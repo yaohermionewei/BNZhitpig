@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { songs } from "../game/songs.js";
 import {
   START_CLOUDS,
   START_LOADING_MIN_DURATION_MS,
+  getStartCharacterStageAnchors,
   getLoadingSubtitleImageSrc,
   getPigFrameSources,
   getRabbitFrameSources,
@@ -45,14 +46,53 @@ function preloadStartImages() {
   return Promise.allSettled(sources.map((src) => preloadImage(src)));
 }
 
+function getMeasuredStageLayout(stageElement, heroElement) {
+  if (!stageElement || !heroElement) {
+    return {
+      width: 402,
+      height: 782,
+      heroOffsetTop: 0,
+    };
+  }
+
+  const stageRect = stageElement.getBoundingClientRect();
+  const heroRect = heroElement.getBoundingClientRect();
+
+  return {
+    width: Math.max(1, stageRect.width),
+    height: Math.max(1, stageRect.height),
+    heroOffsetTop: heroRect.top - stageRect.top,
+  };
+}
+
+function formatAnchorStyle(point, heroOffsetTop) {
+  return {
+    left: `${point.x}px`,
+    top: `${point.y - heroOffsetTop}px`,
+  };
+}
+
 export default function StartScreen({ state, onThemeToggle, onSelectSong, onStart }) {
   const { startTheme, song } = state;
+  const stageRef = useRef(null);
+  const heroRef = useRef(null);
   const [pageReady, setPageReady] = useState(false);
   const [rabbitFrame, setRabbitFrame] = useState(0);
   const [pigFrame, setPigFrame] = useState(0);
+  const [stageLayout, setStageLayout] = useState({
+    width: 402,
+    height: 782,
+    heroOffsetTop: 0,
+  });
   const rabbitFrameSources = useMemo(() => getRabbitFrameSources(startTheme), [startTheme]);
   const pigFrameSources = useMemo(() => getPigFrameSources(startTheme), [startTheme]);
   const startSongs = useMemo(() => getStartSongs(song?.id || "ditto"), [song?.id]);
+  const characterAnchors = useMemo(
+    () => getStartCharacterStageAnchors(startTheme, stageLayout),
+    [startTheme, stageLayout]
+  );
+  const rabbitAnchorStyle = formatAnchorStyle(characterAnchors.rabbit, stageLayout.heroOffsetTop);
+  const pigAnchorStyle = formatAnchorStyle(characterAnchors.pig, stageLayout.heroOffsetTop);
   const currentRabbitFrameSrc =
     rabbitFrameSources[rabbitFrame % rabbitFrameSources.length] || rabbitFrameSources[0];
   const currentPigFrameSrc = pigFrameSources[pigFrame % pigFrameSources.length] || pigFrameSources[0];
@@ -60,6 +100,49 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
   const themeToggleIconSrc = getThemeToggleIconSrc(startTheme);
   const startSongMarkSrc = getStartSongMarkSrc(startTheme);
   const loadingSubtitleImageSrc = getLoadingSubtitleImageSrc(startTheme);
+
+  useLayoutEffect(() => {
+    let animationFrame = 0;
+
+    function measure() {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => {
+        setStageLayout((previousLayout) => {
+          const nextLayout = getMeasuredStageLayout(stageRef.current, heroRef.current);
+          const sameLayout =
+            Math.abs(previousLayout.width - nextLayout.width) < 0.5 &&
+            Math.abs(previousLayout.height - nextLayout.height) < 0.5 &&
+            Math.abs(previousLayout.heroOffsetTop - nextLayout.heroOffsetTop) < 0.5;
+          return sameLayout ? previousLayout : nextLayout;
+        });
+      });
+    }
+
+    measure();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", measure);
+      return () => {
+        window.cancelAnimationFrame(animationFrame);
+        window.removeEventListener("resize", measure);
+      };
+    }
+
+    const resizeObserver = new ResizeObserver(measure);
+    if (stageRef.current) {
+      resizeObserver.observe(stageRef.current);
+    }
+    if (heroRef.current) {
+      resizeObserver.observe(heroRef.current);
+    }
+    window.addEventListener("resize", measure);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", measure);
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -116,7 +199,7 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
 
   return (
     <div className={`screen start-screen page-${startTheme}`}>
-      <div className="start-stage">
+      <div className="start-stage" ref={stageRef}>
         <img className="start-backdrop" src={startBackdropSrc} alt="" draggable="false" />
         <div className={`start-cloud-layer start-cloud-layer-${startTheme}`} aria-hidden="true">
           {START_CLOUDS.map((cloud) => (
@@ -172,10 +255,13 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
             </div>
           </div>
 
-          <div className="start-hero" aria-hidden="true">
-            <div className="start-hero-shadow start-hero-shadow-rabbit" />
-            <div className="start-hero-shadow start-hero-shadow-pig" />
-            <div className="start-rabbit-wrap">
+          <div className="start-hero" aria-hidden="true" ref={heroRef}>
+            <div
+              className="start-hero-shadow start-hero-shadow-rabbit"
+              style={rabbitAnchorStyle}
+            />
+            <div className="start-hero-shadow start-hero-shadow-pig" style={pigAnchorStyle} />
+            <div className="start-rabbit-wrap" style={rabbitAnchorStyle}>
               <div className="start-rabbit-sprite">
                 <img
                   className="start-rabbit-frame"
@@ -185,7 +271,7 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
                 />
               </div>
             </div>
-            <div className="start-pig-wrap">
+            <div className="start-pig-wrap" style={pigAnchorStyle}>
               <div className="start-pig-sprite">
                 <img className="start-pig-frame" src={currentPigFrameSrc} alt="" draggable="false" />
               </div>

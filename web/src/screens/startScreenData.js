@@ -5,6 +5,25 @@ export const START_THEME_BACKDROPS = Object.freeze({
   light: "/assets/images/首页夕阳版.runtime.jpg",
 });
 
+const START_BACKDROP_LAYOUTS = Object.freeze({
+  dark: Object.freeze({
+    naturalWidth: 768,
+    naturalHeight: 1514,
+    anchors: Object.freeze({
+      rabbit: Object.freeze({ x: 210, y: 935 }),
+      pig: Object.freeze({ x: 570, y: 910 }),
+    }),
+  }),
+  light: Object.freeze({
+    naturalWidth: 768,
+    naturalHeight: 1376,
+    anchors: Object.freeze({
+      rabbit: Object.freeze({ x: 245, y: 850 }),
+      pig: Object.freeze({ x: 570, y: 840 }),
+    }),
+  }),
+});
+
 const RABBIT_FRAME_SOURCES = Object.freeze([
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.png",
@@ -417,6 +436,37 @@ export function getStartSongs(selectedSongId) {
 
 export function getStartBackdropSrc(theme) {
   return START_THEME_BACKDROPS[theme] || START_THEME_BACKDROPS[DEFAULT_START_THEME];
+}
+
+export function getStartBackdropLayout(theme) {
+  return START_BACKDROP_LAYOUTS[theme] || START_BACKDROP_LAYOUTS[DEFAULT_START_THEME];
+}
+
+export function mapStartBackdropPointToStage(theme, stageSize, sourcePoint) {
+  const backdrop = getStartBackdropLayout(theme);
+  const stageWidth = Math.max(1, stageSize.width || 1);
+  const stageHeight = Math.max(1, stageSize.height || 1);
+  const scale = Math.max(
+    stageWidth / backdrop.naturalWidth,
+    stageHeight / backdrop.naturalHeight
+  );
+  const renderedWidth = backdrop.naturalWidth * scale;
+  const renderedHeight = backdrop.naturalHeight * scale;
+  const offsetX = (stageWidth - renderedWidth) / 2;
+  const offsetY = (stageHeight - renderedHeight) / 2;
+
+  return Object.freeze({
+    x: offsetX + sourcePoint.x * scale,
+    y: offsetY + sourcePoint.y * scale,
+  });
+}
+
+export function getStartCharacterStageAnchors(theme, stageSize) {
+  const backdrop = getStartBackdropLayout(theme);
+  return Object.freeze({
+    rabbit: mapStartBackdropPointToStage(theme, stageSize, backdrop.anchors.rabbit),
+    pig: mapStartBackdropPointToStage(theme, stageSize, backdrop.anchors.pig),
+  });
 }
 
 export function getRabbitFrameSources(theme) {
