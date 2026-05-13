@@ -1,51 +1,697 @@
-export default function ResultScreen({ summary, startTheme, onReplay, onHome }) {
-  if (!summary) {
-    return (
-      <div className={`screen result-screen screen-${startTheme}`}>
-        <div className="result-card">
-          <p>还没有成绩</p>
-          <button className="primary-button" type="button" onClick={onHome}>
-            回到首页
-          </button>
+import { useEffect, useMemo, useRef, useState } from "react";
+import { RESULT_FIXED_PIXEL_FONT } from "../utils/pixel-font-data.js";
+
+const RABBIT_FRAME_SOURCES = Object.freeze([
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-3.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-4.png",
+]);
+
+const RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES = Object.freeze({
+  dark: "/assets/images/回到魔法世界.dark.png",
+  light: "/assets/images/回到魔法世界....png",
+});
+
+const PARCHMENT_BACKGROUND_SRC = "/assets/images/透明羊皮纸完整版.runtime.png";
+const DEFAULT_SONG_COVER_SRC = "/assets/images/song-covers/ditto.cover.pixel.png";
+const HOME_TRANSITION_ROUTE_DELAY_MS = 120;
+const DEFAULT_RESULT_TONE = "sky";
+
+const RANK_TONE_BY_RANK = Object.freeze({
+  SSS: "prism",
+  SS: "mint",
+  S: "mint",
+  A: "sky",
+  B: "sky",
+});
+
+const RESULT_DIGIT_SPRITES = Object.freeze({
+  0: Object.freeze([
+    ".ffffff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ffffff.",
+  ]),
+  1: Object.freeze([
+    "..ffff..",
+    "...ff...",
+    "...ff...",
+    "...ff...",
+    "...ff...",
+    "...ff...",
+    "...ff...",
+    "...ff...",
+    ".ffffff.",
+  ]),
+  2: Object.freeze([
+    ".ffffff.",
+    ".....ff.",
+    ".....ff.",
+    "...fff..",
+    "..fff...",
+    ".ff.....",
+    ".ff.....",
+    ".ff.....",
+    ".ffffff.",
+  ]),
+  3: Object.freeze([
+    ".ffffff.",
+    ".....ff.",
+    ".....ff.",
+    "..ffff..",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".ffffff.",
+  ]),
+  4: Object.freeze([
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ffffff.",
+    "....ff..",
+    "....ff..",
+    "....ff..",
+    "....ff..",
+    "....ff..",
+  ]),
+  5: Object.freeze([
+    ".ffffff.",
+    ".ff.....",
+    ".ff.....",
+    ".fffff..",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".ffffff.",
+  ]),
+  6: Object.freeze([
+    ".ffffff.",
+    ".ff.....",
+    ".ff.....",
+    ".fffff..",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ffffff.",
+  ]),
+  7: Object.freeze([
+    ".ffffff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+  ]),
+  8: Object.freeze([
+    ".ffffff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ffffff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ffffff.",
+  ]),
+  9: Object.freeze([
+    ".ffffff.",
+    ".ff..ff.",
+    ".ff..ff.",
+    ".ffffff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".....ff.",
+    ".ffffff.",
+  ]),
+  ".": Object.freeze([
+    "........",
+    "........",
+    "........",
+    "........",
+    "........",
+    "........",
+    "...ff...",
+    "...ff...",
+    "........",
+  ]),
+  ",": Object.freeze([
+    "........",
+    "........",
+    "........",
+    "........",
+    "........",
+    "...ff...",
+    "...ff...",
+    "..ff....",
+    ".ff.....",
+  ]),
+  "%": Object.freeze([
+    "ff....ff",
+    "ff....ff",
+    "..f..f..",
+    "...ff...",
+    "..f..f..",
+    ".f..f...",
+    "ff....ff",
+    "ff....ff",
+    "........",
+  ]),
+});
+
+const SPARKS = Object.freeze([
+  ["left-a", "sm", "core"],
+  ["left-b", "md", "core", true],
+  ["left-c", "sm", "mid"],
+  ["left-d", "md", "accent"],
+  ["left-e", "sm", "core", true],
+  ["left-f", "sm", "accent"],
+  ["right-a", "sm", "mid"],
+  ["right-b", "sm", "accent", true],
+  ["right-c", "md", "core"],
+  ["right-d", "sm", "core"],
+  ["right-e", "md", "accent", true],
+  ["right-f", "sm", "mid"],
+]);
+
+function useResultFixedFontFace() {
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const styleId = "bunnies-result-fixed-pixel-font";
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+      @font-face {
+        font-family: "${RESULT_FIXED_PIXEL_FONT.family}";
+        src: url("${RESULT_FIXED_PIXEL_FONT.dataUrl}") format("${RESULT_FIXED_PIXEL_FONT.format}");
+        font-display: swap;
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
+}
+
+function getSafeStartTheme(theme) {
+  return theme === "light" ? "light" : "dark";
+}
+
+function getSafeResultTone(summary) {
+  const explicitTone = summary?.rankTone;
+  if (["prism", "mint", "sky", "violet", "rose"].includes(explicitTone)) {
+    return explicitTone;
+  }
+  return RANK_TONE_BY_RANK[summary?.rank] || DEFAULT_RESULT_TONE;
+}
+
+function formatResultScoreDisplay(scoreDisplay) {
+  const digitsOnly = String(scoreDisplay == null ? "" : scoreDisplay).replace(/[^\d]/g, "");
+  const numericScore = digitsOnly ? Number(digitsOnly) : 0;
+  if (!Number.isFinite(numericScore)) return "0";
+  return String(Math.max(0, Math.round(numericScore)));
+}
+
+function getStatusLengthClass(statusLabel) {
+  const length = String(statusLabel || "").length;
+  if (length >= 11) return "result-status-text-long";
+  if (length >= 9) return "result-status-text-medium";
+  return "result-status-text-short";
+}
+
+function getRankLengthClass(rank) {
+  const length = String(rank || "").length;
+  if (length >= 3) return "result-rank-text-ultra-compact";
+  if (length === 2) return "result-rank-text-compact";
+  return "result-rank-text-standard";
+}
+
+function isZhFontCodePoint(codePoint) {
+  return (
+    (codePoint >= 0x3400 && codePoint <= 0x4dbf) ||
+    (codePoint >= 0x4e00 && codePoint <= 0x9fff) ||
+    (codePoint >= 0x3000 && codePoint <= 0x303f) ||
+    (codePoint >= 0xff00 && codePoint <= 0xffef) ||
+    (codePoint >= 0x2e80 && codePoint <= 0x2fdf) ||
+    (codePoint >= 0x31c0 && codePoint <= 0x31ef)
+  );
+}
+
+function getFontTypeForChar(char, previousType = "en") {
+  if (!char || /\s/.test(char)) return previousType;
+  return isZhFontCodePoint(char.codePointAt(0)) ? "zh" : "en";
+}
+
+function buildFontSegments(value) {
+  const text = value == null ? "" : String(value);
+  const segments = [];
+  let currentSegment = null;
+  let previousType = "en";
+
+  Array.from(text).forEach((char) => {
+    const fontType = getFontTypeForChar(char, previousType);
+    previousType = fontType;
+    if (!currentSegment || currentSegment.fontType !== fontType) {
+      currentSegment = { text: char, fontType };
+      segments.push(currentSegment);
+      return;
+    }
+    currentSegment.text += char;
+  });
+
+  return segments;
+}
+
+function createEmptyDigitRows() {
+  return RESULT_DIGIT_SPRITES[0].map((row, rowIndex) => ({
+    id: `empty-${rowIndex}`,
+    pixels: Array.from(row).map((_, columnIndex) => ({
+      id: `empty-${rowIndex}-${columnIndex}`,
+      filled: false,
+    })),
+  }));
+}
+
+function buildDigitGlyphs(value) {
+  const text = String(value == null || value === "" ? "0" : value);
+  const glyphs = [];
+
+  Array.from(text).forEach((char, glyphIndex) => {
+    const sprite = RESULT_DIGIT_SPRITES[char];
+    if (!sprite) return;
+
+    glyphs.push({
+      id: `${glyphIndex}-${char}`,
+      char,
+      rows: sprite.map((row, rowIndex) => ({
+        id: `${glyphIndex}-${rowIndex}`,
+        pixels: Array.from(row).map((cell, columnIndex) => ({
+          id: `${glyphIndex}-${rowIndex}-${columnIndex}`,
+          filled: cell === "f",
+        })),
+      })),
+    });
+  });
+
+  if (glyphs.length > 0) return glyphs;
+  return [{ id: "empty", char: "", rows: createEmptyDigitRows() }];
+}
+
+function buildStatItem(key, label, value) {
+  const displayValue = String(value ?? 0);
+  return {
+    key,
+    label,
+    value: displayValue,
+    digitGlyphs: buildDigitGlyphs(displayValue),
+  };
+}
+
+function decorateSummary(summary) {
+  const hitCount = Number(summary?.perfect || 0) + Number(summary?.good || 0);
+  const displayStatusLabel = `爆锤方猪${Math.max(0, hitCount)}次`;
+  const resultTone = getSafeResultTone(summary);
+  const displayScore = formatResultScoreDisplay(summary?.scoreDisplay);
+  const rank = summary?.rank || "B";
+
+  return {
+    ...summary,
+    rank,
+    rankTone: resultTone,
+    pageToneClass: `result-page-tone-${resultTone}`,
+    rankToneClass: `result-rank-tone-${resultTone}`,
+    rankLengthClass: getRankLengthClass(rank),
+    statusLengthClass: getStatusLengthClass(displayStatusLabel),
+    displayStatusLabel,
+    displayStatusHitCount: String(Math.max(0, hitCount)),
+    displayStatusPrefixSegments: buildFontSegments("爆锤方猪"),
+    displayStatusSuffixSegments: buildFontSegments("次"),
+    displayScore,
+    scoreDigitGlyphs: buildDigitGlyphs(displayScore),
+    songTitleSegments: buildFontSegments(summary?.songTitle || "Ditto"),
+    songCoverImageSrc: summary?.songCoverImageSrc || DEFAULT_SONG_COVER_SRC,
+    stats: [
+      buildStatItem("perfect", "完美爆锤", summary?.perfect),
+      buildStatItem("good", "优秀爆锤", summary?.good),
+      buildStatItem("miss", "爆锤落空", summary?.miss),
+      buildStatItem("combo", "最高连击", summary?.maxCombo),
+    ],
+  };
+}
+
+function FontSegments({ segments, className = "" }) {
+  return segments.map((segment, index) => (
+    <span
+      key={`${segment.text}-${index}`}
+      className={`${className} ${
+        segment.fontType === "zh"
+          ? "result-fixed-text-zh pixel-font-zh"
+          : "result-fixed-text-en pixel-font-en"
+      }`}
+    >
+      {segment.text}
+    </span>
+  ));
+}
+
+function DigitRun({ glyphs, label, className }) {
+  return (
+    <div className={`result-digit-run ${className}`} aria-label={label}>
+      {glyphs.map((glyph) => (
+        <div className="result-digit-glyph" key={glyph.id}>
+          {glyph.rows.map((row) => (
+            <div className="result-digit-row" key={row.id}>
+              {row.pixels.map((pixel) => (
+                <span
+                  aria-hidden="true"
+                  className={`result-digit-pixel ${
+                    pixel.filled ? "result-digit-pixel-filled" : ""
+                  }`}
+                  key={pixel.id}
+                />
+              ))}
+            </div>
+          ))}
         </div>
+      ))}
+    </div>
+  );
+}
+
+function ResultSparkles() {
+  return (
+    <div className="result-sparkles" aria-hidden="true">
+      {SPARKS.map(([position, tier, color, hasTrail]) => (
+        <div
+          className={`result-spark result-portal-spark result-spark-${position} result-spark-tier-${tier} result-spark-color-${color} ${
+            hasTrail ? "result-spark-has-trail" : ""
+          }`}
+          key={position}
+        >
+          <span className="result-spark-glow" />
+          <span className="result-spark-outer" />
+          <span className="result-spark-core" />
+          {hasTrail && <span className="result-spark-trail" />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ResultButton({ kind, children, onClick }) {
+  const isPrimary = kind === "primary";
+  const prefix = isPrimary ? "result-primary" : "result-secondary";
+
+  return (
+    <button className={`${prefix}-wrap`} type="button" onClick={onClick}>
+      <span className={`${prefix}-shadow`} />
+      <span className={`${prefix}-frame`}>
+        <span className={`${prefix}-face`}>
+          <span className={isPrimary ? "result-primary-inner" : "result-secondary-core"}>
+            <span
+              className={`result-text-block result-button-text ${
+                isPrimary ? "result-replay-button-text" : "result-home-button-text"
+              } result-fixed-text-zh pixel-font-zh`}
+            >
+              {children}
+            </span>
+          </span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function ResultBackground({ startTheme, summary }) {
+  const pageToneClass = summary?.pageToneClass || `result-page-tone-${DEFAULT_RESULT_TONE}`;
+  return (
+    <>
+      <div className="result-bg-base" />
+      <div className="result-bg-glow" />
+      <div className="result-bg-veil" />
+      <div className="result-bg-vignette" />
+      <img
+        className="result-parchment-bg"
+        src={PARCHMENT_BACKGROUND_SRC}
+        alt=""
+        draggable="false"
+      />
+      {startTheme === "dark" && <div className={`result-dark-blue-overlay ${pageToneClass}`} />}
+    </>
+  );
+}
+
+function LeavingOverlay({ startTheme }) {
+  const subtitleImage =
+    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES[startTheme] ||
+    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES.dark;
+
+  return (
+    <div className={`result-leaving-overlay result-leaving-overlay-${startTheme}`}>
+      <div className="result-leaving-spinner" />
+      <div className="result-leaving-copy">
+        <img
+          className="result-leaving-subtitle-image"
+          src={subtitleImage}
+          alt="回到魔法世界"
+          draggable="false"
+        />
+      </div>
+    </div>
+  );
+}
+
+export default function ResultScreen({ summary, startTheme, onReplay, onHome }) {
+  useResultFixedFontFace();
+  const normalizedStartTheme = getSafeStartTheme(startTheme);
+  const decoratedSummary = useMemo(
+    () => (summary ? decorateSummary(summary) : null),
+    [summary]
+  );
+  const [currentRabbitFrame, setCurrentRabbitFrame] = useState(0);
+  const [isLeavingHome, setIsLeavingHome] = useState(false);
+  const homeTimerRef = useRef(0);
+
+  useEffect(() => {
+    if (isLeavingHome) return undefined;
+    const timer = window.setInterval(() => {
+      setCurrentRabbitFrame((frame) => (frame + 1) % RABBIT_FRAME_SOURCES.length);
+    }, 220);
+    return () => window.clearInterval(timer);
+  }, [isLeavingHome]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(homeTimerRef.current);
+    },
+    []
+  );
+
+  function handleHomeTap() {
+    if (isLeavingHome) return;
+    setIsLeavingHome(true);
+    window.clearTimeout(homeTimerRef.current);
+    homeTimerRef.current = window.setTimeout(() => {
+      onHome?.();
+    }, HOME_TRANSITION_ROUTE_DELAY_MS);
+  }
+
+  const pageClasses = [
+    "screen",
+    "result-screen",
+    "result-bg-parchment",
+    `screen-${normalizedStartTheme}`,
+    `page-${normalizedStartTheme}`,
+    decoratedSummary?.pageToneClass || `result-page-tone-${DEFAULT_RESULT_TONE}`,
+    decoratedSummary?.failed ? "result-page-failed" : "result-page-complete",
+  ].join(" ");
+
+  if (!decoratedSummary) {
+    return (
+      <div className={pageClasses}>
+        <ResultBackground startTheme={normalizedStartTheme} summary={decoratedSummary} />
+        <div className="result-shell result-empty-shell">
+          <div className="result-empty-panel result-panel-outer">
+            <div className="result-panel-face">
+              <div className="result-panel-core result-empty-panel-core">
+                <div className="result-text-block result-empty-title result-fixed-text-zh pixel-font-zh">
+                  还没有成绩
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="result-actions result-empty-actions">
+            <ResultButton kind="secondary" onClick={handleHomeTap}>
+              回到首页
+            </ResultButton>
+          </div>
+        </div>
+        {isLeavingHome && <LeavingOverlay startTheme={normalizedStartTheme} />}
       </div>
     );
   }
 
   return (
-    <div className={`screen result-screen screen-${startTheme}`}>
-      <div className="result-glow" />
-      <div className="result-card">
-        <div className="result-status">{summary.statusLabel}</div>
-        <div className="result-song">
-          {summary.songCoverImageSrc && <img src={summary.songCoverImageSrc} alt="" />}
-          <div>
-            <strong>{summary.songTitle}</strong>
-            <span>{summary.songSubtitle}</span>
+    <div className={pageClasses}>
+      <ResultBackground startTheme={normalizedStartTheme} summary={decoratedSummary} />
+
+      <div className="result-shell">
+        <div className="result-stage">
+          <ResultSparkles />
+
+          <div className="result-hero" aria-hidden="true">
+            <div className="result-hero-shadow" />
+            <div className="result-rabbit-wrap">
+              <div className="result-rabbit-sprite">
+                <img
+                  className="result-rabbit-frame"
+                  src={RABBIT_FRAME_SOURCES[currentRabbitFrame]}
+                  alt=""
+                  draggable="false"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="result-status-row">
+            <div
+              className={`result-status-ribbon ${
+                decoratedSummary.failed ? "result-status-ribbon-failed" : ""
+              }`}
+            >
+              <div className="result-status-ribbon-face">
+                <div
+                  className={`result-text-block result-status-text ${decoratedSummary.statusLengthClass} result-text-segments`}
+                >
+                  <FontSegments
+                    segments={decoratedSummary.displayStatusPrefixSegments}
+                    className="result-text-segment"
+                  />
+                  <span className="result-text-segment result-status-count result-fixed-text-en pixel-font-en">
+                    {decoratedSummary.displayStatusHitCount}
+                  </span>
+                  <FontSegments
+                    segments={decoratedSummary.displayStatusSuffixSegments}
+                    className="result-text-segment"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="result-panel-wrap">
+            <div className="result-panel-outer">
+              <div className="result-panel-face">
+                <div className="result-panel-core">
+                  <div className="result-song-strip">
+                    <div className="result-song-header">
+                      <div className="result-song-cover-shell">
+                        {decoratedSummary.songCoverImageSrc ? (
+                          <img
+                            className="result-song-cover-image"
+                            src={decoratedSummary.songCoverImageSrc}
+                            alt=""
+                            draggable="false"
+                          />
+                        ) : (
+                          <div className="result-song-strip-cover-fallback" />
+                        )}
+                      </div>
+
+                      <div className="result-song-copy">
+                        <div className="result-song-title-ellipsis">
+                          <FontSegments
+                            segments={decoratedSummary.songTitleSegments}
+                            className="result-song-title-segment"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="result-divider" aria-hidden="true">
+                    <div className="result-divider-line" />
+                    <div className="result-divider-star" />
+                    <div className="result-divider-line" />
+                  </div>
+
+                  <div className="result-main-row">
+                    <div className="result-score-stack">
+                      <div className="result-text-block result-score-label-text result-fixed-text-zh pixel-font-zh">
+                        总分
+                      </div>
+
+                      <div className="result-score-rank-row">
+                        <div className="result-score-value-wrap">
+                          <DigitRun
+                            glyphs={decoratedSummary.scoreDigitGlyphs}
+                            label={decoratedSummary.displayScore}
+                            className="result-score-digit-run"
+                          />
+                        </div>
+
+                        <div
+                          className={`result-rank-block ${decoratedSummary.rankToneClass}`}
+                        >
+                          <div className="result-rank-face">
+                            <div
+                              className={`result-text-block result-rank-text ${decoratedSummary.rankLengthClass} result-fixed-text-en pixel-font-en`}
+                            >
+                              {decoratedSummary.rank}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="result-stats-grid">
+                    {decoratedSummary.stats.map((item) => (
+                      <div
+                        className={`result-stat-card result-stat-card-${item.key}`}
+                        key={item.key}
+                      >
+                        <div className="result-text-block result-stat-label-text result-fixed-text-zh pixel-font-zh">
+                          {item.label}
+                        </div>
+                        <DigitRun
+                          glyphs={item.digitGlyphs}
+                          label={item.value}
+                          className="result-stat-digit-run"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="result-score-row">
-          <div>
-            <span>总分</span>
-            <strong>{summary.scoreDisplay}</strong>
-          </div>
-          <div className="result-rank">{summary.rank}</div>
-        </div>
-        <div className="result-stats">
-          <span>PERFECT {summary.perfect}</span>
-          <span>GOOD {summary.good}</span>
-          <span>MISS {summary.miss}</span>
-          <span>COMBO {summary.maxCombo}</span>
-        </div>
+
         <div className="result-actions">
-          <button className="secondary-button" type="button" onClick={onHome}>
+          <ResultButton kind="secondary" onClick={handleHomeTap}>
             回到首页
-          </button>
-          <button className="primary-button" type="button" onClick={onReplay}>
+          </ResultButton>
+          <ResultButton kind="primary" onClick={onReplay}>
             再来一遍
-          </button>
+          </ResultButton>
         </div>
       </div>
+
+      {isLeavingHome && <LeavingOverlay startTheme={normalizedStartTheme} />}
     </div>
   );
 }
