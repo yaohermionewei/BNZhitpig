@@ -1,0 +1,460 @@
+import { DEFAULT_START_THEME, START_THEMES } from "../utils/start-theme.js";
+
+export const START_THEME_BACKDROPS = Object.freeze({
+  dark: "/assets/images/首页夜晚版.runtime.jpg",
+  light: "/assets/images/首页夕阳版.runtime.jpg",
+});
+
+const RABBIT_FRAME_SOURCES = Object.freeze([
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-3.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-4.png",
+]);
+
+const RABBIT_DARK_FRAME_SOURCES = Object.freeze([
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-1.png",
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-2.png",
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-3.png",
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-4.png",
+]);
+
+const PIG_FRAME_SOURCES = Object.freeze([
+  "/assets/images/title-pig-frames-v2/pig-frame-1.png",
+  "/assets/images/title-pig-frames-v2/pig-frame-2.png",
+  "/assets/images/title-pig-frames-v2/pig-frame-3.png",
+  "/assets/images/title-pig-frames-v2/pig-frame-4.png",
+]);
+
+const PIG_DARK_FRAME_SOURCES = Object.freeze([
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-1.png",
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-2.png",
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-3.png",
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-4.png",
+]);
+
+const START_THEME_TOGGLE_ICON_SOURCES = Object.freeze({
+  dark: "/assets/images/ui/theme-toggle-sun.png",
+  light: "/assets/images/ui/theme-toggle-moon.png",
+});
+
+const START_SONG_MARK_SOURCES = Object.freeze({
+  dark: "/assets/images/ui/start-song-rabbit-mark.png",
+  light: "/assets/images/ui/start-song-rabbit-mark-light.png",
+});
+
+const START_LOADING_TEXT_IMAGE_SOURCES = Object.freeze({
+  dark: Object.freeze({
+    enter: "/assets/images/进入魔法世界.dark.png",
+    resultReturn: "/assets/images/回到魔法世界.dark.png",
+  }),
+  light: Object.freeze({
+    enter: "/assets/images/进入魔法世界....png",
+    resultReturn: "/assets/images/回到魔法世界....png",
+  }),
+});
+
+const CLOUD_TONE_BY_CHAR = Object.freeze({
+  B: "body",
+  H: "highlight",
+  S: "shadow",
+});
+
+function buildSongs(selectedSongId) {
+  return [
+    {
+      id: "ditto",
+      title: "Ditto",
+      titleSegments: [
+        {
+          text: "Ditto",
+          fontType: "en",
+        },
+      ],
+      selected: selectedSongId === "ditto",
+      available: true,
+    },
+    {
+      id: "coming-soon-1",
+      title: "How Sweet 敬请期待",
+      titleSegments: [
+        {
+          text: "How Sweet",
+          fontType: "en",
+        },
+        {
+          text: "敬请期待",
+          fontType: "zh",
+        },
+      ],
+      selected: false,
+      available: false,
+    },
+    {
+      id: "coming-soon-2",
+      title: "Supernatural 敬请期待",
+      titleSegments: [
+        {
+          text: "Supernatural",
+          fontType: "en",
+        },
+        {
+          text: "敬请期待",
+          fontType: "zh",
+        },
+      ],
+      selected: false,
+      available: false,
+    },
+  ];
+}
+
+function formatPercent(value) {
+  return Number(value.toFixed(3)).toString();
+}
+
+function formatCssLength(value, unit) {
+  if (typeof value === "string" && !Number.isFinite(Number(value))) {
+    return value;
+  }
+
+  if (unit === "px") {
+    return `${formatPercent((Number(value) / 402) * 100)}cqw`;
+  }
+
+  return `${value}${unit}`;
+}
+
+function createPixelRun(id, left, top, width, height, tone, unit) {
+  return Object.freeze({
+    id,
+    tone,
+    style: Object.freeze({
+      left: formatCssLength(left, unit),
+      top: formatCssLength(top, unit),
+      width: formatCssLength(width, unit),
+      height: formatCssLength(height, unit),
+    }),
+  });
+}
+
+function createCloudShapeFromRows(shapeId, rows, options = {}) {
+  const rowCount = rows.length;
+  const colCount = Math.max(...rows.map((row) => row.length));
+  const cloudBlocks = [];
+  const runs = [];
+  const rowHeight = formatPercent(100 / rowCount);
+
+  rows.forEach((rawRow, rowIndex) => {
+    const row = rawRow.padEnd(colCount, ".");
+    let colIndex = 0;
+
+    while (colIndex < colCount) {
+      const toneChar = row[colIndex];
+      const tone = CLOUD_TONE_BY_CHAR[toneChar];
+
+      if (!tone) {
+        colIndex += 1;
+        continue;
+      }
+
+      const runStart = colIndex;
+      while (colIndex < colCount && row[colIndex] === toneChar) {
+        colIndex += 1;
+      }
+
+      const run = Object.freeze({
+        id: `${shapeId}-${rowIndex}-${runStart}`,
+        rowIndex,
+        colStart: runStart,
+        colSpan: colIndex - runStart,
+        tone,
+      });
+      runs.push(run);
+
+      cloudBlocks.push(
+        createPixelRun(
+          run.id,
+          formatPercent((runStart / colCount) * 100),
+          formatPercent((run.rowIndex / rowCount) * 100),
+          formatPercent((run.colSpan / colCount) * 100),
+          rowHeight,
+          tone,
+          "%"
+        )
+      );
+    }
+  });
+
+  return Object.freeze({
+    cloudBlocks: Object.freeze(cloudBlocks),
+    runs: Object.freeze(runs),
+    rowCount,
+    colCount,
+    pixelGrid: Boolean(options.pixelGrid),
+  });
+}
+
+function buildPixelGridCloudBlocks(shape, layout) {
+  return Object.freeze(
+    shape.runs.map((run) => {
+      const left = Math.round((run.colStart / shape.colCount) * layout.width);
+      const right = Math.round(
+        ((run.colStart + run.colSpan) / shape.colCount) * layout.width
+      );
+      const top = Math.round((run.rowIndex / shape.rowCount) * layout.height);
+      const bottom = Math.round(((run.rowIndex + 1) / shape.rowCount) * layout.height);
+
+      return createPixelRun(
+        `${layout.id}-${run.id}`,
+        left,
+        top,
+        right - left,
+        bottom - top,
+        run.tone,
+        "px"
+      );
+    })
+  );
+}
+
+const START_CLOUD_SHAPES = Object.freeze({
+  wide: createCloudShapeFromRows("wide", [
+    "................................................",
+    "................................................",
+    "......HHHH.............HHHHH....................",
+    "....HHBBBBHH.......HHHBBBBBHH..................",
+    "...HBBBBBBBBH.....HBBBBBBBBBBH.................",
+    "..HBBBBBBBBBBHHHHHBBBBBBBBBBBBH................",
+    ".BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBH...............",
+    "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB..............",
+    "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB.............",
+    ".BBBBBBBBBBSSBBBBBBBBBBBBBBBSSSSS..............",
+    "..BBBBBSSSSSBBBBBBBBBBBBBSSSSSS................",
+    "...BBBSSSSSSSBBBBBBBSSSSSSS....................",
+    ".....SSSSSSSSSBBBSSSSSSS.......................",
+    "................................................",
+    "................................................",
+    "................................................",
+  ]),
+  medium: createCloudShapeFromRows(
+    "medium",
+    [
+      "........................................",
+      "........................................",
+      ".....HHH.........HHHH...................",
+      "...HHBBBHH....HHBBBBH..................",
+      "..HBBBBBBBHHHHBBBBBBBBH................",
+      ".HBBBBBBBBBBBBBBBBBBBBBH...............",
+      "BBBBBBBBBBBBBBBBBBBBBBBBB..............",
+      "BBBBBBBBBBBBBBBBBBBBBBBSS..............",
+      ".BBBBBBBSSBBBBBBBBBSSSS................",
+      "..BBBBSSSSBBBBBBSSSS...................",
+      "....SSSSSSBBBSSSS......................",
+      "........................................",
+      "........................................",
+      "........................................",
+    ],
+    { pixelGrid: true }
+  ),
+  small: createCloudShapeFromRows("small", [
+    "..................................",
+    "..................................",
+    "....HHH........HHH................",
+    "..HHBBBHH...HHBBBBH..............",
+    ".HBBBBBBBHHHBBBBBBBH.............",
+    "BBBBBBBBBBBBBBBBBBBBB............",
+    "BBBBBBBSSBBBBBBBBSSS.............",
+    ".BBBSSSSSBBBBBBSSSS..............",
+    "..BSSSSSSBBSSSSSS................",
+    "....SSSSSBBSSS...................",
+    "..................................",
+    "..................................",
+    "..................................",
+  ]),
+});
+
+const START_CLOUD_LAYOUTS = Object.freeze([
+  {
+    id: "cloud-large-left",
+    shape: "wide",
+    left: -30,
+    top: 18,
+    width: 196,
+    height: 58,
+    driftClass: "start-cloud-drift-east-slow",
+    bobClass: "start-cloud-bob-soft",
+    swayClass: "start-cloud-sway-wide",
+    driftDuration: 31.6,
+    driftDelay: -9.4,
+    bobDuration: 11.2,
+    bobDelay: -2.8,
+    swayDuration: 14.7,
+    swayDelay: -6.2,
+  },
+  {
+    id: "cloud-medium-right",
+    shape: "medium",
+    left: 244,
+    top: 42,
+    width: 146,
+    height: 49,
+    driftClass: "start-cloud-drift-west-medium",
+    bobClass: "start-cloud-bob-mid",
+    swayClass: "start-cloud-sway-medium-clean",
+    driftDuration: 28.4,
+    driftDelay: -15.6,
+    bobDuration: 8.8,
+    bobDelay: -1.9,
+    swayDuration: 11.6,
+    swayDelay: -5.7,
+  },
+  {
+    id: "cloud-small-far",
+    shape: "small",
+    left: 304,
+    top: 72,
+    width: 66,
+    height: 27,
+    driftClass: "start-cloud-drift-east-fast",
+    bobClass: "start-cloud-bob-soft",
+    swayClass: "start-cloud-sway-light",
+    driftDuration: 23.8,
+    driftDelay: -7.8,
+    bobDuration: 7.6,
+    bobDelay: -4.1,
+    swayDuration: 9.4,
+    swayDelay: -3.3,
+  },
+  {
+    id: "cloud-small-mid",
+    shape: "small",
+    left: 122,
+    top: 92,
+    width: 72,
+    height: 30,
+    driftClass: "start-cloud-drift-west-slow",
+    bobClass: "start-cloud-bob-fast",
+    swayClass: "start-cloud-sway-long",
+    driftDuration: 32.8,
+    driftDelay: -18.2,
+    bobDuration: 6.5,
+    bobDelay: -3.6,
+    swayDuration: 10.8,
+    swayDelay: -1.7,
+  },
+  {
+    id: "cloud-medium-left",
+    shape: "medium",
+    left: -10,
+    top: 88,
+    width: 150,
+    height: 49,
+    driftClass: "start-cloud-drift-east-medium",
+    bobClass: "start-cloud-bob-mid",
+    swayClass: "start-cloud-sway-medium-clean",
+    driftDuration: 29.6,
+    driftDelay: -13.4,
+    bobDuration: 9.6,
+    bobDelay: -5.4,
+    swayDuration: 13.2,
+    swayDelay: -7.1,
+  },
+]);
+
+function scaledPx(value) {
+  return `${formatPercent((value / 402) * 100)}cqw`;
+}
+
+function buildStartCloudTrackStyle(layout) {
+  return Object.freeze({
+    left: scaledPx(layout.left),
+    top: scaledPx(layout.top),
+    width: scaledPx(layout.width),
+    height: scaledPx(layout.height),
+    animationDuration: `${layout.driftDuration || 28}s`,
+    animationDelay: `${layout.driftDelay || 0}s`,
+  });
+}
+
+function buildStartCloudBobStyle(layout) {
+  return Object.freeze({
+    animationDuration: `${layout.bobDuration || 8}s`,
+    animationDelay: `${layout.bobDelay || 0}s`,
+  });
+}
+
+function buildStartCloudSwayStyle(layout) {
+  return Object.freeze({
+    animationDuration: `${layout.swayDuration || 12}s`,
+    animationDelay: `${layout.swayDelay || 0}s`,
+  });
+}
+
+export const START_CLOUDS = Object.freeze(
+  START_CLOUD_LAYOUTS.map((layout) => {
+    const shape = START_CLOUD_SHAPES[layout.shape] || START_CLOUD_SHAPES.medium;
+    const cloudBlocks = shape.pixelGrid
+      ? buildPixelGridCloudBlocks(shape, layout)
+      : shape.cloudBlocks;
+
+    return Object.freeze({
+      ...layout,
+      ...shape,
+      cloudBlocks,
+      trackStyle: buildStartCloudTrackStyle(layout),
+      bobStyle: buildStartCloudBobStyle(layout),
+      swayStyle: buildStartCloudSwayStyle(layout),
+    });
+  })
+);
+
+export const START_LOADING_MIN_DURATION_MS = 280;
+
+export function getStartSongs(selectedSongId) {
+  return buildSongs(selectedSongId);
+}
+
+export function getStartBackdropSrc(theme) {
+  return START_THEME_BACKDROPS[theme] || START_THEME_BACKDROPS[DEFAULT_START_THEME];
+}
+
+export function getRabbitFrameSources(theme) {
+  return theme === START_THEMES.dark ? RABBIT_DARK_FRAME_SOURCES : RABBIT_FRAME_SOURCES;
+}
+
+export function getPigFrameSources(theme) {
+  return theme === START_THEMES.dark ? PIG_DARK_FRAME_SOURCES : PIG_FRAME_SOURCES;
+}
+
+export function getThemeToggleIconSrc(theme) {
+  return (
+    START_THEME_TOGGLE_ICON_SOURCES[theme] ||
+    START_THEME_TOGGLE_ICON_SOURCES[DEFAULT_START_THEME]
+  );
+}
+
+export function getStartSongMarkSrc(theme) {
+  return START_SONG_MARK_SOURCES[theme] || START_SONG_MARK_SOURCES[DEFAULT_START_THEME];
+}
+
+export function getLoadingSubtitleImageSrc(theme, key = "enter") {
+  const themeSources =
+    START_LOADING_TEXT_IMAGE_SOURCES[theme] ||
+    START_LOADING_TEXT_IMAGE_SOURCES[DEFAULT_START_THEME];
+  return themeSources[key] || themeSources.enter;
+}
+
+export function getStartCriticalImageSources(theme) {
+  const normalizedTheme = theme === START_THEMES.light ? START_THEMES.light : START_THEMES.dark;
+  return Array.from(
+    new Set([
+      getStartBackdropSrc(normalizedTheme),
+      getThemeToggleIconSrc(normalizedTheme),
+      getStartSongMarkSrc(normalizedTheme),
+      getLoadingSubtitleImageSrc(normalizedTheme),
+      ...getRabbitFrameSources(normalizedTheme),
+      ...getPigFrameSources(normalizedTheme),
+    ])
+  );
+}
