@@ -126,12 +126,13 @@ function getCanvasPoint(event, canvas) {
 }
 
 export class GameRunner {
-  constructor({ canvas, song, startTheme, onFinish, onLoadingChange }) {
+  constructor({ canvas, song, startTheme, onFinish, onHome, onLoadingChange }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false });
     this.song = song;
     this.startTheme = normalizeStartTheme(startTheme);
     this.onFinish = onFinish;
+    this.onHome = onHome;
     this.onLoadingChange = onLoadingChange;
     this.audio = new AudioControllerWeb();
     this.state = createGameState(song.chart);
@@ -516,6 +517,10 @@ export class GameRunner {
     }
 
     if (this.isPaused) {
+      if (this.pointHitsRect(point, rects.pauseHome)) {
+        this.goHome();
+        return;
+      }
       if (this.pointHitsRect(point, rects.pauseRestart)) {
         this.start();
         return;
@@ -617,6 +622,18 @@ export class GameRunner {
     this.resetInputGesture();
     this.audio.resume();
     this.startLoop();
+  }
+
+  goHome() {
+    if (this.resultPending) return;
+    this.resultPending = true;
+    this.started = false;
+    this.isPaused = true;
+    this.lastTimestamp = 0;
+    this.resetInputGesture();
+    this.stopLoop();
+    this.audio.destroy();
+    this.onHome?.();
   }
 
   finishRunIfNeeded() {

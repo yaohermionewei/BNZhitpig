@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { GameRunner } from "../game/GameRunner.js";
 
-export default function GameScreen({ song, startTheme, onFinish }) {
+export default function GameScreen({ song, startTheme, onFinish, onHome }) {
   const canvasRef = useRef(null);
   const runnerRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -18,6 +18,7 @@ export default function GameScreen({ song, startTheme, onFinish }) {
       onFinish: (summary) => {
         onFinish({ ...summary, completedAt: Date.now() });
       },
+      onHome,
       onLoadingChange: setLoading,
     });
     runnerRef.current = runner;
@@ -37,7 +38,7 @@ export default function GameScreen({ song, startTheme, onFinish }) {
       runner.dispose();
       runnerRef.current = null;
     };
-  }, [song, startTheme, onFinish]);
+  }, [song, startTheme, onFinish, onHome]);
 
   return (
     <div className={`screen game-screen screen-${startTheme}`}>

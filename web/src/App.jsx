@@ -62,6 +62,7 @@ export default function App() {
           song={song}
           startTheme={startTheme}
           onFinish={handleFinish}
+          onHome={handleHome}
         />
       )}
       {screen === "result" && (
