@@ -74,7 +74,6 @@ const IMPACT_ZONE_LINE_TO_CARPET_RATIO = 182.2 / IMPACT_ZONE_CARPET_WIDTH_BASELI
 const NOTE_ENTRY_FADE_DISTANCE = 22;
 const NOTE_ENTRY_SOFT_FADE_DISTANCE = 42;
 const RABBIT_OCCLUSION_SOFT_FADE_DISTANCE = 28;
-const BACKDROP_OFFSET_X = 2;
 const BACKDROP_LOADING_BACKGROUND = "#6f86aa";
 const BACKDROP_LOADING_SPINNER = "#17233d";
 const BACKDROP_LOADING_SPINNER_TRACK = "rgba(23, 35, 61, 0.22)";
@@ -2325,14 +2324,18 @@ function getCoverBackdropLayout(viewport, image) {
     return null;
   }
 
-  const scale = viewport.height / Math.max(1, image.height);
+  const scale = Math.max(
+    viewport.width / Math.max(1, image.width),
+    viewport.height / Math.max(1, image.height)
+  );
   const drawWidth = image.width * scale;
-  const drawHeight = viewport.height;
-  const drawX = Math.round((viewport.width - drawWidth) / 2) + BACKDROP_OFFSET_X;
+  const drawHeight = image.height * scale;
+  const drawX = Math.round((viewport.width - drawWidth) / 2);
+  const drawY = Math.round((viewport.height - drawHeight) / 2);
 
   return {
     x: drawX,
-    y: 0,
+    y: drawY,
     width: drawWidth,
     height: drawHeight,
     scale,
