@@ -67,6 +67,10 @@ const LANE_HIT_FLASH_SOURCE_ANCHORS = Object.freeze({
   bottomLeft: Object.freeze({ x: 211.76, y: 1840 }),
   bottomRight: Object.freeze({ x: 816.47, y: 1840 }),
 });
+const IMPACT_ZONE_EDGE_PADDING = 6;
+const IMPACT_ZONE_CARPET_WIDTH_BASELINE = 328.06;
+const IMPACT_ZONE_ELLIPSE_TO_CARPET_RATIO = 209.4 / IMPACT_ZONE_CARPET_WIDTH_BASELINE;
+const IMPACT_ZONE_LINE_TO_CARPET_RATIO = 182.2 / IMPACT_ZONE_CARPET_WIDTH_BASELINE;
 const NOTE_ENTRY_FADE_DISTANCE = 22;
 const NOTE_ENTRY_SOFT_FADE_DISTANCE = 42;
 const RABBIT_OCCLUSION_SOFT_FADE_DISTANCE = 28;
@@ -2779,15 +2783,70 @@ function drawLane(ctx, viewport, lane, effects = [], characterSprites = {}, opti
   });
 }
 
-function drawImpactZone(ctx, lane) {
+function getBackdropCarpetEdgeX(backdropLayout, screenY, side) {
+  if (!backdropLayout) {
+    return null;
+  }
+
+  const sourceY =
+    ((screenY - backdropLayout.y) / Math.max(1, backdropLayout.height)) *
+    LANE_HIT_FLASH_SOURCE_BASE_HEIGHT;
+  const carpetProgress = clamp(
+    (sourceY - STAGE_CARPET_TOP) /
+      Math.max(1, LANE_HIT_FLASH_SOURCE_BASE_HEIGHT - STAGE_CARPET_TOP),
+    0,
+    1
+  );
+  const ratio = getStageCarpetEdgeRatio(carpetProgress, side);
+  return backdropLayout.x + backdropLayout.width * ratio;
+}
+
+function getImpactZoneVisualMetrics(viewport, lane, sceneBackgroundImage) {
+  const fallbackZoneRadiusX = lane.targetWidth * 0.6;
+  const fallbackLineWidth = fallbackZoneRadiusX * 1.74;
+  const backdropLayout = getCoverBackdropLayout(viewport, sceneBackgroundImage);
+
+  if (!backdropLayout) {
+    return {
+      zoneRadiusX: fallbackZoneRadiusX,
+      lineWidth: fallbackLineWidth,
+    };
+  }
+
+  const leftEdgeX = getBackdropCarpetEdgeX(backdropLayout, lane.targetY, "left");
+  const rightEdgeX = getBackdropCarpetEdgeX(backdropLayout, lane.targetY, "right");
+  if (leftEdgeX === null || rightEdgeX === null || rightEdgeX <= leftEdgeX) {
+    return {
+      zoneRadiusX: fallbackZoneRadiusX,
+      lineWidth: fallbackLineWidth,
+    };
+  }
+
+  const availableWidth = Math.max(1, rightEdgeX - leftEdgeX - IMPACT_ZONE_EDGE_PADDING * 2);
+  const maxZoneRadiusX = Math.max(
+    12,
+    (availableWidth * IMPACT_ZONE_ELLIPSE_TO_CARPET_RATIO) / 2
+  );
+  const maxLineWidth = Math.max(8, availableWidth * IMPACT_ZONE_LINE_TO_CARPET_RATIO);
+
+  return {
+    zoneRadiusX: Math.min(fallbackZoneRadiusX, maxZoneRadiusX),
+    lineWidth: Math.min(fallbackLineWidth, maxLineWidth),
+  };
+}
+
+function drawImpactZone(ctx, viewport, lane, sceneBackgroundImage) {
   const zoneY = lane.targetY + lerp(8, 2, lane.cameraProgress);
-  const zoneRadiusX = lane.targetWidth * 0.6;
+  const { zoneRadiusX, lineWidth } = getImpactZoneVisualMetrics(
+    viewport,
+    lane,
+    sceneBackgroundImage
+  );
   const zoneRadiusY = lerp(18, 24, lane.cameraProgress);
   const innerRadiusX = Math.max(12, zoneRadiusX - 5);
   const innerRadiusY = Math.max(8, zoneRadiusY - 5);
   const highlightRadiusX = Math.max(10, zoneRadiusX * 0.68);
   const highlightRadiusY = Math.max(5, zoneRadiusY * 0.42);
-  const lineWidth = zoneRadiusX * 1.74;
   const barLeft = snapToGrid(lane.centerX - lineWidth / 2, 1);
   const barY = snapToGrid(lane.targetY - 2, 1);
   const barWidth = snapToGrid(lineWidth, 1);
@@ -5174,7 +5233,7 @@ function renderFrame(ctx, viewport, state, uiState = {}) {
   drawLane(ctx, viewport, lane, state.effects, uiState.characterSprites, {
     showLaneBase,
   });
-  drawImpactZone(ctx, lane);
+  drawImpactZone(ctx, viewport, lane, sceneBackground);
   if (gameplayActive) {
     drawNotes(ctx, viewport, lane, state, {
       characterSprites: uiState.characterSprites,
