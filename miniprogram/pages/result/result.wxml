@@ -1,0 +1,303 @@
+<view class="page page-{{startTheme}} result-bg-parchment {{summary.pageToneClass}} {{summary.failed ? 'result-page-failed' : 'result-page-complete'}} {{fontReady ? 'result-font-ready' : 'result-font-loading'}}">
+  <block wx:if="{{showResultScene && summaryReady}}">
+    <view class="result-bg-base"></view>
+    <view class="result-bg-glow"></view>
+    <view class="result-bg-veil"></view>
+    <view class="result-bg-vignette"></view>
+    <image
+      class="result-parchment-bg"
+      src="/assets/images/透明羊皮纸完整版.runtime.png"
+      mode="aspectFit"
+    ></image>
+
+    <view class="result-shell">
+      <view class="result-stage">
+        <view class="result-sparkles">
+          <view class="result-spark result-portal-spark result-spark-left-a result-spark-tier-sm result-spark-color-core">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-left-b result-spark-tier-md result-spark-color-core result-spark-has-trail">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+            <view class="result-spark-trail"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-left-c result-spark-tier-sm result-spark-color-mid">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-left-d result-spark-tier-md result-spark-color-accent">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-left-e result-spark-tier-sm result-spark-color-core result-spark-has-trail">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+            <view class="result-spark-trail"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-left-f result-spark-tier-sm result-spark-color-accent">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-right-a result-spark-tier-sm result-spark-color-mid">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-right-b result-spark-tier-sm result-spark-color-accent result-spark-has-trail">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+            <view class="result-spark-trail"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-right-c result-spark-tier-md result-spark-color-core">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-right-d result-spark-tier-sm result-spark-color-core">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-right-e result-spark-tier-md result-spark-color-accent result-spark-has-trail">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+            <view class="result-spark-trail"></view>
+          </view>
+          <view class="result-spark result-portal-spark result-spark-right-f result-spark-tier-sm result-spark-color-mid">
+            <view class="result-spark-glow"></view>
+            <view class="result-spark-outer"></view>
+            <view class="result-spark-core"></view>
+          </view>
+        </view>
+
+        <view class="result-hero">
+          <view class="result-hero-shadow"></view>
+          <view class="result-rabbit-wrap">
+            <view class="result-rabbit-sprite">
+              <image
+                class="result-rabbit-frame"
+                src="{{currentRabbitFrameSrc}}"
+                mode="aspectFit"
+              ></image>
+            </view>
+          </view>
+        </view>
+
+        <view class="result-status-row">
+          <view
+            class="result-status-ribbon {{summary.failed ? 'result-status-ribbon-failed' : ''}}"
+          >
+	            <view class="result-status-ribbon-face">
+	              <view class="result-text-block result-status-text {{summary.statusLengthClass}} result-text-segments">
+	                <text
+	                  wx:for="{{summary.displayStatusPrefixSegments}}"
+	                  wx:key="index"
+	                  wx:for-item="segment"
+	                  class="result-text-segment {{segment.fontType === 'zh' ? 'result-fixed-text-zh pixel-font-zh' : 'result-fixed-text-en pixel-font-en'}}"
+	                >
+	                  {{segment.text}}
+	                </text>
+	                <text class="result-text-segment result-status-count result-fixed-text-en pixel-font-en">
+	                  {{summary.displayStatusHitCount}}
+	                </text>
+	                <text
+	                  wx:for="{{summary.displayStatusSuffixSegments}}"
+	                  wx:key="index"
+	                  wx:for-item="segment"
+	                  class="result-text-segment {{segment.fontType === 'zh' ? 'result-fixed-text-zh pixel-font-zh' : 'result-fixed-text-en pixel-font-en'}}"
+	                >
+	                  {{segment.text}}
+	                </text>
+	              </view>
+	            </view>
+          </view>
+        </view>
+
+        <view class="result-panel-wrap">
+          <view class="result-panel-outer">
+            <view class="result-panel-face">
+              <view class="result-panel-core">
+                <view class="result-song-strip">
+                  <view class="result-song-header">
+                    <view class="result-song-cover-shell">
+                      <image
+                        wx:if="{{summary.songCoverImageSrc}}"
+                        class="result-song-cover-image"
+                        src="{{summary.songCoverImageSrc}}"
+                        mode="aspectFill"
+                      ></image>
+                      <view wx:else class="result-song-strip-cover-fallback"></view>
+                    </view>
+
+                    <view class="result-song-copy">
+                      <view class="result-song-title-ellipsis">
+                        <view
+                          wx:for="{{summary.songTitleSegments}}"
+                          wx:key="index"
+                          wx:for-item="segment"
+                          class="result-song-title-segment {{segment.fontType === 'zh' ? 'result-fixed-text-zh pixel-font-zh' : 'result-fixed-text-en pixel-font-en'}}"
+                        >
+                          {{segment.text}}
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+
+                <view class="result-divider">
+                  <view class="result-divider-line"></view>
+                  <view class="result-divider-star"></view>
+                  <view class="result-divider-line"></view>
+                </view>
+
+                <view class="result-main-row">
+                  <view class="result-score-stack">
+                    <view
+                      class="result-text-block result-score-label-text result-fixed-text-zh pixel-font-zh"
+                    >
+                      总分
+                    </view>
+
+                    <view class="result-score-rank-row">
+                      <view class="result-score-value-wrap">
+                        <view
+                          class="result-digit-run result-score-digit-run"
+                          aria-label="{{summary.displayScore}}"
+                        >
+                          <view
+                            wx:for="{{scoreDigitGlyphs}}"
+                            wx:key="id"
+                            wx:for-item="glyph"
+                            class="result-digit-glyph"
+                          >
+                            <view
+                              wx:for="{{glyph.rows}}"
+                              wx:key="id"
+                              wx:for-item="row"
+                              class="result-digit-row"
+                            >
+                              <view
+                                wx:for="{{row.pixels}}"
+                                wx:key="id"
+                                wx:for-item="pixel"
+                                class="result-digit-pixel {{pixel.filled ? 'result-digit-pixel-filled' : ''}}"
+                              ></view>
+                            </view>
+                          </view>
+                        </view>
+                      </view>
+
+                      <view class="result-rank-block {{summary.rankToneClass}}">
+                        <view class="result-rank-face">
+                          <view
+                            class="result-text-block result-rank-text {{summary.rankLengthClass}} result-fixed-text-en pixel-font-en"
+                          >
+                            {{summary.rank}}
+                          </view>
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+
+                <view class="result-stats-grid">
+                  <view
+                    wx:for="{{stats}}"
+                    wx:key="key"
+                    class="result-stat-card result-stat-card-{{item.key}}"
+                  >
+	                    <view
+	                      class="result-text-block result-stat-label-text result-fixed-text-zh pixel-font-zh"
+	                    >
+                      {{item.label}}
+                    </view>
+
+                    <view
+                      class="result-digit-run result-stat-digit-run"
+                      aria-label="{{item.value}}"
+                    >
+                      <view
+                        wx:for="{{item.digitGlyphs}}"
+                        wx:key="id"
+                        wx:for-item="glyph"
+                        class="result-digit-glyph"
+                      >
+                        <view
+                          wx:for="{{glyph.rows}}"
+                          wx:key="id"
+                          wx:for-item="row"
+                          class="result-digit-row"
+                        >
+                          <view
+                            wx:for="{{row.pixels}}"
+                            wx:key="id"
+                            wx:for-item="pixel"
+                            class="result-digit-pixel {{pixel.filled ? 'result-digit-pixel-filled' : ''}}"
+                          ></view>
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="result-actions">
+        <view class="result-secondary-wrap" bindtap="handleHomeTap">
+          <view class="result-secondary-shadow"></view>
+          <view class="result-secondary-frame">
+            <view class="result-secondary-face">
+              <view class="result-secondary-core">
+                <view
+                  class="result-text-block result-button-text result-home-button-text result-fixed-text-zh pixel-font-zh"
+                >
+                  回到首页
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="result-primary-wrap" bindtap="handleReplayTap">
+          <view class="result-primary-shadow"></view>
+          <view class="result-primary-frame">
+            <view class="result-primary-face">
+              <view class="result-primary-inner">
+                <view
+                  class="result-text-block result-button-text result-replay-button-text result-fixed-text-zh pixel-font-zh"
+                >
+                  再来一遍
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{startTheme === 'dark'}}" class="result-dark-blue-overlay"></view>
+  </block>
+
+  <view wx:if="{{isLeavingHome}}" class="result-leaving-overlay result-leaving-overlay-{{startTheme}}">
+    <view class="result-leaving-spinner"></view>
+    <view class="result-leaving-copy">
+      <image
+        class="result-leaving-subtitle-image"
+        src="{{leavingSubtitleImageSrc}}"
+        mode="widthFix"
+      ></image>
+    </view>
+  </view>
+</view>

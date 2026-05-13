@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NJZ Carpet Perspective</title>
+    <style>
+:root {
+  color-scheme: dark;
+  --bg-0: #0a0f1b;
+  --bg-1: #111a2b;
+  --bg-2: #182338;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(134, 206, 255, 0.28);
+  --text-0: #f3f6ff;
+  --text-1: rgba(227, 234, 255, 0.72);
+  --gold: #f1c06d;
+  --gold-soft: rgba(241, 192, 109, 0.18);
+  --sky: #82d7ff;
+  --mint: #8cf0ca;
+  --shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, rgba(94, 168, 255, 0.14), rgba(10, 15, 27, 0) 30%),
+    linear-gradient(180deg, #0b101b 0%, #070b13 100%);
+  color: var(--text-0);
+  font-family: Inter, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(17, 26, 43, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title-wrap {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--sky);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul {
+  margin: 0;
+}
+
+h1 {
+  margin-top: 6px;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin-top: 8px;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.topbar,
+.controls-panel,
+.help-panel {
+  padding: 16px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-group + .control-group,
+.status-row {
+  margin-top: 12px;
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+}
+
+.field select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-0);
+}
+
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+}
+
+.ghost-button,
+.secondary-button,
+.primary-button {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.ghost-button,
+.secondary-button {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-0);
+}
+
+.primary-button {
+  border: 0;
+  background: linear-gradient(135deg, var(--sky) 0%, var(--mint) 100%);
+  color: #08121c;
+  font-weight: 700;
+}
+
+.ghost-button:hover,
+.secondary-button:hover,
+.primary-button:hover {
+  transform: translateY(-1px);
+}
+
+.status-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+  font-size: 12px;
+}
+
+.status-text {
+  margin-top: 12px;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.canvas-panel {
+  padding: 14px;
+}
+
+.canvas-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 2px 12px;
+}
+
+.canvas-header h2 {
+  font-size: 17px;
+}
+
+.canvas-header p {
+  margin-top: 6px;
+  color: var(--text-1);
+  font-size: 12px;
+}
+
+.canvas-wrap {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    #0b111d;
+  background-size: 24px 24px;
+  background-position:
+    0 0,
+    0 12px,
+    12px -12px,
+    -12px 0;
+}
+
+#editorCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.help-grid h3 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.help-grid ol,
+.help-grid ul {
+  padding-left: 18px;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 560px) {
+  .help-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas-header {
+    flex-direction: column;
+  }
+}
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="title-wrap">
+          <div class="eyebrow">Figma Perspective Tool</div>
+          <h1>NJZ Carpet Perspective</h1>
+          <p class="subtitle">把选中的 NJZ 文本或图片，快速压成适合地毯边条的透视图。</p>
+        </div>
+        <button id="closeButton" class="ghost-button" type="button">关闭</button>
+      </header>
+
+      <section class="panel controls-panel">
+        <div class="control-group">
+          <label class="field">
+            <span>导出倍率</span>
+            <select id="exportScale">
+              <option value="0.5">0.5x</option>
+              <option value="1" selected>1x</option>
+              <option value="2">2x</option>
+              <option value="3">3x</option>
+            </select>
+          </label>
+          <button id="reloadButton" class="primary-button" type="button">重新读取选区</button>
+        </div>
+
+        <div class="control-group">
+          <button id="rotateLeftButton" class="secondary-button" type="button">向左旋转 90°</button>
+          <button id="rotateRightButton" class="secondary-button" type="button">向右旋转 90°</button>
+          <label class="checkbox-field">
+            <input id="mirrorCheckbox" type="checkbox" />
+            <span>水平镜像</span>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <button id="leftPresetButton" class="secondary-button" type="button">左边条预设</button>
+          <button id="rightPresetButton" class="secondary-button" type="button">右边条预设</button>
+          <button id="resetQuadButton" class="secondary-button" type="button">重置透视</button>
+        </div>
+
+        <div class="status-row">
+          <div id="selectionMeta" class="meta-pill">等待选区</div>
+          <div id="resultMeta" class="meta-pill">输出未生成</div>
+        </div>
+        <p id="statusText" class="status-text">
+          先在 Figma 里选中 1 个文本或图片节点。拖动画布里的四个角点就能微调透视。
+        </p>
+      </section>
+
+      <section class="panel canvas-panel">
+        <div class="canvas-header">
+          <div>
+            <h2>透视预览</h2>
+            <p>蓝色把手可拖动，金色轮廓是输出边界。</p>
+          </div>
+          <button id="insertButton" class="primary-button" type="button">插回 Figma</button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="editorCanvas" width="500" height="680"></canvas>
+        </div>
+      </section>
+
+      <section class="panel help-panel">
+        <div class="help-grid">
+          <div>
+            <h3>推荐流程</h3>
+            <ol>
+              <li>选中一整条 NJZ 重复文本。</li>
+              <li>先点左右边条预设，再微调四角。</li>
+              <li>如果文字方向不对，再旋转或镜像。</li>
+              <li>点“插回 Figma”，把新图摆到地毯边上。</li>
+            </ol>
+          </div>
+          <div>
+            <h3>当前版本</h3>
+            <ul>
+              <li>支持文本、图片、形状、编组或组件实例。</li>
+              <li>输出是透明 PNG，方便直接叠在地毯图上。</li>
+              <li>更适合左右边条这种长条梯形透视。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script>
+const PREVIEW_WIDTH = 500;
+const PREVIEW_HEIGHT = 680;
+const HANDLE_RADIUS = 8;
+const HANDLE_HIT_RADIUS = 14;
+const OUTPUT_PADDING = 4;
+
+const dom = {
+  canvas: document.getElementById("editorCanvas"),
+  reloadButton: document.getElementById("reloadButton"),
+  insertButton: document.getElementById("insertButton"),
+  rotateLeftButton: document.getElementById("rotateLeftButton"),
+  rotateRightButton: document.getElementById("rotateRightButton"),
+  leftPresetButton: document.getElementById("leftPresetButton"),
+  rightPresetButton: document.getElementById("rightPresetButton"),
+  resetQuadButton: document.getElementById("resetQuadButton"),
+  closeButton: document.getElementById("closeButton"),
+  mirrorCheckbox: document.getElementById("mirrorCheckbox"),
+  exportScale: document.getElementById("exportScale"),
+  selectionMeta: document.getElementById("selectionMeta"),
+  resultMeta: document.getElementById("resultMeta"),
+  statusText: document.getElementById("statusText"),
+};
+
+const state = {
+  sourceImage: null,
+  sourceName: "",
+  sourceBounds: null,
+  exportScale: 1,
+  rotation: "ccw",
+  mirrorX: false,
+  quad: null,
+  draggingHandle: null,
+};
+
+const ctx = dom.canvas.getContext("2d");
+
+function postToPlugin(message) {
+  parent.postMessage({ pluginMessage: message }, "*");
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function distance(left, right) {
+  return Math.hypot(right.x - left.x, right.y - left.y);
+}
+
+function lerpPoint(left, right, progress) {
+  return {
+    x: left.x + (right.x - left.x) * progress,
+    y: left.y + (right.y - left.y) * progress,
+  };
+}
+
+function getLeftPresetQuad() {
+  return [
+    { x: PREVIEW_WIDTH * 0.37, y: PREVIEW_HEIGHT * 0.05 },
+    { x: PREVIEW_WIDTH * 0.46, y: PREVIEW_HEIGHT * 0.05 },
+    { x: PREVIEW_WIDTH * 0.65, y: PREVIEW_HEIGHT * 0.95 },
+    { x: PREVIEW_WIDTH * 0.5, y: PREVIEW_HEIGHT * 0.95 },
+  ];
+}
+
+function getRightPresetQuad() {
+  return [
+    { x: PREVIEW_WIDTH * 0.54, y: PREVIEW_HEIGHT * 0.05 },
+    { x: PREVIEW_WIDTH * 0.63, y: PREVIEW_HEIGHT * 0.05 },
+    { x: PREVIEW_WIDTH * 0.5, y: PREVIEW_HEIGHT * 0.95 },
+    { x: PREVIEW_WIDTH * 0.35, y: PREVIEW_HEIGHT * 0.95 },
+  ];
+}
+
+function getStraightQuad() {
+  const width = PREVIEW_WIDTH * 0.18;
+  const left = (PREVIEW_WIDTH - width) / 2;
+  const right = left + width;
+  return [
+    { x: left, y: PREVIEW_HEIGHT * 0.06 },
+    { x: right, y: PREVIEW_HEIGHT * 0.06 },
+    { x: right, y: PREVIEW_HEIGHT * 0.94 },
+    { x: left, y: PREVIEW_HEIGHT * 0.94 },
+  ];
+}
+
+function applyPreset(presetName) {
+  if (presetName === "left") {
+    state.rotation = "ccw";
+    state.quad = getLeftPresetQuad();
+    updateStatus("已切到左边条预设：底部对应原文本左侧。");
+    renderPreview();
+    return;
+  }
+
+  if (presetName === "right") {
+    state.rotation = "cw";
+    state.quad = getRightPresetQuad();
+    updateStatus("已切到右边条预设：顶部对应原文本左侧。");
+    renderPreview();
+  }
+}
+
+function updateStatus(text) {
+  dom.statusText.textContent = text;
+}
+
+function updateSelectionMeta() {
+  if (!state.sourceImage) {
+    dom.selectionMeta.textContent = "等待选区";
+    return;
+  }
+
+  dom.selectionMeta.textContent = `${state.sourceName} · ${state.sourceImage.width}×${state.sourceImage.height}`;
+}
+
+function updateResultMeta(width = null, height = null) {
+  if (!width || !height) {
+    dom.resultMeta.textContent = "输出未生成";
+    return;
+  }
+
+  dom.resultMeta.textContent = `预计输出 ${width}×${height}`;
+}
+
+function drawEditorBackdrop() {
+  ctx.clearRect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+  ctx.fillStyle = "#09101c";
+  ctx.fillRect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+
+  ctx.strokeStyle = "rgba(126, 188, 255, 0.08)";
+  ctx.lineWidth = 1;
+  for (let x = 20; x < PREVIEW_WIDTH; x += 40) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, PREVIEW_HEIGHT);
+    ctx.stroke();
+  }
+  for (let y = 20; y < PREVIEW_HEIGHT; y += 40) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(PREVIEW_WIDTH, y);
+    ctx.stroke();
+  }
+}
+
+function buildOrientedCanvas() {
+  if (!state.sourceImage) {
+    return null;
+  }
+
+  const image = state.sourceImage;
+  const output = document.createElement("canvas");
+  const outCtx = output.getContext("2d");
+  outCtx.imageSmoothingEnabled = false;
+
+  if (state.rotation === "original") {
+    output.width = image.width;
+    output.height = image.height;
+    outCtx.drawImage(image, 0, 0);
+  } else if (state.rotation === "cw") {
+    output.width = image.height;
+    output.height = image.width;
+    outCtx.translate(output.width, 0);
+    outCtx.rotate(Math.PI / 2);
+    outCtx.drawImage(image, 0, 0);
+  } else {
+    output.width = image.height;
+    output.height = image.width;
+    outCtx.translate(0, output.height);
+    outCtx.rotate(-Math.PI / 2);
+    outCtx.drawImage(image, 0, 0);
+  }
+
+  if (!state.mirrorX) {
+    return output;
+  }
+
+  const mirrored = document.createElement("canvas");
+  mirrored.width = output.width;
+  mirrored.height = output.height;
+  const mirroredCtx = mirrored.getContext("2d");
+  mirroredCtx.imageSmoothingEnabled = false;
+  mirroredCtx.translate(mirrored.width, 0);
+  mirroredCtx.scale(-1, 1);
+  mirroredCtx.drawImage(output, 0, 0);
+  return mirrored;
+}
+
+function computeTransformMatrix(sourceTriangle, destinationTriangle) {
+  const [s1, s2, s3] = sourceTriangle;
+  const [d1, d2, d3] = destinationTriangle;
+  const denominator =
+    s1.x * (s2.y - s3.y) +
+    s2.x * (s3.y - s1.y) +
+    s3.x * (s1.y - s2.y);
+
+  if (Math.abs(denominator) < 0.00001) {
+    return null;
+  }
+
+  return {
+    a:
+      (d1.x * (s2.y - s3.y) +
+        d2.x * (s3.y - s1.y) +
+        d3.x * (s1.y - s2.y)) /
+      denominator,
+    b:
+      (d1.y * (s2.y - s3.y) +
+        d2.y * (s3.y - s1.y) +
+        d3.y * (s1.y - s2.y)) /
+      denominator,
+    c:
+      (d1.x * (s3.x - s2.x) +
+        d2.x * (s1.x - s3.x) +
+        d3.x * (s2.x - s1.x)) /
+      denominator,
+    d:
+      (d1.y * (s3.x - s2.x) +
+        d2.y * (s1.x - s3.x) +
+        d3.y * (s2.x - s1.x)) /
+      denominator,
+    e:
+      (d1.x * (s2.x * s3.y - s3.x * s2.y) +
+        d2.x * (s3.x * s1.y - s1.x * s3.y) +
+        d3.x * (s1.x * s2.y - s2.x * s1.y)) /
+      denominator,
+    f:
+      (d1.y * (s2.x * s3.y - s3.x * s2.y) +
+        d2.y * (s3.x * s1.y - s1.x * s3.y) +
+        d3.y * (s1.x * s2.y - s2.x * s1.y)) /
+      denominator,
+  };
+}
+
+function drawTriangleMappedImage(context, image, sourceTriangle, destinationTriangle) {
+  const matrix = computeTransformMatrix(sourceTriangle, destinationTriangle);
+  if (!matrix) {
+    return;
+  }
+
+  context.save();
+  context.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
+  context.beginPath();
+  context.moveTo(sourceTriangle[0].x, sourceTriangle[0].y);
+  context.lineTo(sourceTriangle[1].x, sourceTriangle[1].y);
+  context.lineTo(sourceTriangle[2].x, sourceTriangle[2].y);
+  context.closePath();
+  context.clip();
+  context.drawImage(image, 0, 0);
+  context.restore();
+}
+
+function renderWarpToCanvas(targetCanvas, image, quad, slices) {
+  const renderContext = targetCanvas.getContext("2d");
+  renderContext.imageSmoothingEnabled = false;
+  renderContext.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+
+  const safeSlices = Math.max(8, slices);
+
+  for (let index = 0; index < safeSlices; index += 1) {
+    const topRatio = index / safeSlices;
+    const bottomRatio = (index + 1) / safeSlices;
+    const sourceTop = image.height * topRatio;
+    const sourceBottom = image.height * bottomRatio;
+
+    const topLeft = lerpPoint(quad[0], quad[3], topRatio);
+    const topRight = lerpPoint(quad[1], quad[2], topRatio);
+    const bottomLeft = lerpPoint(quad[0], quad[3], bottomRatio);
+    const bottomRight = lerpPoint(quad[1], quad[2], bottomRatio);
+
+    const sourceTopLeft = { x: 0, y: sourceTop };
+    const sourceTopRight = { x: image.width, y: sourceTop };
+    const sourceBottomRight = { x: image.width, y: sourceBottom };
+    const sourceBottomLeft = { x: 0, y: sourceBottom };
+
+    drawTriangleMappedImage(
+      renderContext,
+      image,
+      [sourceTopLeft, sourceTopRight, sourceBottomRight],
+      [topLeft, topRight, bottomRight]
+    );
+    drawTriangleMappedImage(
+      renderContext,
+      image,
+      [sourceTopLeft, sourceBottomRight, sourceBottomLeft],
+      [topLeft, bottomRight, bottomLeft]
+    );
+  }
+}
+
+function getQuadBounds(quad) {
+  const xs = quad.map((point) => point.x);
+  const ys = quad.map((point) => point.y);
+  return {
+    left: Math.min(...xs),
+    top: Math.min(...ys),
+    right: Math.max(...xs),
+    bottom: Math.max(...ys),
+  };
+}
+
+function getEstimatedOutputMeta(image) {
+  if (!image || !state.quad) {
+    return null;
+  }
+
+  const leftHeight = distance(state.quad[0], state.quad[3]);
+  const rightHeight = distance(state.quad[1], state.quad[2]);
+  const averageHeight = Math.max(1, (leftHeight + rightHeight) / 2);
+  const scale = image.height / averageHeight;
+  const scaledQuad = state.quad.map((point) => ({
+    x: point.x * scale,
+    y: point.y * scale,
+  }));
+  const bounds = getQuadBounds(scaledQuad);
+  return {
+    scale,
+    scaledQuad,
+    width: Math.ceil(bounds.right - bounds.left + OUTPUT_PADDING * 2),
+    height: Math.ceil(bounds.bottom - bounds.top + OUTPUT_PADDING * 2),
+    offsetX: -bounds.left + OUTPUT_PADDING,
+    offsetY: -bounds.top + OUTPUT_PADDING,
+  };
+}
+
+function renderPreview() {
+  drawEditorBackdrop();
+
+  const image = buildOrientedCanvas();
+  if (!image) {
+    updateSelectionMeta();
+    updateResultMeta();
+    return;
+  }
+
+  if (!state.quad) {
+    state.quad = getLeftPresetQuad();
+  }
+
+  renderWarpToCanvas(
+    dom.canvas,
+    image,
+    state.quad,
+    Math.max(32, Math.min(140, Math.round(image.height / 12)))
+  );
+
+  ctx.save();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(241, 192, 109, 0.92)";
+  ctx.fillStyle = "rgba(241, 192, 109, 0.14)";
+  ctx.beginPath();
+  ctx.moveTo(state.quad[0].x, state.quad[0].y);
+  ctx.lineTo(state.quad[1].x, state.quad[1].y);
+  ctx.lineTo(state.quad[2].x, state.quad[2].y);
+  ctx.lineTo(state.quad[3].x, state.quad[3].y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  state.quad.forEach((point, index) => {
+    ctx.save();
+    ctx.fillStyle = "#82d7ff";
+    ctx.strokeStyle = "#07111c";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, HANDLE_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#07111c";
+    ctx.font = '700 11px Inter, "PingFang SC", sans-serif';
+    ctx.textAlign = "center";
+    ctx.fillText(String(index + 1), point.x, point.y + 4);
+    ctx.restore();
+  });
+
+  updateSelectionMeta();
+  const outputMeta = getEstimatedOutputMeta(image);
+  if (outputMeta) {
+    updateResultMeta(outputMeta.width, outputMeta.height);
+  }
+}
+
+function handleSelectionImage(message) {
+  const bytes = new Uint8Array(message.bytes || []);
+  state.sourceName = message.name || "Selection";
+  state.sourceBounds = message.sourceBounds || null;
+  state.exportScale = message.exportScale || 1;
+  dom.exportScale.value = String(state.exportScale);
+
+  const blob = new Blob([bytes], { type: "image/png" });
+  const url = URL.createObjectURL(blob);
+  const image = new Image();
+  image.onload = () => {
+    state.sourceImage = image;
+    if (!state.quad) {
+      state.quad = getLeftPresetQuad();
+    }
+    updateStatus("选区已读取。先点左右边条预设，再拖四个角点微调。");
+    renderPreview();
+    URL.revokeObjectURL(url);
+  };
+  image.onerror = () => {
+    updateStatus("选区图片读取失败，请重新选择节点后再试。");
+    URL.revokeObjectURL(url);
+  };
+  image.src = url;
+}
+
+function pointerToCanvasPoint(event) {
+  const rect = dom.canvas.getBoundingClientRect();
+  const scaleX = PREVIEW_WIDTH / rect.width;
+  const scaleY = PREVIEW_HEIGHT / rect.height;
+  return {
+    x: (event.clientX - rect.left) * scaleX,
+    y: (event.clientY - rect.top) * scaleY,
+  };
+}
+
+function findHandleIndex(point) {
+  if (!state.quad) {
+    return -1;
+  }
+
+  for (let index = 0; index < state.quad.length; index += 1) {
+    if (distance(point, state.quad[index]) <= HANDLE_HIT_RADIUS) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+async function buildOutputBlob() {
+  const image = buildOrientedCanvas();
+  if (!image || !state.quad) {
+    throw new Error("当前没有可输出的透视结果。");
+  }
+
+  const outputMeta = getEstimatedOutputMeta(image);
+  if (!outputMeta) {
+    throw new Error("透视边界无效，请先调整四角。");
+  }
+
+  const outputCanvas = document.createElement("canvas");
+  outputCanvas.width = outputMeta.width;
+  outputCanvas.height = outputMeta.height;
+
+  const shiftedQuad = outputMeta.scaledQuad.map((point) => ({
+    x: point.x + outputMeta.offsetX,
+    y: point.y + outputMeta.offsetY,
+  }));
+
+  renderWarpToCanvas(
+    outputCanvas,
+    image,
+    shiftedQuad,
+    Math.max(64, Math.min(320, Math.round(image.height / 6)))
+  );
+
+  return new Promise((resolve, reject) => {
+    outputCanvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("PNG 导出失败。"));
+        return;
+      }
+      resolve({
+        blob,
+        width: outputCanvas.width,
+        height: outputCanvas.height,
+      });
+    }, "image/png");
+  });
+}
+
+async function insertIntoFigma() {
+  if (!state.sourceImage) {
+    updateStatus("还没有读取到选区。先回到 Figma 选中 1 个节点。");
+    return;
+  }
+
+  updateStatus("正在生成透明 PNG 并插回 Figma...");
+  const output = await buildOutputBlob();
+  const bytes = new Uint8Array(await output.blob.arrayBuffer());
+
+  postToPlugin({
+    type: "insert-warped-image",
+    bytes: Array.from(bytes),
+    width: output.width,
+    height: output.height,
+    name: state.sourceName,
+  });
+
+  updateStatus("结果已发送到 Figma。你可以继续微调后再插一次。");
+}
+
+function requestSelectionRefresh() {
+  const exportScale = Number(dom.exportScale.value) || 1;
+  postToPlugin({
+    type: "request-selection",
+    exportScale,
+  });
+}
+
+dom.reloadButton.addEventListener("click", requestSelectionRefresh);
+dom.rotateLeftButton.addEventListener("click", () => {
+  state.rotation = state.rotation === "ccw" ? "original" : "ccw";
+  renderPreview();
+});
+dom.rotateRightButton.addEventListener("click", () => {
+  state.rotation = state.rotation === "cw" ? "original" : "cw";
+  renderPreview();
+});
+dom.mirrorCheckbox.addEventListener("change", () => {
+  state.mirrorX = !!dom.mirrorCheckbox.checked;
+  renderPreview();
+});
+dom.leftPresetButton.addEventListener("click", () => {
+  applyPreset("left");
+});
+dom.rightPresetButton.addEventListener("click", () => {
+  applyPreset("right");
+});
+dom.resetQuadButton.addEventListener("click", () => {
+  state.quad = getStraightQuad();
+  renderPreview();
+});
+dom.insertButton.addEventListener("click", () => {
+  insertIntoFigma().catch((error) => {
+    updateStatus(error && error.message ? error.message : String(error));
+  });
+});
+dom.closeButton.addEventListener("click", () => {
+  postToPlugin({ type: "close-plugin" });
+});
+
+dom.canvas.addEventListener("pointerdown", (event) => {
+  const point = pointerToCanvasPoint(event);
+  const index = findHandleIndex(point);
+  if (index < 0) {
+    return;
+  }
+  state.draggingHandle = index;
+  dom.canvas.setPointerCapture(event.pointerId);
+});
+
+dom.canvas.addEventListener("pointermove", (event) => {
+  if (state.draggingHandle === null || !state.quad) {
+    return;
+  }
+
+  const point = pointerToCanvasPoint(event);
+  state.quad[state.draggingHandle] = {
+    x: clamp(point.x, 8, PREVIEW_WIDTH - 8),
+    y: clamp(point.y, 8, PREVIEW_HEIGHT - 8),
+  };
+  renderPreview();
+});
+
+function stopDragging(event) {
+  if (state.draggingHandle === null) {
+    return;
+  }
+  if (event && dom.canvas.hasPointerCapture(event.pointerId)) {
+    dom.canvas.releasePointerCapture(event.pointerId);
+  }
+  state.draggingHandle = null;
+}
+
+dom.canvas.addEventListener("pointerup", stopDragging);
+dom.canvas.addEventListener("pointercancel", stopDragging);
+
+window.onmessage = (event) => {
+  const message = event.data.pluginMessage;
+  if (!message || !message.type) {
+    return;
+  }
+
+  if (message.type === "selection-image") {
+    handleSelectionImage(message);
+    return;
+  }
+
+  if (message.type === "selection-error") {
+    updateStatus(message.message || "读取选区失败。");
+  }
+};
+
+requestSelectionRefresh();
+renderPreview();
+    </script>
+  </body>
+</html>

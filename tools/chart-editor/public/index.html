@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rhythm Chart Editor</title>
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg?v=2" />
+    <link rel="shortcut icon" href="/favicon.svg?v=2" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-group">
+          <button
+            id="playToggle"
+            class="button button-icon play-toggle"
+            type="button"
+            data-state="play"
+            aria-label="播放"
+            title="播放"
+          >
+            <span class="play-toggle-icon" aria-hidden="true"></span>
+          </button>
+          <button id="stopButton" class="button">回到开头</button>
+          <button id="undoButton" class="button" disabled>撤销</button>
+          <button id="redoButton" class="button" disabled>重做</button>
+          <button id="saveButton" class="button button-primary">保存谱面</button>
+        </div>
+
+        <div class="topbar-group topbar-status">
+          <span id="playbackTime" class="chip">00:00.00</span>
+          <span id="saveStatus" class="chip chip-muted">加载中...</span>
+        </div>
+
+        <div class="topbar-group topbar-tools">
+          <label class="inline-control">
+            <span>缩放</span>
+            <input id="zoomRange" type="range" min="60" max="280" value="120" />
+          </label>
+          <label class="inline-control inline-control-checkbox">
+            <input id="followToggle" type="checkbox" checked />
+            <span>播放跟随</span>
+          </label>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="timeline-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Ditto 单轨谱面</div>
+              <div id="chartMeta" class="panel-subtitle">读取中...</div>
+            </div>
+            <div class="panel-actions">
+              <button id="addTapAtPlayhead" class="button">点按</button>
+              <button id="addHoldAtPlayhead" class="button">长按</button>
+              <button id="addLeftAtPlayhead" class="button">左方向</button>
+              <button id="addRightAtPlayhead" class="button">右方向</button>
+            </div>
+          </div>
+
+          <div id="timelineScroll" class="timeline-scroll">
+            <div id="timelineContent" class="timeline-content">
+              <div id="rulerLayer" class="ruler-layer"></div>
+              <div id="trackLayer" class="track-layer">
+                <div class="track-label">单轨</div>
+                <div class="track-base"></div>
+                <div id="playhead" class="playhead"></div>
+                <div id="notesLayer" class="notes-layer"></div>
+                <div id="selectionBox" class="selection-box hidden"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-footer">
+            <div class="help-row">
+              <span class="help-chip">单击时间线：移动播放头</span>
+              <span class="help-chip">双击轨道：新增点按</span>
+              <span class="help-chip">Shift + 双击：新增长按</span>
+              <span class="help-chip">拖动圆点/长条：改时间</span>
+              <span class="help-chip">空白处拖拽：框选多个 note</span>
+              <span class="help-chip">拖长按右侧把手：改结束时间</span>
+              <span class="help-chip">Cmd/Ctrl + Z：撤销</span>
+              <span class="help-chip">Cmd/Ctrl + Shift + Z：重做</span>
+              <span class="help-chip">空格：播放暂停</span>
+              <span class="help-chip">Delete：删除选中</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="inspector-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">属性</div>
+              <div class="panel-subtitle">这里改的是小程序实际读取的同一份谱</div>
+            </div>
+          </div>
+
+          <section class="inspector-section">
+            <div class="section-title">时间</div>
+            <div class="seek-row">
+              <input id="seekRange" type="range" min="0" max="1000" value="0" step="0.001" />
+            </div>
+            <div class="seek-actions">
+              <button id="seekToSelection" class="button">跳到选中 note</button>
+              <button id="snapSelectionToPlayhead" class="button">选中 note 对齐播放线</button>
+            </div>
+          </section>
+
+          <section id="emptyState" class="inspector-section empty-state">
+            先点一个 note，或者双击时间线加一个。
+          </section>
+
+          <form id="noteForm" class="inspector-form hidden" autocomplete="off">
+            <section class="inspector-section">
+              <div class="section-title">选中 note</div>
+              <div id="selectedSummary" class="selected-summary"></div>
+            </section>
+
+            <section class="inspector-section form-grid">
+              <label class="field">
+                <span>类型</span>
+                <select id="noteKind">
+                  <option value="tap">点按</option>
+                  <option value="hold">长按</option>
+                  <option value="tap-left">左方向猪</option>
+                  <option value="tap-right">右方向猪</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>开始时间</span>
+                <input id="noteTime" type="number" min="0" step="0.001" />
+              </label>
+
+              <label id="noteEndWrap" class="field">
+                <span>结束时间</span>
+                <input id="noteEndTime" type="number" min="0" step="0.001" />
+              </label>
+
+              <label class="field">
+                <span>尺寸</span>
+                <input id="noteSize" type="number" min="0.5" max="2" step="0.01" />
+              </label>
+
+              <label class="field field-checkbox">
+                <input id="noteAccent" type="checkbox" />
+                <span>重音</span>
+              </label>
+
+              <label class="field field-full">
+                <span>标签</span>
+                <input id="noteLabel" type="text" maxlength="40" placeholder="例如 lose / ra-ta" />
+              </label>
+            </section>
+
+            <section class="inspector-section action-row">
+              <button id="duplicateButton" type="button" class="button">复制 note</button>
+              <button id="deleteButton" type="button" class="button button-danger">删除 note</button>
+            </section>
+          </form>
+        </aside>
+      </main>
+    </div>
+
+    <audio id="audio" preload="auto"></audio>
+    <script src="/app.js"></script>
+  </body>
+</html>

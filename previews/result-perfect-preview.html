@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perfect Result Preview</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #fff1c8;
+      font-family: "ResultFixedPixel", "Courier New", monospace;
+    }
+
+    .page {
+      position: relative;
+      width: 393px;
+      height: 852px;
+      overflow: hidden;
+      background: #fff1c8;
+    }
+
+    .result-backdrop,
+    .result-bg-base,
+    .result-bg-glow,
+    .result-bg-veil,
+    .result-bg-vignette {
+      position: absolute;
+      inset: 0;
+    }
+
+    .result-backdrop {
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.06;
+      image-rendering: pixelated;
+    }
+
+    .result-bg-base {
+      z-index: 1;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(255, 251, 233, 0.92), rgba(255, 251, 233, 0) 22%),
+        linear-gradient(180deg, #ff9865 0%, #ffb66e 18%, #ffd67f 42%, #ffe8a8 74%, #fff6dc 100%);
+    }
+
+    .result-bg-glow {
+      z-index: 2;
+      background:
+        radial-gradient(circle at 50% 26%, rgba(255, 250, 216, 0.9), rgba(255, 250, 216, 0.36) 22%, rgba(255, 250, 216, 0) 50%),
+        radial-gradient(circle at 50% 88%, rgba(255, 250, 231, 0.62), rgba(255, 250, 231, 0) 42%);
+    }
+
+    .result-bg-veil {
+      z-index: 3;
+      background:
+        linear-gradient(180deg, rgba(124, 67, 28, 0.04) 0%, rgba(124, 67, 28, 0.02) 42%, rgba(76, 33, 19, 0.08) 100%),
+        radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 38%);
+    }
+
+    .result-bg-vignette {
+      z-index: 4;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 16%, rgba(89, 47, 40, 0) 72%, rgba(89, 47, 40, 0.1) 100%);
+    }
+
+    .result-shell {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 15px 35px;
+    }
+
+    .result-stage,
+    .result-actions {
+      width: 94%;
+      max-width: 350px;
+    }
+
+    .result-stage {
+      position: relative;
+      padding-top: 6px;
+    }
+
+    .result-sparkles {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      right: 0;
+      height: 178px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .result-spark {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      background:
+        linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat,
+        linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat;
+      opacity: 0.95;
+      box-shadow: 0 0 3px rgba(255, 214, 96, 0.35);
+    }
+
+    .result-spark-a { top: 22px; left: 69px; color: #f1b62c; }
+    .result-spark-b { top: 58px; left: 43px; width: 7px; height: 7px; color: #43a24c; }
+    .result-spark-c { top: 38px; right: 67px; color: #fff6da; }
+    .result-spark-d { top: 96px; left: 50px; width: 13px; height: 13px; color: #ffcc33; }
+    .result-spark-e { top: 81px; right: 44px; width: 12px; height: 12px; color: #ffce45; }
+    .result-spark-f { top: 112px; right: 66px; width: 7px; height: 7px; color: #43a24c; }
+    .result-spark-g { top: 124px; left: 75px; width: 8px; height: 8px; color: #fff9ea; }
+    .result-spark-h { top: 69px; right: 88px; width: 6px; height: 6px; color: #8ddbb7; }
+
+    .result-hero {
+      position: relative;
+      width: 100%;
+      height: 167px;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .result-hero-shadow {
+      position: absolute;
+      left: 50%;
+      bottom: 7px;
+      width: 112px;
+      height: 17px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      opacity: 0.52;
+      background: radial-gradient(ellipse at center, rgba(67, 28, 18, 0.34) 0%, rgba(67, 28, 18, 0.22) 46%, rgba(67, 28, 18, 0.04) 84%, rgba(67, 28, 18, 0) 100%);
+    }
+
+    .result-rabbit-wrap {
+      position: absolute;
+      left: 50%;
+      bottom: -5px;
+      transform: translateX(-50%);
+    }
+
+    .result-rabbit-frame {
+      display: block;
+      width: 178px;
+      height: 178px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .result-status-row {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: -16px;
+    }
+
+    .result-status-ribbon {
+      padding: 0 10px;
+      transform: translateY(-6px);
+    }
+
+    .result-status-text {
+      font-family: "ResultFixedPixel", "Courier New", monospace;
+      line-height: 1;
+      white-space: nowrap;
+      font-size: 30px;
+      color: #ffcd2f;
+      text-shadow:
+        0 3px 0 #8f4a19,
+        2px 0 0 #8f4a19,
+        -2px 0 0 #8f4a19,
+        0 -2px 0 #fff0af,
+        2px 2px 0 #8f4a19,
+        -2px 2px 0 #8f4a19,
+        2px -2px 0 #8f4a19,
+        -2px -2px 0 #8f4a19;
+    }
+
+    .result-panel-wrap {
+      position: relative;
+      z-index: 4;
+      margin-top: 16px;
+    }
+
+    .pixel-frame-dark,
+    .pixel-frame-face {
+      width: 100%;
+      padding: 3px;
+      overflow: hidden;
+    }
+
+    .pixel-frame-dark {
+      background:
+        linear-gradient(#582f28, #582f28) center / calc(100% - 6px) calc(100% - 6px) no-repeat,
+        linear-gradient(#582f28, #582f28) top center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#582f28, #582f28) bottom center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#582f28, #582f28) left center / 3px calc(100% - 12px) no-repeat,
+        linear-gradient(#582f28, #582f28) right center / 3px calc(100% - 12px) no-repeat;
+    }
+
+    .pixel-frame-face {
+      background:
+        linear-gradient(#e7c394, #e7c394) center / calc(100% - 6px) calc(100% - 6px) no-repeat,
+        linear-gradient(#e7c394, #e7c394) top center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#e7c394, #e7c394) bottom center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#e7c394, #e7c394) left center / 3px calc(100% - 12px) no-repeat,
+        linear-gradient(#e7c394, #e7c394) right center / 3px calc(100% - 12px) no-repeat;
+    }
+
+    .result-panel-core {
+      width: 100%;
+      min-height: 249px;
+      padding: 16px 16px 12px;
+      background: transparent;
+    }
+
+    .result-song-header {
+      height: 50px;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-song-cover-shell {
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      padding: 2px;
+      overflow: hidden;
+      background: #8f4a43;
+    }
+
+    .result-song-cover-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      image-rendering: pixelated;
+    }
+
+    .result-song-title {
+      font-family: "ResultFixedPixel", "Courier New", monospace;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      color: #4f2e1d;
+      font-size: 28px;
+      line-height: 44px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .result-divider {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 9px 0 11px;
+    }
+
+    .result-divider-line {
+      flex: 1;
+      height: 2px;
+      background: repeating-linear-gradient(90deg, rgba(236, 178, 56, 0.9) 0 5px, rgba(236, 178, 56, 0) 5px 9px);
+    }
+
+    .result-divider-star {
+      flex: 0 0 9px;
+      width: 9px;
+      height: 9px;
+      background:
+        linear-gradient(#f1b62c, #f1b62c) center / 2px 100% no-repeat,
+        linear-gradient(#f1b62c, #f1b62c) center / 100% 2px no-repeat;
+      box-shadow: 0 0 4px rgba(241, 182, 44, 0.36);
+    }
+
+    .result-score-label-text {
+      font-family: "ResultFixedPixel", "Courier New", monospace;
+      font-size: 20px;
+      line-height: 1;
+      color: #6f4021;
+    }
+
+    .result-score-rank-row {
+      width: 100%;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .result-score-value-wrap {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+    }
+
+    .result-digit-run {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: nowrap;
+      line-height: 0;
+    }
+
+    .result-digit-glyph {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .result-digit-row {
+      flex: 0 0 auto;
+      display: flex;
+    }
+
+    .result-digit-pixel {
+      flex: 0 0 auto;
+      background: transparent;
+    }
+
+    .result-digit-pixel.filled {
+      background: #582f28;
+    }
+
+    .score-digits {
+      gap: 1px;
+      overflow: hidden;
+    }
+
+    .score-digits .result-digit-row {
+      height: 4px;
+    }
+
+    .score-digits .result-digit-pixel {
+      width: 4px;
+      height: 4px;
+    }
+
+    .stat-digits {
+      margin-left: auto;
+      gap: 1px;
+      justify-content: flex-end;
+    }
+
+    .stat-digits .result-digit-row {
+      height: 2px;
+    }
+
+    .stat-digits .result-digit-pixel {
+      width: 2px;
+      height: 2px;
+    }
+
+    .result-rank-block {
+      flex: 0 0 84px;
+      min-width: 0;
+    }
+
+    .result-rank-face {
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .result-rank-text {
+      font-family: "ResultFixedPixel", "Courier New", monospace;
+      line-height: 0.9;
+      color: #ffcf4d;
+      font-size: 34px;
+      text-shadow:
+        0 3px 0 #90511f,
+        2px 0 0 #90511f,
+        -2px 0 0 #90511f,
+        2px 2px 0 #90511f,
+        -2px 2px 0 #90511f,
+        2px -2px 0 #90511f,
+        -2px -2px 0 #90511f;
+    }
+
+    .result-stats-grid {
+      margin-top: 8px;
+    }
+
+    .result-stat-card {
+      min-height: 33px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 13px;
+      padding: 4px 0;
+      border-bottom: 1px dotted rgba(200, 142, 61, 0.34);
+    }
+
+    .result-stat-card:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .result-stat-label-text {
+      font-family: "ResultFixedPixel", "Courier New", monospace;
+      flex: 0 0 auto;
+      font-size: 18px;
+      line-height: 1;
+      color: #ca7d23;
+    }
+
+    .perfect { color: #ef8f2f; }
+    .good { color: #37a348; }
+    .miss { color: #d85a67; }
+    .combo { color: #ca7d23; }
+
+    .result-actions {
+      margin-top: 24px;
+      margin-bottom: 3px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .result-secondary-wrap,
+    .result-primary-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    .button-shadow {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      bottom: -1px;
+      left: 5px;
+      background: rgba(88, 47, 40, 0.18);
+    }
+
+    .button-frame {
+      position: relative;
+      width: 100%;
+      padding: 3px;
+      background:
+        linear-gradient(#582f28, #582f28) center / calc(100% - 6px) calc(100% - 6px) no-repeat,
+        linear-gradient(#582f28, #582f28) top center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#582f28, #582f28) bottom center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#582f28, #582f28) left center / 3px calc(100% - 12px) no-repeat,
+        linear-gradient(#582f28, #582f28) right center / 3px calc(100% - 12px) no-repeat;
+      overflow: hidden;
+    }
+
+    .button-face {
+      font-family: "ResultFixedPixel", "Courier New", monospace;
+      width: 100%;
+      min-height: 49px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      font-size: 22px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .secondary-face {
+      color: #582f28;
+      background:
+        linear-gradient(180deg, rgba(255, 248, 226, 0.24) 0%, rgba(255, 248, 226, 0) 42%),
+        #ecd2a6;
+    }
+
+    .primary-frame {
+      background:
+        linear-gradient(#6b3418, #6b3418) center / calc(100% - 6px) calc(100% - 6px) no-repeat,
+        linear-gradient(#6b3418, #6b3418) top center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#6b3418, #6b3418) bottom center / calc(100% - 12px) 3px no-repeat,
+        linear-gradient(#6b3418, #6b3418) left center / 3px calc(100% - 12px) no-repeat,
+        linear-gradient(#6b3418, #6b3418) right center / 3px calc(100% - 12px) no-repeat;
+    }
+
+    .primary-face {
+      color: #fff0d7;
+      background:
+        linear-gradient(180deg, rgba(255, 240, 215, 0.32) 0%, rgba(255, 240, 215, 0) 38%),
+        #ee8d4a;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <img class="result-backdrop" src="../miniprogram/assets/images/城堡内.jpg" alt="">
+    <div class="result-bg-base"></div>
+    <div class="result-bg-glow"></div>
+    <div class="result-bg-veil"></div>
+    <div class="result-bg-vignette"></div>
+
+    <section class="result-shell">
+      <div class="result-stage">
+        <div class="result-sparkles">
+          <div class="result-spark result-spark-a"></div>
+          <div class="result-spark result-spark-b"></div>
+          <div class="result-spark result-spark-c"></div>
+          <div class="result-spark result-spark-d"></div>
+          <div class="result-spark result-spark-e"></div>
+          <div class="result-spark result-spark-f"></div>
+          <div class="result-spark result-spark-g"></div>
+          <div class="result-spark result-spark-h"></div>
+        </div>
+
+        <div class="result-hero">
+          <div class="result-hero-shadow"></div>
+          <div class="result-rabbit-wrap">
+            <img class="result-rabbit-frame" src="../miniprogram/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png" alt="">
+          </div>
+        </div>
+
+        <div class="result-status-row">
+          <div class="result-status-ribbon">
+            <div class="result-status-text">ALL PERFECT</div>
+          </div>
+        </div>
+
+        <div class="result-panel-wrap">
+          <div class="pixel-frame-dark">
+            <div class="pixel-frame-face">
+              <div class="result-panel-core">
+                <div class="result-song-header">
+                  <div class="result-song-cover-shell">
+                    <img class="result-song-cover-image" src="../miniprogram/assets/images/song-covers/ditto.cover.pixel.png" alt="">
+                  </div>
+                  <div class="result-song-title">Ditto</div>
+                </div>
+
+                <div class="result-divider">
+                  <div class="result-divider-line"></div>
+                  <div class="result-divider-star"></div>
+                  <div class="result-divider-line"></div>
+                </div>
+
+                <div class="result-score-label-text">总分</div>
+                <div class="result-score-rank-row">
+                  <div class="result-score-value-wrap">
+                    <div class="result-digit-run score-digits" data-digits="42600"></div>
+                  </div>
+                  <div class="result-rank-block">
+                    <div class="result-rank-face">
+                      <div class="result-rank-text">SSS</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="result-stats-grid">
+                  <div class="result-stat-card">
+                    <div class="result-stat-label-text perfect">PERFECT</div>
+                    <div class="result-digit-run stat-digits" data-digits="284"></div>
+                  </div>
+                  <div class="result-stat-card">
+                    <div class="result-stat-label-text good">GOOD</div>
+                    <div class="result-digit-run stat-digits" data-digits="0"></div>
+                  </div>
+                  <div class="result-stat-card">
+                    <div class="result-stat-label-text miss">MISS</div>
+                    <div class="result-digit-run stat-digits" data-digits="0"></div>
+                  </div>
+                  <div class="result-stat-card">
+                    <div class="result-stat-label-text combo">COMBO</div>
+                    <div class="result-digit-run stat-digits" data-digits="284"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <div class="result-secondary-wrap">
+          <div class="button-shadow"></div>
+          <div class="button-frame">
+            <div class="button-face secondary-face">回到首页</div>
+          </div>
+        </div>
+        <div class="result-primary-wrap">
+          <div class="button-shadow"></div>
+          <div class="button-frame primary-frame">
+            <div class="button-face primary-face">再来一遍</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function loadResultFixedPixelFont() {
+      if (!("FontFace" in window)) {
+        return;
+      }
+
+      try {
+        const response = await fetch("../miniprogram/utils/pixel-font-data.js");
+        const source = await response.text();
+        const match = source.match(/dataUrl:\s*"([^"]+)"/);
+        if (!match) {
+          return;
+        }
+
+        const font = new FontFace("ResultFixedPixel", `url(${match[1]}) format("woff2")`);
+        await font.load();
+        document.fonts.add(font);
+        document.documentElement.classList.add("result-fixed-font-ready");
+      } catch (error) {
+        console.warn("ResultFixedPixel preview font failed to load", error);
+      }
+    }
+
+    const DIGITS = {
+      0: [
+        ".ffffff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ffffff.",
+      ],
+      1: [
+        "..ffff..",
+        "...ff...",
+        "...ff...",
+        "...ff...",
+        "...ff...",
+        "...ff...",
+        "...ff...",
+        "...ff...",
+        ".ffffff.",
+      ],
+      2: [
+        ".ffffff.",
+        ".....ff.",
+        ".....ff.",
+        "...fff..",
+        "..fff...",
+        ".ff.....",
+        ".ff.....",
+        ".ff.....",
+        ".ffffff.",
+      ],
+      3: [
+        ".ffffff.",
+        ".....ff.",
+        ".....ff.",
+        "..ffff..",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".ffffff.",
+      ],
+      4: [
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ffffff.",
+        "....ff..",
+        "....ff..",
+        "....ff..",
+        "....ff..",
+        "....ff..",
+      ],
+      5: [
+        ".ffffff.",
+        ".ff.....",
+        ".ff.....",
+        ".fffff..",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".ffffff.",
+      ],
+      6: [
+        ".ffffff.",
+        ".ff.....",
+        ".ff.....",
+        ".fffff..",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ffffff.",
+      ],
+      7: [
+        ".ffffff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+      ],
+      8: [
+        ".ffffff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ffffff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ffffff.",
+      ],
+      9: [
+        ".ffffff.",
+        ".ff..ff.",
+        ".ff..ff.",
+        ".ffffff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".....ff.",
+        ".ffffff.",
+      ],
+    };
+
+    function buildGlyph(char) {
+      const glyph = document.createElement("div");
+      glyph.className = "result-digit-glyph";
+      const rows = DIGITS[char] || DIGITS[0];
+      rows.forEach((row) => {
+        const rowEl = document.createElement("div");
+        rowEl.className = "result-digit-row";
+        Array.from(row).forEach((cell) => {
+          const pixel = document.createElement("div");
+          pixel.className = cell === "f"
+            ? "result-digit-pixel filled"
+            : "result-digit-pixel";
+          rowEl.appendChild(pixel);
+        });
+        glyph.appendChild(rowEl);
+      });
+      return glyph;
+    }
+
+    document.querySelectorAll("[data-digits]").forEach((node) => {
+      Array.from(node.dataset.digits).forEach((char) => {
+        node.appendChild(buildGlyph(char));
+      });
+    });
+
+    loadResultFixedPixelFont();
+  </script>
+</body>
+</html>

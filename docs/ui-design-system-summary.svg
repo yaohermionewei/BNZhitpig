@@ -1,0 +1,341 @@
+<svg width="1800" height="1280" viewBox="0 0 1800 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pageBg" x1="0" y1="0" x2="1800" y2="1280" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17233D"/>
+      <stop offset="0.38" stop-color="#6F86AA"/>
+      <stop offset="0.62" stop-color="#E8C08C"/>
+      <stop offset="1" stop-color="#EE8D4A"/>
+    </linearGradient>
+    <radialGradient id="nightGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(458 178) rotate(90) scale(300 520)">
+      <stop stop-color="#9FE4FF" stop-opacity="0.34"/>
+      <stop offset="0.48" stop-color="#4DB7FF" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#17233D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sunsetGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1350 168) rotate(90) scale(320 520)">
+      <stop stop-color="#FFF2B8" stop-opacity="0.46"/>
+      <stop offset="0.48" stop-color="#FFD56F" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#EE8D4A" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-60" y="-60" width="1920" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#160B0D" flood-opacity="0.22"/>
+    </filter>
+    <filter id="smallShadow" x="-20" y="-20" width="460" height="220" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#160B0D" flood-opacity="0.18"/>
+    </filter>
+    <style>
+      .display {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 58px;
+        font-weight: 700;
+        fill: #FFF0D7;
+      }
+      .subtitle {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 23px;
+        font-weight: 700;
+        fill: rgba(255, 240, 215, 0.9);
+        letter-spacing: 1px;
+      }
+      .section {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 30px;
+        font-weight: 700;
+        fill: #582F28;
+      }
+      .sectionLight {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 30px;
+        font-weight: 700;
+        fill: #FFF0D7;
+      }
+      .label {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        fill: #582F28;
+      }
+      .labelLight {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        fill: #FFF0D7;
+      }
+      .body {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 17px;
+        fill: rgba(88, 47, 40, 0.84);
+      }
+      .bodyLight {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 17px;
+        fill: rgba(255, 240, 215, 0.84);
+      }
+      .tiny {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 14px;
+        fill: rgba(88, 47, 40, 0.78);
+      }
+      .tinyLight {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 14px;
+        fill: rgba(255, 240, 215, 0.78);
+      }
+      .code {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        font-size: 14px;
+        fill: rgba(88, 47, 40, 0.86);
+      }
+      .codeLight {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        font-size: 14px;
+        fill: rgba(255, 240, 215, 0.88);
+      }
+      .pixelText {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+      .microTitle {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        fill: rgba(88, 47, 40, 0.62);
+      }
+      .microTitleLight {
+        font-family: "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        fill: rgba(255, 240, 215, 0.68);
+      }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1280" fill="url(#pageBg)"/>
+  <rect width="1800" height="1280" fill="url(#nightGlow)"/>
+  <rect width="1800" height="1280" fill="url(#sunsetGlow)"/>
+  <rect width="1800" height="1280" fill="rgba(16, 9, 12, 0.12)"/>
+
+  <g opacity="0.38">
+    <rect x="48" y="44" width="34" height="4" fill="#FFF0D7"/>
+    <rect x="48" y="44" width="4" height="34" fill="#FFF0D7"/>
+    <rect x="1718" y="44" width="34" height="4" fill="#FFF0D7"/>
+    <rect x="1748" y="44" width="4" height="34" fill="#FFF0D7"/>
+    <rect x="48" y="1232" width="34" height="4" fill="#FFF0D7"/>
+    <rect x="48" y="1202" width="4" height="34" fill="#FFF0D7"/>
+    <rect x="1718" y="1232" width="34" height="4" fill="#FFF0D7"/>
+    <rect x="1748" y="1202" width="4" height="34" fill="#FFF0D7"/>
+  </g>
+
+  <text x="900" y="92" text-anchor="middle" class="display">Castle Stage Pixel UI</text>
+  <text x="900" y="130" text-anchor="middle" class="subtitle">Light / Dark 双主题城堡舞台像素设计系统速览</text>
+
+  <g filter="url(#softShadow)">
+    <rect x="78" y="172" width="804" height="332" rx="24" fill="rgba(18, 28, 50, 0.92)" stroke="rgba(255, 240, 215, 0.16)" stroke-width="2"/>
+    <text x="122" y="226" class="sectionLight">Dark / 夜晚蓝灰</text>
+    <text x="122" y="260" class="bodyLight">夜晚首页、深蓝面板、冷色传送门魔法。蓝灰是正式主题，不是历史残留。</text>
+
+    <g transform="translate(122 296)">
+      <rect width="118" height="76" rx="10" fill="#6F86AA"/>
+      <text x="0" y="104" class="codeLight">#6F86AA</text>
+      <text x="0" y="126" class="tinyLight">page / loading</text>
+    </g>
+    <g transform="translate(270 296)">
+      <rect width="118" height="76" rx="10" fill="#17233D" stroke="rgba(255,240,215,0.18)"/>
+      <text x="0" y="104" class="codeLight">#17233D</text>
+      <text x="0" y="126" class="tinyLight">deep panel</text>
+    </g>
+    <g transform="translate(418 296)">
+      <rect width="118" height="76" rx="10" fill="#4F668A"/>
+      <text x="0" y="104" class="codeLight">#4F668A</text>
+      <text x="0" y="126" class="tinyLight">frame / cloud</text>
+    </g>
+    <g transform="translate(566 296)">
+      <rect width="118" height="76" rx="10" fill="#325389"/>
+      <text x="0" y="104" class="codeLight">#325389</text>
+      <text x="0" y="126" class="tinyLight">dark CTA</text>
+    </g>
+    <g transform="translate(714 296)">
+      <rect width="118" height="76" rx="10" fill="#9FE4FF"/>
+      <text x="0" y="104" class="codeLight">#9FE4FF</text>
+      <text x="0" y="126" class="tinyLight">portal magic</text>
+    </g>
+
+    <rect x="122" y="446" width="292" height="34" rx="17" fill="rgba(255,240,215,0.08)"/>
+    <text x="268" y="469" text-anchor="middle" class="tinyLight">default: dark / legacy night</text>
+    <rect x="438" y="446" width="354" height="34" rx="17" fill="rgba(159,228,255,0.12)"/>
+    <text x="615" y="469" text-anchor="middle" class="tinyLight">startTheme keeps start -> game -> result</text>
+
+    <rect x="918" y="172" width="804" height="332" rx="24" fill="rgba(255, 240, 215, 0.86)" stroke="rgba(88, 47, 40, 0.14)" stroke-width="2"/>
+    <text x="962" y="226" class="section">Light / 夕阳暖纸</text>
+    <text x="962" y="260" class="body">夕阳首页、暖纸底色、深棕像素框、橙金主行动。它是正式主题，不是唯一主系统。</text>
+
+    <g transform="translate(962 296)">
+      <rect width="118" height="76" rx="10" fill="#E8C08C" stroke="rgba(88,47,40,0.14)"/>
+      <text x="0" y="104" class="code">#E8C08C</text>
+      <text x="0" y="126" class="tiny">page / panel</text>
+    </g>
+    <g transform="translate(1110 296)">
+      <rect width="118" height="76" rx="10" fill="#582F28"/>
+      <text x="0" y="104" class="code">#582F28</text>
+      <text x="0" y="126" class="tiny">frame / text</text>
+    </g>
+    <g transform="translate(1258 296)">
+      <rect width="118" height="76" rx="10" fill="#6B3418"/>
+      <text x="0" y="104" class="code">#6B3418</text>
+      <text x="0" y="126" class="tiny">CTA frame</text>
+    </g>
+    <g transform="translate(1406 296)">
+      <rect width="118" height="76" rx="10" fill="#EE8D4A"/>
+      <text x="0" y="104" class="code">#EE8D4A</text>
+      <text x="0" y="126" class="tiny">CTA face</text>
+    </g>
+    <g transform="translate(1554 296)">
+      <rect width="118" height="76" rx="10" fill="#FFF0D7" stroke="rgba(88,47,40,0.14)"/>
+      <text x="0" y="104" class="code">#FFF0D7</text>
+      <text x="0" y="126" class="tiny">button text</text>
+    </g>
+
+    <rect x="962" y="446" width="292" height="34" rx="17" fill="rgba(88,47,40,0.1)"/>
+    <text x="1108" y="469" text-anchor="middle" class="tiny">legacy sunset -> light</text>
+    <rect x="1278" y="446" width="354" height="34" rx="17" fill="rgba(238,141,74,0.18)"/>
+    <text x="1455" y="469" text-anchor="middle" class="tiny">warm paper + orange-gold action</text>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="78" y="548" width="520" height="432" rx="24" fill="rgba(255, 240, 215, 0.88)" stroke="rgba(88, 47, 40, 0.14)" stroke-width="2"/>
+    <text x="118" y="606" class="section">首页组件</text>
+    <text x="118" y="638" class="body">主题背景、块状云层、角色舞台、曲目条和主 CTA。</text>
+
+    <rect x="118" y="680" width="208" height="142" rx="14" fill="#17233D"/>
+    <circle cx="300" cy="706" r="16" fill="rgba(255,255,255,0.2)"/>
+    <path d="M300 696 L300 716 M290 706 L310 706 M293 699 L307 713 M307 699 L293 713" stroke="#FFF0D7" stroke-width="2" stroke-linecap="round"/>
+    <rect x="142" y="724" width="72" height="20" fill="#4F668A"/>
+    <rect x="160" y="704" width="82" height="22" fill="#6F86AA"/>
+    <rect x="184" y="746" width="106" height="34" fill="#4F668A"/>
+    <text x="222" y="809" text-anchor="middle" class="codeLight">dark start</text>
+
+    <rect x="350" y="680" width="208" height="142" rx="14" fill="#E8C08C"/>
+    <circle cx="532" cy="706" r="16" fill="rgba(0,0,0,0.2)"/>
+    <path d="M536 697 C526 702 526 716 539 718 C528 722 518 714 520 704 C522 696 529 692 536 697Z" fill="#FFF0D7"/>
+    <rect x="374" y="724" width="72" height="20" fill="#D9965C"/>
+    <rect x="392" y="704" width="82" height="22" fill="#F0BD70"/>
+    <rect x="416" y="746" width="106" height="34" fill="#A85D50"/>
+    <text x="454" y="809" text-anchor="middle" class="code">light start</text>
+
+    <text x="118" y="872" class="microTitle">SONG PANEL</text>
+    <rect x="118" y="896" width="208" height="52" fill="#4F668A"/>
+    <rect x="124" y="902" width="196" height="40" fill="#17233D"/>
+    <text x="150" y="928" class="tinyLight">Ditto</text>
+    <rect x="292" y="914" width="18" height="14" fill="#FFF0D7"/>
+
+    <rect x="350" y="896" width="208" height="52" fill="#6B3418"/>
+    <rect x="356" y="902" width="196" height="40" fill="#EE8D4A"/>
+    <text x="454" y="929" text-anchor="middle" class="labelLight">开始</text>
+
+    <rect x="638" y="548" width="520" height="432" rx="24" fill="rgba(18, 28, 50, 0.92)" stroke="rgba(255, 240, 215, 0.16)" stroke-width="2"/>
+    <text x="678" y="606" class="sectionLight">战斗页</text>
+    <text x="678" y="638" class="bodyLight">主题化背景、HUD、暂停按钮、传送门星光与判定反馈。</text>
+
+    <rect x="678" y="680" width="198" height="262" rx="14" fill="#0F1628" stroke="rgba(255,240,215,0.12)"/>
+    <path d="M777 700 C732 744 706 842 690 930 L862 930 C850 842 823 744 777 700Z" fill="#74839A" opacity="0.72"/>
+    <rect x="704" y="706" width="88" height="28" fill="rgba(0,0,0,0.3)"/>
+    <text x="714" y="725" class="tinyLight">SCORE</text>
+    <rect x="820" y="706" width="30" height="30" fill="rgba(0,0,0,0.3)"/>
+    <rect x="830" y="714" width="3" height="14" fill="#F7F4E8"/>
+    <rect x="840" y="714" width="3" height="14" fill="#F7F4E8"/>
+    <circle cx="777" cy="792" r="34" fill="rgba(159,228,255,0.13)"/>
+    <rect x="774" y="744" width="6" height="96" fill="#D9BF7A"/>
+    <rect x="744" y="790" width="66" height="6" fill="#C6B07A"/>
+    <circle cx="777" cy="870" r="18" fill="#E9C3C3"/>
+
+    <g transform="translate(914 688)">
+      <text x="0" y="0" class="microTitleLight">PAUSE</text>
+      <rect x="0" y="26" width="58" height="58" fill="rgba(23,35,61,0.24)"/>
+      <rect x="-4" y="22" width="58" height="58" fill="#17233D"/>
+      <rect x="2" y="28" width="46" height="46" fill="#6F86AA"/>
+      <path d="M22 42 L36 51 L22 60 Z" fill="#17233D"/>
+      <rect x="88" y="26" width="58" height="58" fill="rgba(88,47,40,0.18)"/>
+      <rect x="84" y="22" width="58" height="58" fill="#582F28"/>
+      <rect x="90" y="28" width="46" height="46" fill="#ECD2A6"/>
+      <path d="M110 42 L124 51 L110 60 Z" fill="#582F28"/>
+    </g>
+
+    <g transform="translate(914 810)">
+      <text x="0" y="0" class="microTitleLight">FEEDBACK</text>
+      <rect x="0" y="28" width="130" height="28" rx="14" fill="#6EDE7D"/>
+      <text x="65" y="48" text-anchor="middle" class="tiny">PERFECT</text>
+      <rect x="0" y="70" width="130" height="28" rx="14" fill="#8BDDFF"/>
+      <text x="65" y="90" text-anchor="middle" class="tiny">GOOD</text>
+      <rect x="0" y="112" width="130" height="28" rx="14" fill="#FF7F90"/>
+      <text x="65" y="132" text-anchor="middle" class="tiny">MISS</text>
+    </g>
+
+    <rect x="1198" y="548" width="524" height="432" rx="24" fill="rgba(255, 240, 215, 0.88)" stroke="rgba(88, 47, 40, 0.14)" stroke-width="2"/>
+    <text x="1238" y="606" class="section">结果页</text>
+    <text x="1238" y="638" class="body">共享羊皮纸结算系统；dark 只加轻微蓝色 overlay。</text>
+
+    <rect x="1238" y="680" width="206" height="260" rx="14" fill="#C59247"/>
+    <circle cx="1341" cy="708" r="42" fill="#FFF2B8" opacity="0.28"/>
+    <rect x="1272" y="728" width="138" height="34" fill="#FFCD2F"/>
+    <text x="1341" y="752" text-anchor="middle" class="tiny">COMPLETED</text>
+    <rect x="1262" y="790" width="158" height="116" fill="#DDBC6C"/>
+    <rect x="1268" y="796" width="146" height="104" fill="#FBEEC2"/>
+    <rect x="1284" y="816" width="38" height="38" fill="#8F4A43"/>
+    <rect x="1338" y="820" width="58" height="10" fill="#654915"/>
+    <rect x="1284" y="870" width="112" height="4" fill="#E8C08C"/>
+    <rect x="1284" y="882" width="112" height="4" fill="#E8C08C"/>
+    <rect x="1284" y="912" width="58" height="24" fill="#FFF0D7"/>
+    <rect x="1358" y="912" width="62" height="24" fill="#EE8D4A"/>
+
+    <g transform="translate(1480 690)">
+      <text x="0" y="0" class="microTitle">RESULT TOKENS</text>
+      <rect x="0" y="30" width="104" height="54" rx="8" fill="#C59247"/>
+      <text x="124" y="52" class="code">#C59247</text>
+      <text x="124" y="74" class="tiny">parchment</text>
+      <rect x="0" y="104" width="104" height="54" rx="8" fill="#FBEEC2" stroke="rgba(88,47,40,0.14)"/>
+      <text x="124" y="126" class="code">#FBEEC2</text>
+      <text x="124" y="148" class="tiny">panel face</text>
+      <rect x="0" y="178" width="104" height="54" rx="8" fill="#FFCD2F"/>
+      <text x="124" y="200" class="code">#FFCD2F</text>
+      <text x="124" y="222" class="tiny">status gold</text>
+    </g>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="78" y="1026" width="1644" height="168" rx="24" fill="rgba(255, 240, 215, 0.88)" stroke="rgba(88, 47, 40, 0.14)" stroke-width="2"/>
+    <text x="118" y="1084" class="section">边界规则</text>
+
+    <g transform="translate(330 1056)">
+      <rect width="340" height="92" rx="18" fill="#17233D"/>
+      <text x="28" y="36" class="labelLight">可用</text>
+      <text x="28" y="64" class="tinyLight">夜晚蓝灰用于 dark 主题、战斗页、</text>
+      <text x="28" y="84" class="tinyLight">loading 和暂停按钮。</text>
+    </g>
+
+    <g transform="translate(710 1056)">
+      <rect width="340" height="92" rx="18" fill="#EE8D4A"/>
+      <text x="28" y="36" class="labelLight">可用</text>
+      <text x="28" y="64" class="tinyLight">暖纸橙金用于 light 主题、主行动</text>
+      <text x="28" y="84" class="tinyLight">和羊皮纸结算。</text>
+    </g>
+
+    <g transform="translate(1090 1056)">
+      <rect width="340" height="92" rx="18" fill="#FFF0D7" stroke="rgba(88,47,40,0.16)"/>
+      <text x="28" y="36" class="label">边界</text>
+      <text x="28" y="64" class="tiny">Perfect / Good / Miss 只服务玩法识别，</text>
+      <text x="28" y="84" class="tiny">不做页面主色。</text>
+    </g>
+
+    <g transform="translate(1470 1056)">
+      <rect width="202" height="92" rx="18" fill="#582F28"/>
+      <text x="28" y="36" class="labelLight">禁用</text>
+      <text x="28" y="64" class="tinyLight">旧式通用深蓝</text>
+      <text x="28" y="84" class="tinyLight">金边 modal。</text>
+    </g>
+  </g>
+
+  <text x="900" y="1242" text-anchor="middle" class="subtitle">source of truth: start-theme.js / start.wxss / result.wxss / renderer.js</text>
+</svg>

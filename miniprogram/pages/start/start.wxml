@@ -1,0 +1,163 @@
+<view class="page page-{{startTheme}}">
+  <view class="start-stage">
+    <image
+      class="start-backdrop"
+      src="{{startBackdropSrc}}"
+      mode="aspectFill"
+    ></image>
+    <view class="start-cloud-layer start-cloud-layer-{{startTheme}}">
+      <view
+        wx:for="{{clouds}}"
+        wx:key="id"
+        class="start-cloud-track {{item.driftClass}}"
+        style="{{item.trackStyle}}"
+      >
+        <view
+          class="start-cloud-bob {{item.bobClass}}"
+          style="{{item.bobStyle}}"
+        >
+          <view
+            class="start-cloud-sway {{item.swayClass}}"
+            style="{{item.swayStyle}}"
+          >
+            <view class="start-cloud-code">
+              <view
+                wx:for="{{item.cloudBlocks}}"
+                wx:key="id"
+                wx:for-item="block"
+                class="start-cloud-block start-cloud-{{block.tone}}"
+                style="{{block.style}}"
+              ></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="start-backdrop-veil"></view>
+    <view class="start-backdrop-bottom"></view>
+
+    <view class="start-shell">
+      <view class="start-theme-toggle" bindtap="handleThemeToggle">
+        <view class="start-theme-icon start-theme-icon-{{startTheme}}">
+          <image
+            class="start-theme-icon-image"
+            src="{{themeToggleIconSrc}}"
+            mode="aspectFit"
+          ></image>
+        </view>
+      </view>
+
+      <view class="start-title-wrap">
+        <view class="start-title-main">
+          <view class="start-title-word start-title-word-en">
+            <view class="start-title-text start-title-text-en pixel-font-en">Bunnies</view>
+          </view>
+          <view class="start-title-word start-title-word-cn">
+            <view class="start-title-text start-title-text-cn pixel-font-zh">爆锤方猪</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="start-hero">
+        <view class="start-hero-shadow start-hero-shadow-rabbit"></view>
+        <view class="start-hero-shadow start-hero-shadow-pig"></view>
+        <view class="start-rabbit-wrap">
+          <view class="start-rabbit-sprite">
+            <image
+              class="start-rabbit-frame"
+              src="{{currentRabbitFrameSrc}}"
+              mode="aspectFit"
+            ></image>
+          </view>
+        </view>
+        <view class="start-pig-wrap">
+          <view class="start-pig-sprite">
+            <image
+              class="start-pig-frame"
+              src="{{currentPigFrameSrc}}"
+              mode="aspectFit"
+            ></image>
+          </view>
+        </view>
+      </view>
+
+      <view class="start-song-panel">
+        <view class="start-song-panel-outer">
+          <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-tl pixel-cut-mask-panel-shadow"></view>
+          <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-tr pixel-cut-mask-panel-shadow"></view>
+          <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-bl pixel-cut-mask-panel-shadow"></view>
+          <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-br pixel-cut-mask-panel-shadow"></view>
+          <view class="start-song-panel-face">
+            <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-tl pixel-cut-mask-gold-outer"></view>
+            <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-tr pixel-cut-mask-gold-outer"></view>
+            <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-bl pixel-cut-mask-gold-outer"></view>
+            <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-br pixel-cut-mask-gold-outer"></view>
+            <view class="start-song-panel-core">
+              <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-tl pixel-cut-mask-gold-inner"></view>
+              <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-tr pixel-cut-mask-gold-inner"></view>
+              <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-bl pixel-cut-mask-gold-inner"></view>
+              <view class="pixel-cut-corner pixel-cut-corner-md pixel-cut-corner-br pixel-cut-mask-gold-inner"></view>
+              <view class="start-song-list">
+                <view
+                  wx:for="{{songs}}"
+                  wx:key="id"
+                  class="start-song-row {{item.selected ? 'start-song-row-selected' : ''}} {{item.available ? '' : 'start-song-row-disabled'}}"
+                  data-song-id="{{item.id}}"
+                  bindtap="handleSongSelect"
+                >
+                  <view class="start-song-row-fill">
+                    <view class="start-song-title-text">
+                      <text
+                        wx:for="{{item.titleSegments}}"
+                        wx:key="index"
+                        wx:for-item="segment"
+                        class="start-song-title-segment {{segment.fontType === 'zh' ? 'pixel-font-zh' : 'pixel-font-en'}} {{!item.available ? 'start-song-title-segment-disabled' : ''}}"
+                      >
+                        {{segment.text}}
+                      </text>
+                    </view>
+                    <view class="start-song-row-mark-slot">
+                      <view wx:if="{{item.selected}}" class="start-song-mark">
+                        <image
+                          class="start-song-mark-image"
+                          src="{{startSongMarkSrc}}"
+                          mode="aspectFit"
+                        ></image>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="start-action-wrap" bindtap="handleStartTap">
+        <view class="start-action-frame">
+          <view class="start-action-inner">
+            <view class="start-action-label">
+              <view class="start-action-text start-action-text-face pixel-font-zh">开始</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!pageReady}}" class="start-loading-overlay start-loading-overlay-{{startTheme}}">
+    <view class="start-loading-spinner"></view>
+    <view class="start-loading-copy">
+      <image
+        wx:if="{{loadingSubtitleImageSrc}}"
+        class="start-loading-subtitle-image"
+        src="{{loadingSubtitleImageSrc}}"
+        mode="widthFix"
+      ></image>
+      <view wx:else class="start-loading-subtitle">
+        <text class="start-loading-subtitle-label">{{loadingSubtitle}}</text>
+        <text class="start-loading-subtitle-ellipsis">...</text>
+      </view>
+    </view>
+  </view>
+</view>

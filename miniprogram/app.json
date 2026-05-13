@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/start/start",
+    "pages/game/game",
+    "pages/result/result"
+  ],
+  "window": {
+    "navigationBarTitleText": "Bunnies爆锤方猪",
+    "navigationBarBackgroundColor": "#101426",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#6f86aa",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

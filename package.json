@@ -1,0 +1,11 @@
+{
+  "name": "rhythm-game-prototype",
+  "private": true,
+  "scripts": {
+    "assets:rabbit-hit": "python3 scripts/generate_rabbit_hit_sheet.py --action-order forward",
+    "assets:song-covers": "python3 scripts/generate_song_cover_assets.py",
+    "assets:parchment": "python3 scripts/generate_parchment_outline_assets.py",
+    "chart:editor": "node tools/chart-editor/server.js",
+    "assets:stage": "python3 scripts/generate_stage_runtime_assets.py"
+  }
+}

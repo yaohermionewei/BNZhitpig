@@ -1,0 +1,100 @@
+import { normalizeStartTheme } from "../utils/start-theme.js";
+
+const BASE_CHARACTER_ASSET_SOURCES = {
+  titleRabbit: "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
+  titlePig: "/assets/images/title-pig-frames-v2/pig-frame-1.png",
+  char1Front: "/assets/images/characters/五小妹正面新/1.png",
+  char1Side: "/assets/images/characters/五小妹侧面新/1.png",
+  char2Front: "/assets/images/characters/五小妹正面新/2.png",
+  char2Side: "/assets/images/characters/五小妹侧面新/2.png",
+  char3Front: "/assets/images/characters/五小妹正面新/3.png",
+  char3Side: "/assets/images/characters/五小妹侧面新/3.png",
+  char4Front: "/assets/images/characters/五小妹正面新/4.png",
+  char4Side: "/assets/images/characters/五小妹侧面新/4.png",
+  char5Front: "/assets/images/characters/五小妹正面新/5.png",
+  char5Side: "/assets/images/characters/五小妹侧面新/5.png",
+  pigFront: "/assets/images/characters/pig-front-new-cropped.png",
+  pigFrontLaunch: "/assets/images/characters/pig-front-launch-v2-cropped.png",
+  pigGlasses: "/assets/images/characters/glass.png",
+  pigLeft: "/assets/images/characters/pig-left-new-cropped.png",
+  pigRight: "/assets/images/characters/pig-right-new-cropped.png",
+  rabbitFront: "/assets/images/characters/rabbit-front.png",
+  rabbitBack: "/assets/images/characters/rabbit-back.png",
+  rabbitBackHitSheet: "/assets/images/characters/rabbit-back-hit-sheet.png",
+  rabbitBackWandSwing2Sheet: "/assets/images/characters/rabbit-back-wand-swing-2-sheet.png",
+};
+
+const GAME_SCENE_BACKGROUND_SOURCES = {
+  dark: "/assets/images/战斗场景dark.runtime.jpg",
+  light: "/assets/images/战斗场景light.runtime.jpg",
+};
+
+const imageCache = new Map();
+const spriteSetCache = new Map();
+
+export const EFFECT_AUDIO_POOL_SIZES = {
+  "/assets/audio/hit.wav": 6,
+  "/assets/audio/miss.wav": 3,
+};
+
+export function getGameSceneBackgroundSource(theme) {
+  const normalizedTheme = normalizeStartTheme(theme);
+  return GAME_SCENE_BACKGROUND_SOURCES[normalizedTheme] || GAME_SCENE_BACKGROUND_SOURCES.dark;
+}
+
+export function getCharacterAssetSources(theme) {
+  return {
+    ...BASE_CHARACTER_ASSET_SOURCES,
+    sceneBackground: getGameSceneBackgroundSource(theme),
+  };
+}
+
+export function loadImage(src) {
+  if (imageCache.has(src)) {
+    return imageCache.get(src);
+  }
+
+  const loadPromise = new Promise((resolve) => {
+    const image = new Image();
+    image.decoding = "async";
+    image.onload = () => resolve(image);
+    image.onerror = () => {
+      imageCache.delete(src);
+      resolve(null);
+    };
+    image.src = src;
+  });
+
+  imageCache.set(src, loadPromise);
+  return loadPromise;
+}
+
+export async function loadCharacterSprites(theme) {
+  const normalizedTheme = normalizeStartTheme(theme);
+  if (spriteSetCache.has(normalizedTheme)) {
+    return spriteSetCache.get(normalizedTheme);
+  }
+
+  const loadPromise = Promise.all(
+    Object.entries(getCharacterAssetSources(normalizedTheme)).map(async ([key, src]) => [
+      key,
+      await loadImage(src),
+    ])
+  ).then((entries) =>
+    entries.reduce((sprites, [key, image]) => {
+      if (image) {
+        sprites[key] = image;
+      }
+      return sprites;
+    }, {})
+  );
+
+  spriteSetCache.set(normalizedTheme, loadPromise);
+
+  try {
+    return await loadPromise;
+  } catch (error) {
+    spriteSetCache.delete(normalizedTheme);
+    throw error;
+  }
+}

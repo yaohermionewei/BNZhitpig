@@ -1,0 +1,278 @@
+:root {
+  color-scheme: dark;
+  --bg-0: #0a0f1b;
+  --bg-1: #111a2b;
+  --bg-2: #182338;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(134, 206, 255, 0.28);
+  --text-0: #f3f6ff;
+  --text-1: rgba(227, 234, 255, 0.72);
+  --gold: #f1c06d;
+  --gold-soft: rgba(241, 192, 109, 0.18);
+  --sky: #82d7ff;
+  --mint: #8cf0ca;
+  --shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, rgba(94, 168, 255, 0.14), rgba(10, 15, 27, 0) 30%),
+    linear-gradient(180deg, #0b101b 0%, #070b13 100%);
+  color: var(--text-0);
+  font-family: Inter, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(17, 26, 43, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title-wrap {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--sky);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul {
+  margin: 0;
+}
+
+h1 {
+  margin-top: 6px;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin-top: 8px;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.topbar,
+.controls-panel,
+.help-panel {
+  padding: 16px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-group + .control-group,
+.status-row {
+  margin-top: 12px;
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+}
+
+.field select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-0);
+}
+
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+}
+
+.ghost-button,
+.secondary-button,
+.primary-button {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.ghost-button,
+.secondary-button {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-0);
+}
+
+.primary-button {
+  border: 0;
+  background: linear-gradient(135deg, var(--sky) 0%, var(--mint) 100%);
+  color: #08121c;
+  font-weight: 700;
+}
+
+.ghost-button:hover,
+.secondary-button:hover,
+.primary-button:hover {
+  transform: translateY(-1px);
+}
+
+.status-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+  font-size: 12px;
+}
+
+.status-text {
+  margin-top: 12px;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.canvas-panel {
+  padding: 14px;
+}
+
+.canvas-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 2px 12px;
+}
+
+.canvas-header h2 {
+  font-size: 17px;
+}
+
+.canvas-header p {
+  margin-top: 6px;
+  color: var(--text-1);
+  font-size: 12px;
+}
+
+.canvas-wrap {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    #0b111d;
+  background-size: 24px 24px;
+  background-position:
+    0 0,
+    0 12px,
+    12px -12px,
+    -12px 0;
+}
+
+#editorCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.help-grid h3 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.help-grid ol,
+.help-grid ul {
+  padding-left: 18px;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 560px) {
+  .help-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas-header {
+    flex-direction: column;
+  }
+}

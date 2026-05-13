@@ -1,0 +1,40 @@
+page {
+  background: #6f86aa;
+  color: #f6f7fb;
+  font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+view {
+  box-sizing: border-box;
+}
+
+.pixel-font-en {
+  /* The alias stays stable; swap the actual source in utils/pixel-font-config.js */
+  font-family: "PixelEnPrimary", monospace;
+  font-weight: 400;
+}
+
+.pixel-font-zh {
+  font-family: "PixelZhFusion", "PixelZhBackup", "PingFang SC", "Helvetica Neue", sans-serif;
+  font-weight: 400;
+}
+
+.font-lock-en-pixel {
+  font-family: "PixelEnPrimary", monospace;
+}
+
+.font-lock-en-fallback {
+  font-family: monospace;
+}
+
+.font-lock-zh-fusion {
+  font-family: "PixelZhFusion", "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+.font-lock-zh-backup {
+  font-family: "PixelZhBackup", "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+.font-lock-zh-fallback {
+  font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+}

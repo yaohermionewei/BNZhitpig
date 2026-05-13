@@ -1,0 +1,20 @@
+<view class="page page-{{startTheme}}">
+  <canvas
+    id="gameCanvas"
+    type="2d"
+    canvas-id="gameCanvas"
+    class="game-canvas"
+    hidden="{{!showCanvas}}"
+    disable-scroll
+    bindrendererror="handleCanvasRenderError"
+    bind:pointerdown="handleCanvasPointerDown"
+    bindtouchstart="handleCanvasTouchStart"
+    bindtouchmove="handleCanvasTouchMove"
+    bindtouchend="handleCanvasTouchEnd"
+    bindtouchcancel="handleCanvasTouchEnd"
+  ></canvas>
+
+  <view wx:if="{{showTransitionLoading}}" class="game-loading-overlay game-loading-overlay-{{startTheme}}">
+    <view class="game-loading-spinner"></view>
+  </view>
+</view>

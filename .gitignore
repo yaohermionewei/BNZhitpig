@@ -1,0 +1,16 @@
+.DS_Store
+*.log
+
+# Local scratch and generated analysis output
+tmp/
+.analysis/
+Delete/
+tools/chart-editor/backups/
+
+# Node dependencies and build output
+node_modules/
+web/node_modules/
+web/dist/
+
+# Local/private IDE config
+project.private.config.json
