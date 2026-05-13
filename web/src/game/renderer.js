@@ -50,13 +50,22 @@ const RABBIT_HIT_SHEET = Object.freeze({
 const NOTE_ENTRY_Y = 183;
 const STAGE_CARPET_TOP = 205;
 const LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH = 402;
+const LANE_HIT_FLASH_CALIBRATION_BASE_HEIGHT = 782;
 const LANE_HIT_FLASH_CALIBRATION = Object.freeze({
-  // Ratios are derived from live devtools canvas-coordinate taps on a 402px-wide
-  // viewport. Keep the hit flash and guide lines on this same calibration source.
+  // Legacy viewport ratios from the 402px-wide calibration pass. These remain as
+  // a fallback for the loading path where the scene background is not available.
   topLeftRatio: 161 / LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH,
   topRightRatio: 245 / LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH,
   bottomLeftRatio: 75 / LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH,
   bottomRightRatio: 332 / LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH,
+});
+const LANE_HIT_FLASH_SOURCE_BASE_WIDTH = 1024;
+const LANE_HIT_FLASH_SOURCE_BASE_HEIGHT = 1840;
+const LANE_HIT_FLASH_SOURCE_ANCHORS = Object.freeze({
+  topLeft: Object.freeze({ x: 414.04, y: 584.16 }),
+  topRight: Object.freeze({ x: 611.25, y: 584.16 }),
+  bottomLeft: Object.freeze({ x: 211.76, y: 1840 }),
+  bottomRight: Object.freeze({ x: 816.47, y: 1840 }),
 });
 const NOTE_ENTRY_FADE_DISTANCE = 22;
 const NOTE_ENTRY_SOFT_FADE_DISTANCE = 42;
@@ -2613,32 +2622,62 @@ function getLaneFlashPalette(quality) {
   };
 }
 
-function getLaneHitFlashGeometry(viewport, lane, stageCarpetImage) {
-  const carpetLayout = getStageCarpetLayout(viewport, lane, stageCarpetImage);
-  const flashTopY = carpetLayout
-    ? clamp(
-        lane.top + (lane.bottom - lane.top) * 0.28,
-        carpetLayout.y + 8,
-        carpetLayout.y + carpetLayout.height - 28
-      )
-    : lane.top + (lane.bottom - lane.top) * 0.28;
-  const flashBottomY = viewport.height;
-  const flashTopTargetLeftX = viewport.width * LANE_HIT_FLASH_CALIBRATION.topLeftRatio;
-  const flashTopTargetRightX = viewport.width * LANE_HIT_FLASH_CALIBRATION.topRightRatio;
-  const flashBottomTargetLeftX = viewport.width * LANE_HIT_FLASH_CALIBRATION.bottomLeftRatio;
-  const flashBottomTargetRightX = viewport.width * LANE_HIT_FLASH_CALIBRATION.bottomRightRatio;
-
+function mapLaneHitFlashSourceAnchor(layout, anchor) {
   return {
-    flashTopY,
-    flashBottomY,
-    flashTopTargetLeftX,
-    flashTopTargetRightX,
-    flashBottomTargetLeftX,
-    flashBottomTargetRightX,
+    x: layout.x + (anchor.x / LANE_HIT_FLASH_SOURCE_BASE_WIDTH) * layout.width,
+    y: layout.y + (anchor.y / LANE_HIT_FLASH_SOURCE_BASE_HEIGHT) * layout.height,
   };
 }
 
-function drawLaneHitFlash(ctx, viewport, lane, effect, stageCarpetImage) {
+function getLaneHitFlashGeometry(viewport, lane, stageCarpetImage, sceneBackgroundImage) {
+  const carpetLayout = getStageCarpetLayout(viewport, lane, stageCarpetImage);
+  const backdropLayout = getCoverBackdropLayout(viewport, sceneBackgroundImage);
+
+  if (backdropLayout) {
+    const topLeft = mapLaneHitFlashSourceAnchor(
+      backdropLayout,
+      LANE_HIT_FLASH_SOURCE_ANCHORS.topLeft
+    );
+    const topRight = mapLaneHitFlashSourceAnchor(
+      backdropLayout,
+      LANE_HIT_FLASH_SOURCE_ANCHORS.topRight
+    );
+    const bottomLeft = mapLaneHitFlashSourceAnchor(
+      backdropLayout,
+      LANE_HIT_FLASH_SOURCE_ANCHORS.bottomLeft
+    );
+    const bottomRight = mapLaneHitFlashSourceAnchor(
+      backdropLayout,
+      LANE_HIT_FLASH_SOURCE_ANCHORS.bottomRight
+    );
+
+    return {
+      flashTopY: topLeft.y,
+      flashBottomY: Math.max(topLeft.y + 1, bottomLeft.y),
+      flashTopTargetLeftX: topLeft.x,
+      flashTopTargetRightX: topRight.x,
+      flashBottomTargetLeftX: bottomLeft.x,
+      flashBottomTargetRightX: bottomRight.x,
+    };
+  }
+
+  return {
+    flashTopY: carpetLayout
+      ? clamp(
+          lane.top + (lane.bottom - lane.top) * 0.28,
+          carpetLayout.y + 8,
+          carpetLayout.y + carpetLayout.height - 28
+        )
+      : lane.top + (lane.bottom - lane.top) * 0.28,
+    flashBottomY: viewport.height,
+    flashTopTargetLeftX: viewport.width * LANE_HIT_FLASH_CALIBRATION.topLeftRatio,
+    flashTopTargetRightX: viewport.width * LANE_HIT_FLASH_CALIBRATION.topRightRatio,
+    flashBottomTargetLeftX: viewport.width * LANE_HIT_FLASH_CALIBRATION.bottomLeftRatio,
+    flashBottomTargetRightX: viewport.width * LANE_HIT_FLASH_CALIBRATION.bottomRightRatio,
+  };
+}
+
+function drawLaneHitFlash(ctx, viewport, lane, effect, stageCarpetImage, sceneBackgroundImage) {
   const progress = effect.age / effect.duration;
   const intensity = Math.pow(1 - progress, 1.35);
   const flashAlphaBottom = 0.54;
@@ -2659,7 +2698,7 @@ function drawLaneHitFlash(ctx, viewport, lane, effect, stageCarpetImage) {
     flashTopTargetRightX,
     flashBottomTargetLeftX,
     flashBottomTargetRightX,
-  } = getLaneHitFlashGeometry(viewport, lane, stageCarpetImage);
+  } = getLaneHitFlashGeometry(viewport, lane, stageCarpetImage, sceneBackgroundImage);
 
   ctx.save();
   const laneGradient = ctx.createLinearGradient(0, flashBottomY, 0, flashTopY);
@@ -2728,7 +2767,14 @@ function drawLane(ctx, viewport, lane, effects = [], characterSprites = {}, opti
 
   effects.forEach((effect) => {
     if (effect.kind === "laneFlash") {
-      drawLaneHitFlash(ctx, viewport, lane, effect, characterSprites.stageCarpet);
+      drawLaneHitFlash(
+        ctx,
+        viewport,
+        lane,
+        effect,
+        characterSprites.stageCarpet,
+        characterSprites.sceneBackground
+      );
     }
   });
 }
