@@ -4,6 +4,7 @@ import {
   START_CLOUDS,
   START_LOADING_MIN_DURATION_MS,
   getStartCharacterStageAnchors,
+  getStartBackdropStageOffsetY,
   getLoadingSubtitleImageSrc,
   getPigFrameSources,
   getRabbitFrameSources,
@@ -72,6 +73,12 @@ function formatAnchorStyle(point, heroOffsetTop) {
   };
 }
 
+function formatStageStyle(backdropOffsetY) {
+  return {
+    "--start-backdrop-offset-y": `${backdropOffsetY}px`,
+  };
+}
+
 export default function StartScreen({ state, onThemeToggle, onSelectSong, onStart }) {
   const { startTheme, song } = state;
   const stageRef = useRef(null);
@@ -91,6 +98,11 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
     () => getStartCharacterStageAnchors(startTheme, stageLayout),
     [startTheme, stageLayout]
   );
+  const backdropOffsetY = useMemo(
+    () => getStartBackdropStageOffsetY(startTheme, stageLayout),
+    [startTheme, stageLayout]
+  );
+  const stageStyle = formatStageStyle(backdropOffsetY);
   const rabbitAnchorStyle = formatAnchorStyle(characterAnchors.rabbit, stageLayout.heroOffsetTop);
   const pigAnchorStyle = formatAnchorStyle(characterAnchors.pig, stageLayout.heroOffsetTop);
   const currentRabbitFrameSrc =
@@ -199,7 +211,7 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
 
   return (
     <div className={`screen start-screen page-${startTheme}`}>
-      <div className="start-stage" ref={stageRef}>
+      <div className="start-stage" ref={stageRef} style={stageStyle}>
         <img className="start-backdrop" src={startBackdropSrc} alt="" draggable="false" />
         <div className={`start-cloud-layer start-cloud-layer-${startTheme}`} aria-hidden="true">
           {START_CLOUDS.map((cloud) => (

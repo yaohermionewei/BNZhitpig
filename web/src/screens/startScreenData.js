@@ -9,6 +9,7 @@ const START_BACKDROP_LAYOUTS = Object.freeze({
   dark: Object.freeze({
     naturalWidth: 768,
     naturalHeight: 1514,
+    objectOffsetY: 25,
     anchors: Object.freeze({
       rabbit: Object.freeze({ x: 210, y: 935 }),
       pig: Object.freeze({ x: 570, y: 910 }),
@@ -17,6 +18,7 @@ const START_BACKDROP_LAYOUTS = Object.freeze({
   light: Object.freeze({
     naturalWidth: 768,
     naturalHeight: 1376,
+    objectOffsetY: 0,
     anchors: Object.freeze({
       rabbit: Object.freeze({ x: 245, y: 850 }),
       pig: Object.freeze({ x: 570, y: 840 }),
@@ -442,7 +444,7 @@ export function getStartBackdropLayout(theme) {
   return START_BACKDROP_LAYOUTS[theme] || START_BACKDROP_LAYOUTS[DEFAULT_START_THEME];
 }
 
-export function mapStartBackdropPointToStage(theme, stageSize, sourcePoint) {
+export function getStartBackdropCoverMetrics(theme, stageSize) {
   const backdrop = getStartBackdropLayout(theme);
   const stageWidth = Math.max(1, stageSize.width || 1);
   const stageHeight = Math.max(1, stageSize.height || 1);
@@ -453,11 +455,31 @@ export function mapStartBackdropPointToStage(theme, stageSize, sourcePoint) {
   const renderedWidth = backdrop.naturalWidth * scale;
   const renderedHeight = backdrop.naturalHeight * scale;
   const offsetX = (stageWidth - renderedWidth) / 2;
-  const offsetY = (stageHeight - renderedHeight) / 2;
+  const centerOffsetY = (stageHeight - renderedHeight) / 2;
+  const requestedObjectOffsetY = Math.max(0, backdrop.objectOffsetY || 0);
+  const maxDownwardOffsetY = Math.max(0, -centerOffsetY);
+  const objectOffsetY = Math.min(requestedObjectOffsetY, maxDownwardOffsetY);
 
   return Object.freeze({
-    x: offsetX + sourcePoint.x * scale,
-    y: offsetY + sourcePoint.y * scale,
+    scale,
+    renderedWidth,
+    renderedHeight,
+    offsetX,
+    offsetY: centerOffsetY + objectOffsetY,
+    objectOffsetY,
+  });
+}
+
+export function getStartBackdropStageOffsetY(theme, stageSize) {
+  return getStartBackdropCoverMetrics(theme, stageSize).objectOffsetY;
+}
+
+export function mapStartBackdropPointToStage(theme, stageSize, sourcePoint) {
+  const metrics = getStartBackdropCoverMetrics(theme, stageSize);
+
+  return Object.freeze({
+    x: metrics.offsetX + sourcePoint.x * metrics.scale,
+    y: metrics.offsetY + sourcePoint.y * metrics.scale,
   });
 }
 

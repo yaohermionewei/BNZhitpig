@@ -124,6 +124,10 @@ button {
   -webkit-user-drag: none;
 }
 
+.page-dark .start-backdrop {
+  object-position: center calc(50% + var(--start-backdrop-offset-y, 0px));
+}
+
 .start-cloud-layer {
   position: absolute;
   inset: 0;
