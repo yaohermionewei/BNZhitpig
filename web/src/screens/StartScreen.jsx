@@ -278,68 +278,70 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
             </div>
           </div>
 
-          <section className="start-song-panel" aria-label="选择歌曲">
-            <div className="start-song-panel-outer">
-              <div className="start-song-panel-face">
-                <div className="start-song-panel-core">
-                  <div className="start-song-list">
-                    {startSongs.map((item) => (
-                      <button
-                        key={item.id}
-                        className={`start-song-row ${
-                          item.selected ? "start-song-row-selected" : ""
-                        } ${item.available ? "" : "start-song-row-disabled"}`}
-                        type="button"
-                        disabled={!item.available}
-                        onClick={() => handleSongSelect(item)}
-                      >
-                        <span className="start-song-row-fill">
-                          <span className="start-song-title-text">
-                            {item.titleSegments.map((segment, index) => (
-                              <span
-                                key={`${segment.text}-${index}`}
-                                className={`start-song-title-segment ${
-                                  segment.fontType === "zh" ? "pixel-font-zh" : "pixel-font-en"
-                                } ${
-                                  item.available ? "" : "start-song-title-segment-disabled"
-                                }`}
-                              >
-                                {segment.text}
-                              </span>
-                            ))}
+          <div className="start-controls">
+            <section className="start-song-panel" aria-label="选择歌曲">
+              <div className="start-song-panel-outer">
+                <div className="start-song-panel-face">
+                  <div className="start-song-panel-core">
+                    <div className="start-song-list">
+                      {startSongs.map((item) => (
+                        <button
+                          key={item.id}
+                          className={`start-song-row ${
+                            item.selected ? "start-song-row-selected" : ""
+                          } ${item.available ? "" : "start-song-row-disabled"}`}
+                          type="button"
+                          disabled={!item.available}
+                          onClick={() => handleSongSelect(item)}
+                        >
+                          <span className="start-song-row-fill">
+                            <span className="start-song-title-text">
+                              {item.titleSegments.map((segment, index) => (
+                                <span
+                                  key={`${segment.text}-${index}`}
+                                  className={`start-song-title-segment ${
+                                    segment.fontType === "zh" ? "pixel-font-zh" : "pixel-font-en"
+                                  } ${
+                                    item.available ? "" : "start-song-title-segment-disabled"
+                                  }`}
+                                >
+                                  {segment.text}
+                                </span>
+                              ))}
+                            </span>
+                            <span className="start-song-row-mark-slot">
+                              {item.selected && (
+                                <span className="start-song-mark">
+                                  <img
+                                    className="start-song-mark-image"
+                                    src={startSongMarkSrc}
+                                    alt=""
+                                    draggable="false"
+                                  />
+                                </span>
+                              )}
+                            </span>
                           </span>
-                          <span className="start-song-row-mark-slot">
-                            {item.selected && (
-                              <span className="start-song-mark">
-                                <img
-                                  className="start-song-mark-image"
-                                  src={startSongMarkSrc}
-                                  alt=""
-                                  draggable="false"
-                                />
-                              </span>
-                            )}
-                          </span>
-                        </span>
-                      </button>
-                    ))}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <button className="start-action-wrap" type="button" onClick={onStart}>
-            <span className="start-action-frame">
-              <span className="start-action-inner">
-                <span className="start-action-label">
-                  <span className="start-action-text start-action-text-face pixel-font-zh">
-                    开始
+            <button className="start-action-wrap" type="button" onClick={onStart}>
+              <span className="start-action-frame">
+                <span className="start-action-inner">
+                  <span className="start-action-label">
+                    <span className="start-action-text start-action-text-face pixel-font-zh">
+                      开始
+                    </span>
                   </span>
                 </span>
               </span>
-            </span>
-          </button>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -453,6 +453,15 @@ button {
   -webkit-user-drag: none;
 }
 
+.start-controls {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateY(25px);
+}
+
 .start-song-panel {
   position: relative;
   top: -2px;
