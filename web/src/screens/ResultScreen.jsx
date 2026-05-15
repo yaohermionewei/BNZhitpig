@@ -470,6 +470,14 @@ function ResultCertificateButton({ children, onClick }) {
     <button className="result-certificate-button" type="button" onClick={onClick}>
       <span className="result-certificate-button-shadow" />
       <span className="result-certificate-button-frame">
+        <span className="result-certificate-button-border result-certificate-button-border-top" />
+        <span className="result-certificate-button-border result-certificate-button-border-right" />
+        <span className="result-certificate-button-border result-certificate-button-border-bottom" />
+        <span className="result-certificate-button-border result-certificate-button-border-left" />
+        <span className="result-certificate-button-corner result-certificate-button-corner-top-left" />
+        <span className="result-certificate-button-corner result-certificate-button-corner-top-right" />
+        <span className="result-certificate-button-corner result-certificate-button-corner-bottom-left" />
+        <span className="result-certificate-button-corner result-certificate-button-corner-bottom-right" />
         <span className="result-certificate-button-face">
           <span className="result-text-block result-certificate-button-text result-fixed-text-zh pixel-font-zh">
             {children}
