@@ -2,14 +2,6 @@ const GOOGLE_FONTS_COMMIT = "47831f08ec6d6d7ad6b465f23dc9f9a890a2a04b";
 const ENGLISH_PIXEL_FONT_ALIAS = "PixelEnPrimary";
 
 const ENGLISH_PIXEL_FONT_CANDIDATES = Object.freeze({
-  cubic11: Object.freeze({
-    key: "cubic11",
-    label: "Cubic 11",
-    family: ENGLISH_PIXEL_FONT_ALIAS,
-    stack: `"${ENGLISH_PIXEL_FONT_ALIAS}", monospace`,
-    sourceUrl: "/assets/fonts/bunnies-pixel-en.woff2",
-    notes: "Trial for the React web build: match Chinese Cubic 11 with a lighter, squarer English style.",
-  }),
   jersey10: Object.freeze({
     key: "jersey10",
     label: "Jersey 10",
@@ -31,8 +23,8 @@ const ENGLISH_PIXEL_FONT_CANDIDATES = Object.freeze({
     label: "Silkscreen",
     family: ENGLISH_PIXEL_FONT_ALIAS,
     stack: `"${ENGLISH_PIXEL_FONT_ALIAS}", monospace`,
-    sourceUrl: `https://cdn.jsdelivr.net/gh/google/fonts@${GOOGLE_FONTS_COMMIT}/ofl/silkscreen/Silkscreen-Regular.ttf`,
-    notes: "Best first replacement for Tiny5: true pixel feel, finer strokes, very small file.",
+    sourceUrl: "/assets/fonts/bunnies-pixel-en.woff2",
+    notes: "Trial for pairing with Cubic 11 Chinese: straighter and less round than Jersey 10, but stronger than Cubic Latin.",
   }),
   vt323: Object.freeze({
     key: "vt323",
@@ -60,7 +52,7 @@ const ENGLISH_PIXEL_FONT_CANDIDATES = Object.freeze({
   }),
 });
 
-const ACTIVE_ENGLISH_PIXEL_FONT_KEY = "cubic11";
+const ACTIVE_ENGLISH_PIXEL_FONT_KEY = "silkscreen";
 const ACTIVE_ENGLISH_PIXEL_FONT =
   ENGLISH_PIXEL_FONT_CANDIDATES[ACTIVE_ENGLISH_PIXEL_FONT_KEY];
 
