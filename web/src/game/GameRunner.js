@@ -29,6 +29,7 @@ const CROWD_EVENT_DELAY_RANGE = Object.freeze([2.8, 5.2]);
 const CROWD_FRONT_HOLD_RANGE = Object.freeze([0.72, 1.28]);
 const CROWD_TURN_DURATION_RANGE = Object.freeze([0.1, 0.16]);
 const GAME_OVER_EFFECT_SOURCE = "/assets/audio/miss.wav";
+const CRITICAL_FONT_LOAD_TIMEOUT_MS = 1200;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -125,6 +126,25 @@ function getCanvasPoint(event, canvas) {
   };
 }
 
+function waitForCriticalPixelFonts() {
+  if (typeof document === "undefined" || !document.fonts) {
+    return Promise.resolve(false);
+  }
+
+  const fontLoads = [
+    document.fonts.load('400 24px "PixelEnPrimary"', "Bunnies PERFECT START"),
+    document.fonts.load('400 24px "PixelZhFusion"', "爆锤方猪开始进入魔法世界"),
+  ];
+  const timeout = new Promise((resolve) => {
+    window.setTimeout(() => resolve(false), CRITICAL_FONT_LOAD_TIMEOUT_MS);
+  });
+
+  return Promise.race([
+    Promise.allSettled(fontLoads).then(() => true),
+    timeout,
+  ]);
+}
+
 export class GameRunner {
   constructor({ canvas, song, startTheme, onFinish, onHome, onLoadingChange }) {
     this.canvas = canvas;
@@ -165,6 +185,7 @@ export class GameRunner {
     this.resizeCanvas();
     this.drawWarmupFrame();
     await Promise.all([
+      waitForCriticalPixelFonts(),
       this.audio.preloadChart(this.song.chart),
       this.audio.preloadEffects(Object.keys(EFFECT_AUDIO_POOL_SIZES)),
       loadCharacterSprites(this.startTheme).then((sprites) => {

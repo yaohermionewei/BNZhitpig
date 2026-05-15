@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RESULT_FIXED_PIXEL_FONT } from "../utils/pixel-font-data.js";
 
 const RABBIT_FRAME_SOURCES = Object.freeze([
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
@@ -186,25 +185,6 @@ const SPARKS = Object.freeze([
   ["right-e", "md", "accent", true],
   ["right-f", "sm", "mid"],
 ]);
-
-function useResultFixedFontFace() {
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const styleId = "bunnies-result-fixed-pixel-font";
-    if (document.getElementById(styleId)) return;
-
-    const style = document.createElement("style");
-    style.id = styleId;
-    style.textContent = `
-      @font-face {
-        font-family: "${RESULT_FIXED_PIXEL_FONT.family}";
-        src: url("${RESULT_FIXED_PIXEL_FONT.dataUrl}") format("${RESULT_FIXED_PIXEL_FONT.format}");
-        font-display: swap;
-      }
-    `;
-    document.head.appendChild(style);
-  }, []);
-}
 
 function getSafeStartTheme(theme) {
   return theme === "light" ? "light" : "dark";
@@ -475,7 +455,6 @@ function LeavingOverlay({ startTheme }) {
 }
 
 export default function ResultScreen({ summary, startTheme, onReplay, onHome }) {
-  useResultFixedFontFace();
   const normalizedStartTheme = getSafeStartTheme(startTheme);
   const decoratedSummary = useMemo(
     () => (summary ? decorateSummary(summary) : null),

@@ -151,7 +151,6 @@ const PORTAL_MAGIC_STAR_ANCHORS = Object.freeze([
 const HUD_PLATE_FILL = "rgba(0, 0, 0, 0.3)";
 const HUD_PLATE_SHADOW = "rgba(4, 8, 16, 0.12)";
 const PIXEL_FONT_EN_FAMILY = ACTIVE_ENGLISH_PIXEL_FONT.stack;
-const PIXEL_FONT_ZH_FAMILY = '"PixelZhFusion", "PixelZhBackup", sans-serif';
 const HUD_CARD_TOP = 46;
 const HUD_LABEL_OFFSET_Y = 5;
 const HUD_VALUE_OFFSET_Y = 28;

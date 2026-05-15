@@ -2,6 +2,14 @@ const GOOGLE_FONTS_COMMIT = "47831f08ec6d6d7ad6b465f23dc9f9a890a2a04b";
 const ENGLISH_PIXEL_FONT_ALIAS = "PixelEnPrimary";
 
 const ENGLISH_PIXEL_FONT_CANDIDATES = Object.freeze({
+  jersey10: Object.freeze({
+    key: "jersey10",
+    label: "Jersey 10",
+    family: ENGLISH_PIXEL_FONT_ALIAS,
+    stack: `"${ENGLISH_PIXEL_FONT_ALIAS}", monospace`,
+    sourceUrl: "/assets/fonts/bunnies-pixel-en.woff2",
+    notes: "Selected for the React web build: arcade-like, narrow, and mobile-friendly as WOFF2.",
+  }),
   tiny5: Object.freeze({
     key: "tiny5",
     label: "Tiny5",
@@ -44,7 +52,7 @@ const ENGLISH_PIXEL_FONT_CANDIDATES = Object.freeze({
   }),
 });
 
-const ACTIVE_ENGLISH_PIXEL_FONT_KEY = "tiny5";
+const ACTIVE_ENGLISH_PIXEL_FONT_KEY = "jersey10";
 const ACTIVE_ENGLISH_PIXEL_FONT =
   ENGLISH_PIXEL_FONT_CANDIDATES[ACTIVE_ENGLISH_PIXEL_FONT_KEY];
 
