@@ -32,12 +32,50 @@ function getChartMaxPerfectScore(notes) {
   );
 }
 
-function getResultRank(rankRate) {
-  if (rankRate >= 90) return "SSS";
-  if (rankRate >= 85) return "SS";
-  if (rankRate >= 80) return "S";
-  if (rankRate >= 60) return "A";
-  return "B";
+const RESULT_RANKS = Object.freeze([
+  Object.freeze({
+    rank: "SSS",
+    minRate: 90,
+    title: "NJZ终极守护神",
+    subtitle: "战斗力天花板 让方猪烟消云散",
+  }),
+  Object.freeze({
+    rank: "SS",
+    minRate: 75,
+    title: "方猪终结者",
+    subtitle: "魔法部特级奥罗 正义必达",
+  }),
+  Object.freeze({
+    rank: "S",
+    minRate: 60,
+    title: "方猪粉碎专家",
+    subtitle: "粉碎咒专家 让方猪四分五裂",
+  }),
+  Object.freeze({
+    rank: "A",
+    minRate: 45,
+    title: "除猪武器大师",
+    subtitle: "精准施法 bnz中的超强战力",
+  }),
+  Object.freeze({
+    rank: "B",
+    minRate: 30,
+    title: "锤猪门面担当",
+    subtitle: "火力全开 方猪昏昏倒地",
+  }),
+  Object.freeze({
+    rank: "C",
+    minRate: Number.NEGATIVE_INFINITY,
+    title: "魔力在觉醒的兔宝",
+    subtitle: "愤怒的眼神足以让方猪破防",
+  }),
+]);
+
+function getResultRankConfig(rankRate) {
+  return (
+    RESULT_RANKS.find((item) => rankRate >= item.minRate) ||
+    RESULT_RANKS[RESULT_RANKS.length - 1]
+  );
 }
 
 function getResultStatus(state) {
@@ -54,6 +92,7 @@ export function buildResultSummary(song, state, startTheme) {
     : 0;
   const maxPerfectScore = getChartMaxPerfectScore(state.notes);
   const rankRate = (Math.max(0, Number(state.score) || 0) / maxPerfectScore) * 100;
+  const rankConfig = getResultRankConfig(rankRate);
 
   return {
     songId: song.id,
@@ -61,7 +100,9 @@ export function buildResultSummary(song, state, startTheme) {
     songSubtitle: song.subtitle || "",
     songCoverImageSrc: song.coverImageSrc || "",
     statusLabel: getResultStatus(state),
-    rank: getResultRank(rankRate),
+    rank: rankConfig.rank,
+    rankTitle: rankConfig.title,
+    rankSubtitle: rankConfig.subtitle,
     failed: !!state.failed,
     scoreDisplay: formatScoreDisplay(state.score),
     accuracyDisplay: `${rankRate.toFixed(1)}%`,
