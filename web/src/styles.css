@@ -1,6 +1,7 @@
 @font-face {
   font-family: "PixelEnPrimary";
   src: url("/assets/fonts/bunnies-pixel-en.woff2") format("woff2");
+  font-weight: 700;
   font-display: swap;
   unicode-range: U+0000-00FF;
 }

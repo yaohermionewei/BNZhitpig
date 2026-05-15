@@ -26,6 +26,14 @@ const ENGLISH_PIXEL_FONT_CANDIDATES = Object.freeze({
     sourceUrl: "/assets/fonts/bunnies-pixel-en.woff2",
     notes: "Trial for pairing with Cubic 11 Chinese: straighter and less round than Jersey 10, but stronger than Cubic Latin.",
   }),
+  pixelOperatorBold: Object.freeze({
+    key: "pixelOperatorBold",
+    label: "Pixel Operator Bold",
+    family: ENGLISH_PIXEL_FONT_ALIAS,
+    stack: `"${ENGLISH_PIXEL_FONT_ALIAS}", monospace`,
+    sourceUrl: "/assets/fonts/bunnies-pixel-en.woff2",
+    notes: "Trial for pairing with Cubic 11 Chinese: square, readable lowercase, and a stronger button weight.",
+  }),
   vt323: Object.freeze({
     key: "vt323",
     label: "VT323",
@@ -52,7 +60,7 @@ const ENGLISH_PIXEL_FONT_CANDIDATES = Object.freeze({
   }),
 });
 
-const ACTIVE_ENGLISH_PIXEL_FONT_KEY = "silkscreen";
+const ACTIVE_ENGLISH_PIXEL_FONT_KEY = "pixelOperatorBold";
 const ACTIVE_ENGLISH_PIXEL_FONT =
   ENGLISH_PIXEL_FONT_CANDIDATES[ACTIVE_ENGLISH_PIXEL_FONT_KEY];
 
