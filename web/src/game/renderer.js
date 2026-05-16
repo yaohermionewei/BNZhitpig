@@ -167,7 +167,9 @@ const HUD_SPRITE_DIGIT_SHADOW_OFFSET_Y = 2;
 const HUD_SCORE_SLOT_TEXT = "0000000";
 const HUD_SCORE_PLACEHOLDER_COLOR = "rgba(247, 244, 232, 0.5)";
 const HUD_SCORE_PLACEHOLDER_SHADOW_COLOR = "rgba(65, 49, 18, 0.36)";
-const FEEDBACK_TEXT_Y_RATIO = 0.54;
+const FEEDBACK_TEXT_MIN_OFFSET = 72;
+const FEEDBACK_TEXT_MAX_OFFSET = 104;
+const FEEDBACK_TEXT_OFFSET_RATIO = 0.095;
 const FEEDBACK_TEXT_TRACKING = 0.4;
 const GAME_OVER_TEXT_TRACKING = 1.6;
 const PERFECT_FEEDBACK_MAIN = "#6EDE7D";
@@ -4362,7 +4364,12 @@ function drawImpactBurst(ctx, centerX, centerY, progress, quality) {
 function drawEffects(ctx, viewport, lane, effects, characterSprites = {}) {
   const centerX = lane.centerX;
   const centerY = lane.targetY;
-  const feedbackY = viewport.height * FEEDBACK_TEXT_Y_RATIO;
+  const feedbackOffset = clamp(
+    viewport.height * FEEDBACK_TEXT_OFFSET_RATIO,
+    FEEDBACK_TEXT_MIN_OFFSET,
+    FEEDBACK_TEXT_MAX_OFFSET
+  );
+  const feedbackY = lane.targetY - feedbackOffset;
 
   effects.forEach((effect) => {
     const progress = effect.age / effect.duration;
