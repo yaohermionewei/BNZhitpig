@@ -26,6 +26,8 @@ const START_BACKDROP_LAYOUTS = Object.freeze({
   }),
 });
 
+const START_CHARACTER_X_ANCHOR_THEME = START_THEMES.dark;
+
 const RABBIT_FRAME_SOURCES = Object.freeze([
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.png",
@@ -465,9 +467,29 @@ export function mapStartBackdropPointToStage(theme, stageSize, sourcePoint) {
 
 export function getStartCharacterStageAnchors(theme, stageSize) {
   const backdrop = getStartBackdropLayout(theme);
+  const xAnchorBackdrop = getStartBackdropLayout(START_CHARACTER_X_ANCHOR_THEME);
+  const rabbitXAnchor = mapStartBackdropPointToStage(
+    START_CHARACTER_X_ANCHOR_THEME,
+    stageSize,
+    xAnchorBackdrop.anchors.rabbit
+  );
+  const pigXAnchor = mapStartBackdropPointToStage(
+    START_CHARACTER_X_ANCHOR_THEME,
+    stageSize,
+    xAnchorBackdrop.anchors.pig
+  );
+  const rabbitYAnchor = mapStartBackdropPointToStage(theme, stageSize, backdrop.anchors.rabbit);
+  const pigYAnchor = mapStartBackdropPointToStage(theme, stageSize, backdrop.anchors.pig);
+
   return Object.freeze({
-    rabbit: mapStartBackdropPointToStage(theme, stageSize, backdrop.anchors.rabbit),
-    pig: mapStartBackdropPointToStage(theme, stageSize, backdrop.anchors.pig),
+    rabbit: Object.freeze({
+      x: rabbitXAnchor.x,
+      y: rabbitYAnchor.y,
+    }),
+    pig: Object.freeze({
+      x: pigXAnchor.x,
+      y: pigYAnchor.y,
+    }),
   });
 }
 
