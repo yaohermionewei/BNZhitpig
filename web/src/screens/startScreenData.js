@@ -96,31 +96,11 @@ function buildSongs(selectedSongId) {
       available: true,
     },
     {
-      id: "coming-soon-1",
-      title: "How Sweet 敬请期待",
+      id: "more-coming-soon",
+      title: "更多歌曲敬请期待",
       titleSegments: [
         {
-          text: "How Sweet",
-          fontType: "en",
-        },
-        {
-          text: "敬请期待",
-          fontType: "zh",
-        },
-      ],
-      selected: false,
-      available: false,
-    },
-    {
-      id: "coming-soon-2",
-      title: "Supernatural 敬请期待",
-      titleSegments: [
-        {
-          text: "Supernatural",
-          fontType: "en",
-        },
-        {
-          text: "敬请期待",
+          text: "更多歌曲敬请期待",
           fontType: "zh",
         },
       ],
