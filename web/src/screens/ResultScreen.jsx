@@ -49,7 +49,7 @@ const RESULT_RANK_COPY_BY_RANK = Object.freeze({
     subtitle: "火力全开 方猪昏昏倒地",
   }),
   C: Object.freeze({
-    title: "魔力在觉醒的兔宝",
+    title: "魔力觉醒的兔宝",
     subtitle: "愤怒的眼神足以让方猪破防",
   }),
 });
@@ -513,27 +513,29 @@ function ResultCertificateScreen({ summary, onReplay, onHome }) {
             <span className="result-certificate-divider-line" />
           </div>
 
-          <div className="result-certificate-song">
+          <div className="result-certificate-song-rank-row">
+            <div className="result-certificate-song">
+              <img
+                className="result-certificate-song-cover"
+                src={summary.songCoverImageSrc}
+                alt=""
+                draggable="false"
+              />
+              <div className="result-certificate-song-title result-text-segments">
+                <FontSegments
+                  segments={summary.songTitleSegments}
+                  className="result-certificate-song-title-segment"
+                />
+              </div>
+            </div>
+
             <img
-              className="result-certificate-song-cover"
-              src={summary.songCoverImageSrc}
-              alt=""
+              className={`result-certificate-rank-image result-certificate-rank-image-${summary.rank.toLowerCase()}`}
+              src={summary.rankImageSrc}
+              alt={summary.rank}
               draggable="false"
             />
-            <div className="result-certificate-song-title result-text-segments">
-              <FontSegments
-                segments={summary.songTitleSegments}
-                className="result-certificate-song-title-segment"
-              />
-            </div>
           </div>
-
-          <img
-            className={`result-certificate-rank-image result-certificate-rank-image-${summary.rank.toLowerCase()}`}
-            src={summary.rankImageSrc}
-            alt={summary.rank}
-            draggable="false"
-          />
 
           <div className="result-certificate-hit-count">
             <div className="result-text-block result-certificate-metric-label result-fixed-text-zh pixel-font-zh">

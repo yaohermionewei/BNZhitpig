@@ -66,7 +66,7 @@ const RESULT_RANKS = Object.freeze([
   Object.freeze({
     rank: "C",
     minRate: Number.NEGATIVE_INFINITY,
-    title: "魔力在觉醒的兔宝",
+    title: "魔力觉醒的兔宝",
     subtitle: "愤怒的眼神足以让方猪破防",
   }),
 ]);

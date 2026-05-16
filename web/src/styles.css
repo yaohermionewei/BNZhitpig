@@ -484,27 +484,65 @@ button {
 }
 
 .start-song-panel-outer {
+  --start-panel-corner-step: 0.8cqw;
+  --start-panel-corner-step-2: 1.6cqw;
   position: relative;
   width: 100%;
-  padding: 0.8cqw;
-  background:
-    linear-gradient(#582f28, #582f28) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#582f28, #582f28) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#582f28, #582f28) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#582f28, #582f28) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#582f28, #582f28) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  padding: 1.2cqw;
+  background: #6b3418;
+  clip-path: polygon(
+    var(--start-panel-corner-step-2) 0,
+    calc(100% - var(--start-panel-corner-step-2)) 0,
+    calc(100% - var(--start-panel-corner-step-2)) var(--start-panel-corner-step),
+    calc(100% - var(--start-panel-corner-step)) var(--start-panel-corner-step),
+    calc(100% - var(--start-panel-corner-step)) var(--start-panel-corner-step-2),
+    100% var(--start-panel-corner-step-2),
+    100% calc(100% - var(--start-panel-corner-step-2)),
+    calc(100% - var(--start-panel-corner-step)) calc(100% - var(--start-panel-corner-step-2)),
+    calc(100% - var(--start-panel-corner-step)) calc(100% - var(--start-panel-corner-step)),
+    calc(100% - var(--start-panel-corner-step-2)) calc(100% - var(--start-panel-corner-step)),
+    calc(100% - var(--start-panel-corner-step-2)) 100%,
+    var(--start-panel-corner-step-2) 100%,
+    var(--start-panel-corner-step-2) calc(100% - var(--start-panel-corner-step)),
+    var(--start-panel-corner-step) calc(100% - var(--start-panel-corner-step)),
+    var(--start-panel-corner-step) calc(100% - var(--start-panel-corner-step-2)),
+    0 calc(100% - var(--start-panel-corner-step-2)),
+    0 var(--start-panel-corner-step-2),
+    var(--start-panel-corner-step) var(--start-panel-corner-step-2),
+    var(--start-panel-corner-step) var(--start-panel-corner-step),
+    var(--start-panel-corner-step-2) var(--start-panel-corner-step)
+  );
 }
 
 .start-song-panel-face {
+  --start-panel-face-corner-step: 0.65cqw;
+  --start-panel-face-corner-step-2: 1.3cqw;
   position: relative;
   width: 100%;
   padding: 0.8cqw;
-  background:
-    linear-gradient(#e8c08c, #e8c08c) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#e8c08c, #e8c08c) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#e8c08c, #e8c08c) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#e8c08c, #e8c08c) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#e8c08c, #e8c08c) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  background: #e8c08c;
+  clip-path: polygon(
+    var(--start-panel-face-corner-step-2) 0,
+    calc(100% - var(--start-panel-face-corner-step-2)) 0,
+    calc(100% - var(--start-panel-face-corner-step-2)) var(--start-panel-face-corner-step),
+    calc(100% - var(--start-panel-face-corner-step)) var(--start-panel-face-corner-step),
+    calc(100% - var(--start-panel-face-corner-step)) var(--start-panel-face-corner-step-2),
+    100% var(--start-panel-face-corner-step-2),
+    100% calc(100% - var(--start-panel-face-corner-step-2)),
+    calc(100% - var(--start-panel-face-corner-step)) calc(100% - var(--start-panel-face-corner-step-2)),
+    calc(100% - var(--start-panel-face-corner-step)) calc(100% - var(--start-panel-face-corner-step)),
+    calc(100% - var(--start-panel-face-corner-step-2)) calc(100% - var(--start-panel-face-corner-step)),
+    calc(100% - var(--start-panel-face-corner-step-2)) 100%,
+    var(--start-panel-face-corner-step-2) 100%,
+    var(--start-panel-face-corner-step-2) calc(100% - var(--start-panel-face-corner-step)),
+    var(--start-panel-face-corner-step) calc(100% - var(--start-panel-face-corner-step)),
+    var(--start-panel-face-corner-step) calc(100% - var(--start-panel-face-corner-step-2)),
+    0 calc(100% - var(--start-panel-face-corner-step-2)),
+    0 var(--start-panel-face-corner-step-2),
+    var(--start-panel-face-corner-step) var(--start-panel-face-corner-step-2),
+    var(--start-panel-face-corner-step) var(--start-panel-face-corner-step),
+    var(--start-panel-face-corner-step-2) var(--start-panel-face-corner-step)
+  );
 }
 
 .start-song-panel-core {
@@ -639,28 +677,66 @@ button {
 }
 
 .start-action-frame {
+  --start-action-corner-step: 0.8cqw;
+  --start-action-corner-step-2: 1.6cqw;
   position: relative;
   display: block;
   width: 100%;
-  padding: 0.8cqw;
-  background:
-    linear-gradient(#6b3418, #6b3418) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#6b3418, #6b3418) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#6b3418, #6b3418) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#6b3418, #6b3418) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#6b3418, #6b3418) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  padding: 1.2cqw;
+  background: #6b3418;
+  clip-path: polygon(
+    var(--start-action-corner-step-2) 0,
+    calc(100% - var(--start-action-corner-step-2)) 0,
+    calc(100% - var(--start-action-corner-step-2)) var(--start-action-corner-step),
+    calc(100% - var(--start-action-corner-step)) var(--start-action-corner-step),
+    calc(100% - var(--start-action-corner-step)) var(--start-action-corner-step-2),
+    100% var(--start-action-corner-step-2),
+    100% calc(100% - var(--start-action-corner-step-2)),
+    calc(100% - var(--start-action-corner-step)) calc(100% - var(--start-action-corner-step-2)),
+    calc(100% - var(--start-action-corner-step)) calc(100% - var(--start-action-corner-step)),
+    calc(100% - var(--start-action-corner-step-2)) calc(100% - var(--start-action-corner-step)),
+    calc(100% - var(--start-action-corner-step-2)) 100%,
+    var(--start-action-corner-step-2) 100%,
+    var(--start-action-corner-step-2) calc(100% - var(--start-action-corner-step)),
+    var(--start-action-corner-step) calc(100% - var(--start-action-corner-step)),
+    var(--start-action-corner-step) calc(100% - var(--start-action-corner-step-2)),
+    0 calc(100% - var(--start-action-corner-step-2)),
+    0 var(--start-action-corner-step-2),
+    var(--start-action-corner-step) var(--start-action-corner-step-2),
+    var(--start-action-corner-step) var(--start-action-corner-step),
+    var(--start-action-corner-step-2) var(--start-action-corner-step)
+  );
 }
 
 .start-action-inner {
+  --start-action-inner-corner-step: 0.65cqw;
+  --start-action-inner-corner-step-2: 1.3cqw;
   width: 100%;
-  min-height: 13.067cqw;
+  min-height: 12.267cqw;
   padding: 0 3.2cqw;
-  background:
-    linear-gradient(#ee8d4a, #ee8d4a) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  background: #ee8d4a;
+  clip-path: polygon(
+    var(--start-action-inner-corner-step-2) 0,
+    calc(100% - var(--start-action-inner-corner-step-2)) 0,
+    calc(100% - var(--start-action-inner-corner-step-2)) var(--start-action-inner-corner-step),
+    calc(100% - var(--start-action-inner-corner-step)) var(--start-action-inner-corner-step),
+    calc(100% - var(--start-action-inner-corner-step)) var(--start-action-inner-corner-step-2),
+    100% var(--start-action-inner-corner-step-2),
+    100% calc(100% - var(--start-action-inner-corner-step-2)),
+    calc(100% - var(--start-action-inner-corner-step)) calc(100% - var(--start-action-inner-corner-step-2)),
+    calc(100% - var(--start-action-inner-corner-step)) calc(100% - var(--start-action-inner-corner-step)),
+    calc(100% - var(--start-action-inner-corner-step-2)) calc(100% - var(--start-action-inner-corner-step)),
+    calc(100% - var(--start-action-inner-corner-step-2)) 100%,
+    var(--start-action-inner-corner-step-2) 100%,
+    var(--start-action-inner-corner-step-2) calc(100% - var(--start-action-inner-corner-step)),
+    var(--start-action-inner-corner-step) calc(100% - var(--start-action-inner-corner-step)),
+    var(--start-action-inner-corner-step) calc(100% - var(--start-action-inner-corner-step-2)),
+    0 calc(100% - var(--start-action-inner-corner-step-2)),
+    0 var(--start-action-inner-corner-step-2),
+    var(--start-action-inner-corner-step) var(--start-action-inner-corner-step-2),
+    var(--start-action-inner-corner-step) var(--start-action-inner-corner-step),
+    var(--start-action-inner-corner-step-2) var(--start-action-inner-corner-step)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -687,21 +763,11 @@ button {
 }
 
 .page-dark .start-song-panel-outer {
-  background:
-    linear-gradient(#4f668a, #4f668a) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#4f668a, #4f668a) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#4f668a, #4f668a) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#4f668a, #4f668a) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#4f668a, #4f668a) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  background: #4f668a;
 }
 
 .page-dark .start-song-panel-face {
-  background:
-    linear-gradient(#17233d, #17233d) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#17233d, #17233d) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#17233d, #17233d) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#17233d, #17233d) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#17233d, #17233d) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  background: #17233d;
 }
 
 .page-dark .start-song-title-segment {
@@ -713,21 +779,11 @@ button {
 }
 
 .page-dark .start-action-frame {
-  background:
-    linear-gradient(#4f668a, #4f668a) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#4f668a, #4f668a) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#4f668a, #4f668a) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#4f668a, #4f668a) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#4f668a, #4f668a) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  background: #4f668a;
 }
 
 .page-dark .start-action-inner {
-  background:
-    linear-gradient(#325389, #325389) center / calc(100% - 1.6cqw) calc(100% - 1.6cqw) no-repeat,
-    linear-gradient(#325389, #325389) top center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#325389, #325389) bottom center / calc(100% - 3.2cqw) 0.8cqw no-repeat,
-    linear-gradient(#325389, #325389) left center / 0.8cqw calc(100% - 3.2cqw) no-repeat,
-    linear-gradient(#325389, #325389) right center / 0.8cqw calc(100% - 3.2cqw) no-repeat;
+  background: #325389;
 }
 
 .page-dark .start-action-text-face {
@@ -1833,6 +1889,14 @@ button {
 
 .result-secondary-wrap,
 .result-primary-wrap {
+  --result-button-frame: calc(var(--rpx) * 9);
+  --result-button-corner-step: calc(var(--rpx) * 6);
+  --result-button-corner-step-2: calc(var(--rpx) * 12);
+  --result-button-face-corner-step: calc(var(--rpx) * 5);
+  --result-button-face-corner-step-2: calc(var(--rpx) * 10);
+  --result-button-border-color: #6b3418;
+  --result-button-primary-fill: #ee8d4a;
+  --result-button-secondary-fill: #e8c08c;
   position: relative;
   flex: 1;
   min-width: 0;
@@ -1859,19 +1923,31 @@ button {
   position: relative;
   display: block;
   width: 100%;
-  padding: calc(var(--rpx) * 6);
+  padding: var(--result-button-frame);
   overflow: hidden;
-  background:
-    linear-gradient(#654915, #654915) center / calc(100% - calc(var(--rpx) * 12))
-      calc(100% - calc(var(--rpx) * 12)) no-repeat,
-    linear-gradient(#654915, #654915) top center / calc(100% - calc(var(--rpx) * 24))
-      calc(var(--rpx) * 6) no-repeat,
-    linear-gradient(#654915, #654915) bottom center / calc(100% - calc(var(--rpx) * 24))
-      calc(var(--rpx) * 6) no-repeat,
-    linear-gradient(#654915, #654915) left center / calc(var(--rpx) * 6)
-      calc(100% - calc(var(--rpx) * 24)) no-repeat,
-    linear-gradient(#654915, #654915) right center / calc(var(--rpx) * 6)
-      calc(100% - calc(var(--rpx) * 24)) no-repeat;
+  background: var(--result-button-border-color);
+  clip-path: polygon(
+    var(--result-button-corner-step-2) 0,
+    calc(100% - var(--result-button-corner-step-2)) 0,
+    calc(100% - var(--result-button-corner-step-2)) var(--result-button-corner-step),
+    calc(100% - var(--result-button-corner-step)) var(--result-button-corner-step),
+    calc(100% - var(--result-button-corner-step)) var(--result-button-corner-step-2),
+    100% var(--result-button-corner-step-2),
+    100% calc(100% - var(--result-button-corner-step-2)),
+    calc(100% - var(--result-button-corner-step)) calc(100% - var(--result-button-corner-step-2)),
+    calc(100% - var(--result-button-corner-step)) calc(100% - var(--result-button-corner-step)),
+    calc(100% - var(--result-button-corner-step-2)) calc(100% - var(--result-button-corner-step)),
+    calc(100% - var(--result-button-corner-step-2)) 100%,
+    var(--result-button-corner-step-2) 100%,
+    var(--result-button-corner-step-2) calc(100% - var(--result-button-corner-step)),
+    var(--result-button-corner-step) calc(100% - var(--result-button-corner-step)),
+    var(--result-button-corner-step) calc(100% - var(--result-button-corner-step-2)),
+    0 calc(100% - var(--result-button-corner-step-2)),
+    0 var(--result-button-corner-step-2),
+    var(--result-button-corner-step) var(--result-button-corner-step-2),
+    var(--result-button-corner-step) var(--result-button-corner-step),
+    var(--result-button-corner-step-2) var(--result-button-corner-step)
+  );
 }
 
 .result-secondary-face,
@@ -1884,18 +1960,31 @@ button {
 }
 
 .result-secondary-face {
-  padding: calc(var(--rpx) * 6);
-  background:
-    linear-gradient(#fff0d7, #fff0d7) center / calc(100% - calc(var(--rpx) * 12))
-      calc(100% - calc(var(--rpx) * 12)) no-repeat,
-    linear-gradient(#fff0d7, #fff0d7) top center / calc(100% - calc(var(--rpx) * 24))
-      calc(var(--rpx) * 6) no-repeat,
-    linear-gradient(#fff0d7, #fff0d7) bottom center / calc(100% - calc(var(--rpx) * 24))
-      calc(var(--rpx) * 6) no-repeat,
-    linear-gradient(#fff0d7, #fff0d7) left center / calc(var(--rpx) * 6)
-      calc(100% - calc(var(--rpx) * 24)) no-repeat,
-    linear-gradient(#fff0d7, #fff0d7) right center / calc(var(--rpx) * 6)
-      calc(100% - calc(var(--rpx) * 24)) no-repeat;
+  padding: 0;
+  overflow: hidden;
+  background: var(--result-button-secondary-fill);
+  clip-path: polygon(
+    var(--result-button-face-corner-step-2) 0,
+    calc(100% - var(--result-button-face-corner-step-2)) 0,
+    calc(100% - var(--result-button-face-corner-step-2)) var(--result-button-face-corner-step),
+    calc(100% - var(--result-button-face-corner-step)) var(--result-button-face-corner-step),
+    calc(100% - var(--result-button-face-corner-step)) var(--result-button-face-corner-step-2),
+    100% var(--result-button-face-corner-step-2),
+    100% calc(100% - var(--result-button-face-corner-step-2)),
+    calc(100% - var(--result-button-face-corner-step)) calc(100% - var(--result-button-face-corner-step-2)),
+    calc(100% - var(--result-button-face-corner-step)) calc(100% - var(--result-button-face-corner-step)),
+    calc(100% - var(--result-button-face-corner-step-2)) calc(100% - var(--result-button-face-corner-step)),
+    calc(100% - var(--result-button-face-corner-step-2)) 100%,
+    var(--result-button-face-corner-step-2) 100%,
+    var(--result-button-face-corner-step-2) calc(100% - var(--result-button-face-corner-step)),
+    var(--result-button-face-corner-step) calc(100% - var(--result-button-face-corner-step)),
+    var(--result-button-face-corner-step) calc(100% - var(--result-button-face-corner-step-2)),
+    0 calc(100% - var(--result-button-face-corner-step-2)),
+    0 var(--result-button-face-corner-step-2),
+    var(--result-button-face-corner-step) var(--result-button-face-corner-step-2),
+    var(--result-button-face-corner-step) var(--result-button-face-corner-step),
+    var(--result-button-face-corner-step-2) var(--result-button-face-corner-step)
+  );
 }
 
 .result-secondary-core,
@@ -1908,31 +1997,42 @@ button {
 }
 
 .result-secondary-core {
-  min-height: calc(var(--rpx) * 78);
-  background:
-    linear-gradient(180deg, rgba(255, 248, 226, 0.24) 0%, rgba(255, 248, 226, 0) 42%),
-    #fff0d7;
+  min-height: calc(var(--rpx) * 94);
+  background: transparent;
 }
 
 .result-primary-face {
   padding: 0;
+  overflow: visible;
   background: transparent;
 }
 
 .result-primary-inner {
   min-height: calc(var(--rpx) * 94);
-  background:
-    linear-gradient(180deg, rgba(255, 240, 215, 0.32) 0%, rgba(255, 240, 215, 0) 38%),
-    linear-gradient(#ee8d4a, #ee8d4a) center / calc(100% - calc(var(--rpx) * 12))
-      calc(100% - calc(var(--rpx) * 12)) no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) top center / calc(100% - calc(var(--rpx) * 24))
-      calc(var(--rpx) * 6) no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) bottom center / calc(100% - calc(var(--rpx) * 24))
-      calc(var(--rpx) * 6) no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) left center / calc(var(--rpx) * 6)
-      calc(100% - calc(var(--rpx) * 24)) no-repeat,
-    linear-gradient(#ee8d4a, #ee8d4a) right center / calc(var(--rpx) * 6)
-      calc(100% - calc(var(--rpx) * 24)) no-repeat;
+  overflow: hidden;
+  background: var(--result-button-primary-fill);
+  clip-path: polygon(
+    var(--result-button-face-corner-step-2) 0,
+    calc(100% - var(--result-button-face-corner-step-2)) 0,
+    calc(100% - var(--result-button-face-corner-step-2)) var(--result-button-face-corner-step),
+    calc(100% - var(--result-button-face-corner-step)) var(--result-button-face-corner-step),
+    calc(100% - var(--result-button-face-corner-step)) var(--result-button-face-corner-step-2),
+    100% var(--result-button-face-corner-step-2),
+    100% calc(100% - var(--result-button-face-corner-step-2)),
+    calc(100% - var(--result-button-face-corner-step)) calc(100% - var(--result-button-face-corner-step-2)),
+    calc(100% - var(--result-button-face-corner-step)) calc(100% - var(--result-button-face-corner-step)),
+    calc(100% - var(--result-button-face-corner-step-2)) calc(100% - var(--result-button-face-corner-step)),
+    calc(100% - var(--result-button-face-corner-step-2)) 100%,
+    var(--result-button-face-corner-step-2) 100%,
+    var(--result-button-face-corner-step-2) calc(100% - var(--result-button-face-corner-step)),
+    var(--result-button-face-corner-step) calc(100% - var(--result-button-face-corner-step)),
+    var(--result-button-face-corner-step) calc(100% - var(--result-button-face-corner-step-2)),
+    0 calc(100% - var(--result-button-face-corner-step-2)),
+    0 var(--result-button-face-corner-step-2),
+    var(--result-button-face-corner-step) var(--result-button-face-corner-step-2),
+    var(--result-button-face-corner-step) var(--result-button-face-corner-step),
+    var(--result-button-face-corner-step-2) var(--result-button-face-corner-step)
+  );
 }
 
 .result-button-text {
@@ -1945,6 +2045,22 @@ button {
 }
 
 .result-replay-button-text {
+  color: #fff0d7;
+}
+
+.page-dark .result-secondary-wrap,
+.page-dark .result-primary-wrap {
+  --result-button-border-color: #4f668a;
+  --result-button-primary-fill: #325389;
+  --result-button-secondary-fill: #17233d;
+}
+
+.page-dark .result-secondary-shadow,
+.page-dark .result-primary-shadow {
+  background: rgba(8, 16, 31, 0.38);
+}
+
+.page-dark .result-home-button-text {
   color: #fff0d7;
 }
 
@@ -2011,7 +2127,7 @@ button {
   margin: 0;
   transform: translateX(-50%);
   color: var(--result-certificate-title);
-  font-size: clamp(27px, 7.45cqw, 61px);
+  font-size: clamp(31px, 8.35cqw, 68px);
   line-height: 1;
   text-align: center;
   text-shadow: max(1px, 0.12cqw) max(1px, 0.12cqw) 0 rgba(0, 0, 0, 0.42);
@@ -2019,7 +2135,7 @@ button {
 
 .result-certificate-rank-subtitle {
   position: absolute;
-  top: calc(30.57% + 20px);
+  top: calc(29.1% + 20px);
   left: 50%;
   width: 80%;
   margin: 0;
@@ -2065,17 +2181,26 @@ button {
   box-shadow: 0 0 0.9cqw rgba(215, 161, 63, 0.32);
 }
 
-.result-certificate-song {
+.result-certificate-song-rank-row {
   position: absolute;
-  top: 38.8%;
-  left: 30.3%;
+  top: 37.55%;
+  left: 20.4%;
   display: flex;
   align-items: center;
-  gap: 2.44cqw;
-  justify-content: flex-start;
-  width: 28%;
+  justify-content: space-between;
+  width: 58.75%;
   min-width: 0;
-  height: 4.87%;
+  height: 9.04cqw;
+}
+
+.result-certificate-song {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2.44cqw;
+  min-width: 0;
+  width: 45%;
+  height: 100%;
 }
 
 .result-certificate-song-cover {
@@ -2092,7 +2217,7 @@ button {
 .result-certificate-song-title {
   min-width: 0;
   color: var(--result-certificate-brown);
-  font-size: clamp(15px, 4.15cqw, 34px);
+  font-size: clamp(17px, 4.65cqw, 38px);
   line-height: 1;
 }
 
@@ -2104,12 +2229,15 @@ button {
 }
 
 .result-certificate-rank-image {
-  position: absolute;
-  top: 38.75%;
-  right: 20.5%;
+  position: relative;
+  top: auto;
+  right: auto;
   display: block;
-  width: 21.61%;
+  flex: 0 0 auto;
+  width: 40.48%;
   height: auto;
+  object-fit: contain;
+  object-position: right center;
   image-rendering: pixelated;
   pointer-events: none;
   user-select: none;
@@ -2117,46 +2245,38 @@ button {
 }
 
 .result-certificate-rank-image-ss {
-  top: 39.0%;
-  right: 20.5%;
-  width: 17.7%;
+  width: 33.11%;
 }
 
 .result-certificate-rank-image-s {
-  top: 39.3%;
-  right: 20.5%;
-  width: 14.8%;
+  width: 27.72%;
 }
 
 .result-certificate-rank-image-a,
 .result-certificate-rank-image-b {
-  top: 39.1%;
-  right: 20.5%;
-  width: 16.1%;
+  width: 30.14%;
 }
 
 .result-certificate-rank-image-c {
-  top: 39.3%;
-  right: 20.5%;
-  width: 13.9%;
+  width: 26.07%;
 }
 
 .result-certificate-hit-count,
 .result-certificate-score {
   position: absolute;
-  top: 46.38%;
+  top: 44.9%;
   display: flex;
   flex-direction: column;
 }
 
 .result-certificate-hit-count {
   left: 20.76%;
-  width: 19.54%;
+  width: 24.8%;
   align-items: flex-start;
 }
 
 .result-certificate-score {
-  right: 18%;
+  right: 20.85%;
   width: 40%;
   align-items: flex-end;
 }
@@ -2169,7 +2289,7 @@ button {
 }
 
 .result-certificate-hit-count .result-certificate-metric-label {
-  text-align: right;
+  text-align: left;
 }
 
 .result-certificate-score .result-certificate-metric-label {
@@ -2178,7 +2298,7 @@ button {
 
 .result-certificate-metric-value-line {
   display: flex;
-  align-items: flex-end;
+  align-items: baseline;
   gap: 0.72cqw;
   width: 100%;
   min-width: 0;
@@ -2186,13 +2306,13 @@ button {
 
 .result-certificate-large-value {
   color: var(--result-certificate-gold);
-  font-size: clamp(28px, 7.3cqw, 60px);
+  font-size: clamp(42px, 10.9cqw, 88px);
   line-height: 1.18;
   text-shadow: max(1px, 0.24cqw) max(1px, 0.24cqw) 0 var(--result-certificate-gold-shadow);
 }
 
 .result-certificate-score .result-certificate-large-value {
-  font-size: clamp(24px, 5.85cqw, 48px);
+  font-size: clamp(40px, 9.7cqw, 80px);
   max-width: 100%;
   overflow: hidden;
   text-align: right;
@@ -2200,8 +2320,9 @@ button {
 }
 
 .result-certificate-unit {
+  align-self: baseline;
   flex: 0 0 auto;
-  padding-bottom: 1.28cqw;
+  padding-bottom: 0;
   color: var(--result-certificate-brown);
   font-size: clamp(13px, 3.66cqw, 30px);
   line-height: 1;
@@ -2209,11 +2330,11 @@ button {
 
 .result-certificate-stats {
   position: absolute;
-  top: 56.19%;
+  top: 58.2%;
   left: 20.4%;
   display: flex;
   flex-direction: column;
-  gap: min(3.95cqh, 3.66cqw);
+  gap: max(0px, calc(min(3.95cqh, 3.66cqw) - 7px));
   width: 58.75%;
 }
 
@@ -2221,7 +2342,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 3.05cqw;
+  min-height: 2.65cqw;
   padding: 0 0 0.18cqw;
   border-bottom: max(1px, 0.12cqw) dashed rgba(88, 47, 40, 0.23);
 }
@@ -2233,7 +2354,7 @@ button {
 .result-certificate-stat-label {
   flex: 0 0 auto;
   color: var(--result-certificate-brown);
-  font-size: clamp(16px, 4.4cqw, 36px);
+  font-size: clamp(14px, 3.75cqw, 31px);
   line-height: 1.22;
 }
 
@@ -2241,7 +2362,7 @@ button {
   flex: 0 0 auto;
   min-width: 13%;
   color: var(--result-certificate-ink);
-  font-size: clamp(20px, 5.86cqw, 48px);
+  font-size: clamp(18px, 5cqw, 40px);
   line-height: 1;
   text-align: right;
 }
@@ -2318,10 +2439,13 @@ button {
 }
 
 .result-certificate-button {
-  --result-certificate-button-border-size: max(4px, 1.16cqw);
-  --result-certificate-button-step: max(4px, 1.16cqw);
-  --result-certificate-button-fill: #0f1728;
-  --result-certificate-button-border-color: #e9b556;
+  --result-certificate-button-border-size: max(4px, 1.2cqw);
+  --result-certificate-button-corner-step: max(3px, 0.8cqw);
+  --result-certificate-button-corner-step-2: max(6px, 1.6cqw);
+  --result-certificate-button-face-corner-step: max(3px, 0.65cqw);
+  --result-certificate-button-face-corner-step-2: max(5px, 1.3cqw);
+  --result-certificate-button-fill: #325389;
+  --result-certificate-button-border-color: #4f668a;
   position: relative;
   flex: 1 1 0;
   min-width: 0;
@@ -2349,23 +2473,46 @@ button {
 }
 
 .result-certificate-button-frame {
-  padding: var(--result-certificate-button-step);
-  background: transparent;
+  padding: var(--result-certificate-button-border-size);
+  overflow: hidden;
+  background: var(--result-certificate-button-border-color);
+  clip-path: polygon(
+    var(--result-certificate-button-corner-step-2) 0,
+    calc(100% - var(--result-certificate-button-corner-step-2)) 0,
+    calc(100% - var(--result-certificate-button-corner-step-2)) var(--result-certificate-button-corner-step),
+    calc(100% - var(--result-certificate-button-corner-step)) var(--result-certificate-button-corner-step),
+    calc(100% - var(--result-certificate-button-corner-step)) var(--result-certificate-button-corner-step-2),
+    100% var(--result-certificate-button-corner-step-2),
+    100% calc(100% - var(--result-certificate-button-corner-step-2)),
+    calc(100% - var(--result-certificate-button-corner-step)) calc(100% - var(--result-certificate-button-corner-step-2)),
+    calc(100% - var(--result-certificate-button-corner-step)) calc(100% - var(--result-certificate-button-corner-step)),
+    calc(100% - var(--result-certificate-button-corner-step-2)) calc(100% - var(--result-certificate-button-corner-step)),
+    calc(100% - var(--result-certificate-button-corner-step-2)) 100%,
+    var(--result-certificate-button-corner-step-2) 100%,
+    var(--result-certificate-button-corner-step-2) calc(100% - var(--result-certificate-button-corner-step)),
+    var(--result-certificate-button-corner-step) calc(100% - var(--result-certificate-button-corner-step)),
+    var(--result-certificate-button-corner-step) calc(100% - var(--result-certificate-button-corner-step-2)),
+    0 calc(100% - var(--result-certificate-button-corner-step-2)),
+    0 var(--result-certificate-button-corner-step-2),
+    var(--result-certificate-button-corner-step) var(--result-certificate-button-corner-step-2),
+    var(--result-certificate-button-corner-step) var(--result-certificate-button-corner-step),
+    var(--result-certificate-button-corner-step-2) var(--result-certificate-button-corner-step)
+  );
 }
 
 .result-certificate-button-border,
 .result-certificate-button-corner {
   position: absolute;
   z-index: 1;
-  display: block;
+  display: none;
   background: var(--result-certificate-button-border-color);
   pointer-events: none;
 }
 
 .result-certificate-button-border-top,
 .result-certificate-button-border-bottom {
-  left: calc(var(--result-certificate-button-step) * 2);
-  right: calc(var(--result-certificate-button-step) * 2);
+  left: calc(var(--result-certificate-button-border-size) * 2);
+  right: calc(var(--result-certificate-button-border-size) * 2);
   height: var(--result-certificate-button-border-size);
 }
 
@@ -2379,8 +2526,8 @@ button {
 
 .result-certificate-button-border-left,
 .result-certificate-button-border-right {
-  top: calc(var(--result-certificate-button-step) * 2);
-  bottom: calc(var(--result-certificate-button-step) * 2);
+  top: calc(var(--result-certificate-button-border-size) * 2);
+  bottom: calc(var(--result-certificate-button-border-size) * 2);
   width: var(--result-certificate-button-border-size);
 }
 
@@ -2393,28 +2540,28 @@ button {
 }
 
 .result-certificate-button-corner {
-  width: var(--result-certificate-button-step);
-  height: var(--result-certificate-button-step);
+  width: var(--result-certificate-button-border-size);
+  height: var(--result-certificate-button-border-size);
 }
 
 .result-certificate-button-corner-top-left {
-  top: var(--result-certificate-button-step);
-  left: var(--result-certificate-button-step);
+  top: var(--result-certificate-button-border-size);
+  left: var(--result-certificate-button-border-size);
 }
 
 .result-certificate-button-corner-top-right {
-  top: var(--result-certificate-button-step);
-  right: var(--result-certificate-button-step);
+  top: var(--result-certificate-button-border-size);
+  right: var(--result-certificate-button-border-size);
 }
 
 .result-certificate-button-corner-bottom-left {
-  bottom: var(--result-certificate-button-step);
-  left: var(--result-certificate-button-step);
+  bottom: var(--result-certificate-button-border-size);
+  left: var(--result-certificate-button-border-size);
 }
 
 .result-certificate-button-corner-bottom-right {
-  right: var(--result-certificate-button-step);
-  bottom: var(--result-certificate-button-step);
+  right: var(--result-certificate-button-border-size);
+  bottom: var(--result-certificate-button-border-size);
 }
 
 .result-certificate-button-face {
@@ -2423,19 +2570,37 @@ button {
   align-items: center;
   justify-content: center;
   padding: 0 2cqw;
-  background:
-    linear-gradient(180deg, rgba(49, 112, 180, 0.42) 0%, rgba(49, 112, 180, 0) 46%),
-    var(--result-certificate-button-fill);
-  box-shadow:
-    inset 0 0 0 max(1px, 0.16cqw) #16365f,
-    inset 0 max(1px, 0.18cqw) 0 rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+  background: var(--result-certificate-button-fill);
+  clip-path: polygon(
+    var(--result-certificate-button-face-corner-step-2) 0,
+    calc(100% - var(--result-certificate-button-face-corner-step-2)) 0,
+    calc(100% - var(--result-certificate-button-face-corner-step-2)) var(--result-certificate-button-face-corner-step),
+    calc(100% - var(--result-certificate-button-face-corner-step)) var(--result-certificate-button-face-corner-step),
+    calc(100% - var(--result-certificate-button-face-corner-step)) var(--result-certificate-button-face-corner-step-2),
+    100% var(--result-certificate-button-face-corner-step-2),
+    100% calc(100% - var(--result-certificate-button-face-corner-step-2)),
+    calc(100% - var(--result-certificate-button-face-corner-step)) calc(100% - var(--result-certificate-button-face-corner-step-2)),
+    calc(100% - var(--result-certificate-button-face-corner-step)) calc(100% - var(--result-certificate-button-face-corner-step)),
+    calc(100% - var(--result-certificate-button-face-corner-step-2)) calc(100% - var(--result-certificate-button-face-corner-step)),
+    calc(100% - var(--result-certificate-button-face-corner-step-2)) 100%,
+    var(--result-certificate-button-face-corner-step-2) 100%,
+    var(--result-certificate-button-face-corner-step-2) calc(100% - var(--result-certificate-button-face-corner-step)),
+    var(--result-certificate-button-face-corner-step) calc(100% - var(--result-certificate-button-face-corner-step)),
+    var(--result-certificate-button-face-corner-step) calc(100% - var(--result-certificate-button-face-corner-step-2)),
+    0 calc(100% - var(--result-certificate-button-face-corner-step-2)),
+    0 var(--result-certificate-button-face-corner-step-2),
+    var(--result-certificate-button-face-corner-step) var(--result-certificate-button-face-corner-step-2),
+    var(--result-certificate-button-face-corner-step) var(--result-certificate-button-face-corner-step),
+    var(--result-certificate-button-face-corner-step-2) var(--result-certificate-button-face-corner-step)
+  );
 }
 
 .result-certificate-button-text {
-  color: #f3e7d5;
+  color: #fff0d7;
   font-size: clamp(18px, 4.28cqw, 35px);
   line-height: 1;
-  text-shadow: max(1px, 0.12cqw) max(1px, 0.12cqw) 0 rgba(0, 0, 0, 0.72);
+  text-shadow: none;
 }
 
 .result-certificate-button:active {
