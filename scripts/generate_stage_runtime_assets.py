@@ -13,8 +13,10 @@ DEFAULT_FILES = [
 ]
 
 DEFAULT_JPEG_QUALITY = 72
+DEFAULT_WEBP_QUALITY = 78
 DEFAULT_PNG_COLORS = 48
 DEFAULT_OUTPUT_DIR = "miniprogram/assets/images"
+OPAQUE_FORMATS = ("auto", "jpg", "webp")
 
 
 def image_has_transparency(image: Image.Image) -> bool:
@@ -62,11 +64,13 @@ def resize_image_to_fit(
 def convert_image(
     src: Path,
     jpeg_quality: int,
+    webp_quality: int,
     png_colors: int,
     output_dir: Path,
     suffix: str,
     max_width: int | None,
     max_height: int | None,
+    output_format: str,
 ) -> Path:
     if not src.exists():
         raise FileNotFoundError(f"Missing source image: {src}")
@@ -84,6 +88,17 @@ def convert_image(
             )
             cleanup_stale_outputs(dst)
             paletted.save(dst, "PNG", optimize=True)
+            return dst
+
+        if output_format == "webp":
+            dst = output_dir / f"{src.stem}{suffix}.webp"
+            cleanup_stale_outputs(dst)
+            resized.convert("RGB").save(
+                dst,
+                "WEBP",
+                quality=webp_quality,
+                method=6,
+            )
             return dst
 
         dst = output_dir / f"{src.stem}{suffix}.jpg"
@@ -108,6 +123,12 @@ def main() -> int:
         type=int,
         default=DEFAULT_JPEG_QUALITY,
         help=f"JPEG quality for opaque runtime assets. Default: {DEFAULT_JPEG_QUALITY}",
+    )
+    parser.add_argument(
+        "--webp-quality",
+        type=int,
+        default=DEFAULT_WEBP_QUALITY,
+        help=f"WebP quality for opaque runtime assets. Default: {DEFAULT_WEBP_QUALITY}",
     )
     parser.add_argument(
         "--png-colors",
@@ -137,6 +158,12 @@ def main() -> int:
         default=None,
         help="Optional max height for resized runtime assets.",
     )
+    parser.add_argument(
+        "--format",
+        choices=OPAQUE_FORMATS,
+        default="auto",
+        help="Runtime format for opaque images. Transparent images always output PNG. Default: auto.",
+    )
     args = parser.parse_args()
     output_dir = Path(args.output_dir)
 
@@ -145,11 +172,13 @@ def main() -> int:
         dst = convert_image(
             src,
             args.jpeg_quality,
+            args.webp_quality,
             args.png_colors,
             output_dir,
             args.suffix,
             args.max_width,
             args.max_height,
+            args.format,
         )
         print(f"{src} -> {dst} ({dst.stat().st_size} bytes)")
 

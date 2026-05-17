@@ -29,6 +29,30 @@ const GAME_SCENE_BACKGROUND_SOURCES = {
   light: "/assets/images/战斗场景light.runtime.jpg",
 };
 
+export const RESULT_CERTIFICATE_BACKGROUND_SOURCES = Object.freeze({
+  dark: "/assets/images/结算页新dark.runtime.webp",
+  light: "",
+});
+
+export const RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES = Object.freeze({
+  dark: "/assets/images/回到魔法世界.dark.png",
+  light: "/assets/images/回到魔法世界....png",
+});
+
+export const DEFAULT_RESULT_SONG_COVER_SOURCE =
+  "/assets/images/song-covers/ditto.cover.pixel.png";
+
+export const RESULT_SHARE_ICON_SOURCE = "/assets/images/share.png";
+
+export const RESULT_RANK_IMAGE_SOURCES = Object.freeze({
+  SSS: "/assets/images/rank/sss.png",
+  SS: "/assets/images/rank/s's.png",
+  S: "/assets/images/rank/s.png",
+  A: "/assets/images/rank/a.png",
+  B: "/assets/images/rank/b.png",
+  C: "/assets/images/rank/c.png",
+});
+
 const imageCache = new Map();
 const spriteSetCache = new Map();
 
@@ -42,11 +66,37 @@ export function getGameSceneBackgroundSource(theme) {
   return GAME_SCENE_BACKGROUND_SOURCES[normalizedTheme] || GAME_SCENE_BACKGROUND_SOURCES.dark;
 }
 
+export function getResultCertificateBackgroundSource(theme) {
+  const normalizedTheme = normalizeStartTheme(theme);
+  return RESULT_CERTIFICATE_BACKGROUND_SOURCES[normalizedTheme] || "";
+}
+
 export function getCharacterAssetSources(theme) {
   return {
     ...BASE_CHARACTER_ASSET_SOURCES,
     sceneBackground: getGameSceneBackgroundSource(theme),
   };
+}
+
+export function getResultPreloadSources(theme, extraSources = []) {
+  const normalizedTheme = normalizeStartTheme(theme);
+  const backgroundSource = getResultCertificateBackgroundSource(normalizedTheme);
+  const subtitleSource =
+    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES[normalizedTheme] ||
+    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES.dark;
+
+  return Array.from(
+    new Set(
+      [
+        backgroundSource,
+        subtitleSource,
+        DEFAULT_RESULT_SONG_COVER_SOURCE,
+        RESULT_SHARE_ICON_SOURCE,
+        ...Object.values(RESULT_RANK_IMAGE_SOURCES),
+        ...extraSources,
+      ].filter(Boolean)
+    )
+  );
 }
 
 export function loadImage(src) {
@@ -57,7 +107,16 @@ export function loadImage(src) {
   const loadPromise = new Promise((resolve) => {
     const image = new Image();
     image.decoding = "async";
-    image.onload = () => resolve(image);
+    image.onload = () => {
+      if (typeof image.decode !== "function") {
+        resolve(image);
+        return;
+      }
+      image.decode().then(
+        () => resolve(image),
+        () => resolve(image)
+      );
+    };
     image.onerror = () => {
       imageCache.delete(src);
       resolve(null);
@@ -67,6 +126,16 @@ export function loadImage(src) {
 
   imageCache.set(src, loadPromise);
   return loadPromise;
+}
+
+export async function preloadResultAssets(theme, extraSources = []) {
+  const sources = getResultPreloadSources(theme, extraSources);
+  const images = await Promise.all(sources.map((src) => loadImage(src)));
+  return images.map((image, index) => ({
+    src: sources[index],
+    image,
+    ok: !!image,
+  }));
 }
 
 export async function loadCharacterSprites(theme) {

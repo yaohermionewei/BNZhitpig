@@ -1,4 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  DEFAULT_RESULT_SONG_COVER_SOURCE,
+  RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES,
+  RESULT_RANK_IMAGE_SOURCES,
+  getResultCertificateBackgroundSource,
+  preloadResultAssets,
+} from "../game/assets.js";
 
 const RABBIT_FRAME_SOURCES = Object.freeze([
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
@@ -7,15 +14,10 @@ const RABBIT_FRAME_SOURCES = Object.freeze([
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-4.png",
 ]);
 
-const RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES = Object.freeze({
-  dark: "/assets/images/回到魔法世界.dark.png",
-  light: "/assets/images/回到魔法世界....png",
-});
-
 const PARCHMENT_BACKGROUND_SRC = "/assets/images/透明羊皮纸完整版.runtime.png";
-const RESULT_CERTIFICATE_BACKGROUND_SRC = "/assets/images/结算页新dark.png";
-const DEFAULT_SONG_COVER_SRC = "/assets/images/song-covers/ditto.cover.pixel.png";
 const HOME_TRANSITION_ROUTE_DELAY_MS = 120;
+const RESULT_ENTRY_READY_TIMEOUT_MS = 2500;
+const RESULT_ENTRY_MIN_LOADING_MS = 280;
 const DEFAULT_RESULT_TONE = "sky";
 
 const RANK_TONE_BY_RANK = Object.freeze({
@@ -52,15 +54,6 @@ const RESULT_RANK_COPY_BY_RANK = Object.freeze({
     title: "魔力觉醒的兔宝",
     subtitle: "愤怒的眼神足以让方猪破防",
   }),
-});
-
-const RESULT_RANK_IMAGE_SOURCES = Object.freeze({
-  SSS: "/assets/images/rank/sss.png",
-  SS: "/assets/images/rank/s's.png",
-  S: "/assets/images/rank/s.png",
-  A: "/assets/images/rank/a.png",
-  B: "/assets/images/rank/b.png",
-  C: "/assets/images/rank/c.png",
 });
 
 const RESULT_DIGIT_SPRITES = Object.freeze({
@@ -346,6 +339,65 @@ function buildStatItem(key, label, value) {
   };
 }
 
+function waitForResultFonts(summary) {
+  if (typeof document === "undefined" || !document.fonts) {
+    return Promise.resolve(false);
+  }
+
+  const fontLoads = [
+    document.fonts.load('400 24px "PixelZhFusion"', summary?.rankTitle || "魔力觉醒的兔宝"),
+    document.fonts.load('400 24px "PixelZhFusion"', summary?.rankSubtitle || "回到魔法世界"),
+    document.fonts.load('400 24px "PixelEnPrimary"', summary?.displayScore || "00000"),
+    document.fonts.ready,
+  ];
+
+  return Promise.allSettled(fontLoads).then(() => true);
+}
+
+async function waitForResultEntryReadiness(theme, summary) {
+  const imageResults = await preloadResultAssets(theme, [
+    summary?.songCoverImageSrc,
+    summary?.rankImageSrc,
+  ]);
+  const failedImages = imageResults.filter((result) => !result.ok);
+  if (failedImages.length > 0) {
+    console.warn(
+      "result entry image preload failed",
+      failedImages.map((result) => result.src)
+    );
+  }
+  await waitForResultFonts(summary);
+}
+
+function waitForMinimumDuration(durationMs) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, durationMs);
+  });
+}
+
+function waitWithTimeout(promise, timeoutMs, warningMessage) {
+  let timeoutId = 0;
+  const timeout = new Promise((resolve) => {
+    timeoutId = window.setTimeout(() => {
+      console.warn(warningMessage);
+      resolve(false);
+    }, timeoutMs);
+  });
+
+  return Promise.race([
+    promise.then(
+      () => true,
+      (error) => {
+        console.warn(warningMessage, error);
+        return false;
+      }
+    ),
+    timeout,
+  ]).finally(() => {
+    window.clearTimeout(timeoutId);
+  });
+}
+
 function decorateSummary(summary) {
   const hitCount = Number(summary?.perfect || 0) + Number(summary?.good || 0);
   const displayStatusLabel = `爆锤方猪${Math.max(0, hitCount)}次`;
@@ -372,7 +424,7 @@ function decorateSummary(summary) {
     displayScore,
     scoreDigitGlyphs: buildDigitGlyphs(displayScore),
     songTitleSegments: buildFontSegments(summary?.songTitle || "Ditto"),
-    songCoverImageSrc: summary?.songCoverImageSrc || DEFAULT_SONG_COVER_SRC,
+    songCoverImageSrc: summary?.songCoverImageSrc || DEFAULT_RESULT_SONG_COVER_SOURCE,
     stats: [
       buildStatItem("perfect", "完美爆锤", summary?.perfect),
       buildStatItem("good", "优秀爆锤", summary?.good),
@@ -488,12 +540,14 @@ function ResultCertificateButton({ children, onClick }) {
   );
 }
 
-function ResultCertificateScreen({ summary, onReplay, onHome }) {
+function ResultCertificateScreen({ summary, startTheme, onReplay, onHome }) {
+  const backgroundSrc = getResultCertificateBackgroundSource(startTheme);
+
   return (
     <>
       <img
         className="result-certificate-background"
-        src={RESULT_CERTIFICATE_BACKGROUND_SRC}
+        src={backgroundSrc}
         alt=""
         draggable="false"
       />
@@ -583,7 +637,13 @@ function ResultCertificateScreen({ summary, onReplay, onHome }) {
           <span className="result-text-block result-certificate-share-text result-fixed-text-zh pixel-font-zh">
             分享战报
           </span>
-          <span className="result-certificate-share-plane" aria-hidden="true" />
+          <img
+            className="result-certificate-share-plane"
+            src="/assets/images/share.png"
+            alt=""
+            aria-hidden="true"
+            draggable="false"
+          />
         </button>
 
         <div className="result-certificate-actions">
@@ -642,6 +702,9 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   );
   const [currentRabbitFrame, setCurrentRabbitFrame] = useState(0);
   const [isLeavingHome, setIsLeavingHome] = useState(false);
+  const [isPreparingResult, setIsPreparingResult] = useState(
+    Boolean(decoratedSummary && normalizedStartTheme === "dark")
+  );
   const homeTimerRef = useRef(0);
 
   useEffect(() => {
@@ -658,6 +721,38 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     },
     []
   );
+
+  useEffect(() => {
+    if (!decoratedSummary || normalizedStartTheme !== "dark") {
+      setIsPreparingResult(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setIsPreparingResult(true);
+
+    const readiness = waitForResultEntryReadiness(normalizedStartTheme, decoratedSummary);
+
+    Promise.all([
+      waitWithTimeout(
+        readiness,
+        RESULT_ENTRY_READY_TIMEOUT_MS,
+        "result entry assets were not ready before timeout"
+      ),
+      waitForMinimumDuration(RESULT_ENTRY_MIN_LOADING_MS),
+    ]).then(() => {
+      if (!cancelled) setIsPreparingResult(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    decoratedSummary?.completedAt,
+    decoratedSummary?.rankImageSrc,
+    decoratedSummary?.songCoverImageSrc,
+    normalizedStartTheme,
+  ]);
 
   function handleHomeTap() {
     if (isLeavingHome) return;
@@ -706,12 +801,17 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   if (normalizedStartTheme === "dark") {
     return (
       <div className={`${pageClasses} result-certificate-page`}>
-        <ResultCertificateScreen
-          summary={decoratedSummary}
-          onReplay={onReplay}
-          onHome={handleHomeTap}
-        />
-        {isLeavingHome && <LeavingOverlay startTheme={normalizedStartTheme} />}
+        {!isPreparingResult && (
+          <ResultCertificateScreen
+            summary={decoratedSummary}
+            startTheme={normalizedStartTheme}
+            onReplay={onReplay}
+            onHome={handleHomeTap}
+          />
+        )}
+        {(isPreparingResult || isLeavingHome) && (
+          <LeavingOverlay startTheme={normalizedStartTheme} />
+        )}
       </div>
     );
   }

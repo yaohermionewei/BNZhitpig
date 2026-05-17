@@ -8,7 +8,12 @@ import {
 } from "./engine.js";
 import { renderFrame, getControlRects } from "./renderer.js";
 import { AudioControllerWeb } from "./AudioControllerWeb.js";
-import { EFFECT_AUDIO_POOL_SIZES, loadCharacterSprites } from "./assets.js";
+import {
+  EFFECT_AUDIO_POOL_SIZES,
+  loadImage,
+  loadCharacterSprites,
+  preloadResultAssets,
+} from "./assets.js";
 import { buildResultSummary } from "./result.js";
 import { normalizeStartTheme, getStartThemeLoadingColors } from "../utils/start-theme.js";
 
@@ -157,6 +162,7 @@ export class GameRunner {
     this.audio = new AudioControllerWeb();
     this.state = createGameState(song.chart);
     this.characterSprites = {};
+    this.songCoverImage = null;
     this.viewport = { width: 1, height: 1, dpr: 1 };
     this.frameHandle = 0;
     this.lastTimestamp = 0;
@@ -169,6 +175,7 @@ export class GameRunner {
     this.rabbitWandAnimation = createRabbitWandAnimationState();
     this.inputGesture = null;
     this.resultPending = false;
+    this.resultAssetsPromise = null;
     this.disposed = false;
     this.resizeObserver = null;
     this.resizeFallbackInstalled = false;
@@ -188,15 +195,20 @@ export class GameRunner {
       waitForCriticalPixelFonts(),
       this.audio.preloadChart(this.song.chart),
       this.audio.preloadEffects(Object.keys(EFFECT_AUDIO_POOL_SIZES)),
+      loadImage(this.song.coverImageSrc).then((image) => {
+        this.songCoverImage = image;
+      }),
       loadCharacterSprites(this.startTheme).then((sprites) => {
         this.characterSprites = sprites;
       }),
     ]);
     this.onLoadingChange?.(false);
+    this.preloadResultAssets();
     this.renderCurrentFrame();
   }
 
   start() {
+    this.preloadResultAssets();
     this.state = createGameState(this.song.chart);
     this.failureSequence = createFailureSequenceState();
     this.crowdMotion = createCrowdMotionState();
@@ -282,6 +294,16 @@ export class GameRunner {
     this.frameHandle = 0;
   }
 
+  preloadResultAssets() {
+    if (!this.resultAssetsPromise) {
+      this.resultAssetsPromise = preloadResultAssets(this.startTheme).catch((error) => {
+        console.warn("result assets preload failed", error);
+        return [];
+      });
+    }
+    return this.resultAssetsPromise;
+  }
+
   async update(dt) {
     if (!this.started || this.isPaused) return;
 
@@ -333,6 +355,7 @@ export class GameRunner {
           ? this.failureSequence.elapsed / Math.max(0.001, this.failureSequence.duration)
           : 0,
         selectedSongId: this.song.id,
+        songCoverImage: this.songCoverImage,
         characterSprites: this.characterSprites,
         crowdMotion: this.crowdMotion,
         audioDebugText: "",
@@ -676,6 +699,7 @@ export class GameRunner {
     this.isPaused = true;
     this.stopLoop();
     this.audio.destroy();
+    this.preloadResultAssets();
     const summary = buildResultSummary(this.song, this.state, this.startTheme);
     this.onFinish?.(summary);
   }
