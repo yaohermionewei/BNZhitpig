@@ -4,6 +4,10 @@ const AudioContextCtor =
 let sharedAudioContext = null;
 const audioBufferCache = new Map();
 
+function isRecoverableAudioState(state) {
+  return state === "suspended" || state === "interrupted";
+}
+
 export async function getAudioContext() {
   if (!AudioContextCtor) {
     throw new Error("Web Audio is not supported in this browser.");
@@ -13,7 +17,7 @@ export async function getAudioContext() {
     sharedAudioContext = new AudioContextCtor();
   }
 
-  if (sharedAudioContext.state === "suspended") {
+  if (isRecoverableAudioState(sharedAudioContext.state)) {
     await sharedAudioContext.resume();
   }
 
@@ -27,7 +31,7 @@ export function unlockAudioForUserGesture() {
     sharedAudioContext = new AudioContextCtor();
   }
 
-  if (sharedAudioContext.state === "suspended") {
+  if (isRecoverableAudioState(sharedAudioContext.state)) {
     sharedAudioContext.resume().catch(() => {
       // The game screen will surface the real preload/playback error if audio
       // cannot be started in this browser.
@@ -76,7 +80,7 @@ export class AudioControllerWeb {
   }
 
   async preloadChart(chart) {
-    this.audioContext = await getAudioContext();
+    this.audioContext = await this.ensureReady();
     this.buffer = await loadAudioBuffer(chart.audioSrc);
   }
 
@@ -93,7 +97,7 @@ export class AudioControllerWeb {
   async start(chart) {
     this.destroySource();
     this.chart = chart;
-    this.audioContext = await getAudioContext();
+    this.audioContext = await this.ensureReady();
     if (!this.buffer) {
       this.buffer = await loadAudioBuffer(chart.audioSrc);
     }
@@ -101,11 +105,29 @@ export class AudioControllerWeb {
       Number.isFinite(chart.playbackStartTime) && chart.playbackStartTime >= 0
         ? chart.playbackStartTime
         : chart.audioStartTime || 0;
-    this.playFromOffset(offset);
+    return this.playFromOffset(offset);
   }
 
-  playFromOffset(offset) {
-    if (!this.audioContext || !this.buffer) return;
+  async ensureReady() {
+    this.audioContext = await getAudioContext();
+    if (isRecoverableAudioState(this.audioContext.state)) {
+      await this.audioContext.resume();
+    }
+    return this.audioContext;
+  }
+
+  getContextState() {
+    return this.audioContext?.state || sharedAudioContext?.state || "unavailable";
+  }
+
+  async playFromOffset(offset) {
+    if (!this.buffer) {
+      throw new Error("Cannot start playback before audio buffer is loaded.");
+    }
+    this.audioContext = await this.ensureReady();
+    if (!this.audioContext || this.audioContext.state !== "running") {
+      throw new Error(`Audio context is not running: ${this.getContextState()}`);
+    }
     this.destroySource();
     const source = this.audioContext.createBufferSource();
     source.buffer = this.buffer;
@@ -124,11 +146,14 @@ export class AudioControllerWeb {
     this.source = source;
     try {
       source.start(0, this.offset);
+      return true;
     } catch (error) {
       this.playing = false;
+      this.source = null;
       if (typeof this.errorHandler === "function") {
         this.errorHandler(error);
       }
+      throw error;
     }
   }
 
@@ -140,20 +165,27 @@ export class AudioControllerWeb {
     return Math.max(0, audioTime - (this.chart.audioStartTime || 0));
   }
 
-  playEffect(src, options = {}) {
+  async playEffect(src, options = {}) {
     const buffer = this.effectBuffers.get(src);
     if (!this.audioContext || !buffer) return;
-    const source = this.audioContext.createBufferSource();
-    const gain = this.audioContext.createGain();
-    source.buffer = buffer;
-    source.playbackRate.value =
-      typeof options.playbackRate === "number" && options.playbackRate > 0
-        ? options.playbackRate
-        : 1;
-    gain.gain.value = typeof options.volume === "number" ? options.volume : 1;
-    source.connect(gain);
-    gain.connect(this.audioContext.destination);
-    source.start(0);
+    try {
+      this.audioContext = await this.ensureReady();
+      if (this.audioContext.state !== "running") return;
+      const source = this.audioContext.createBufferSource();
+      const gain = this.audioContext.createGain();
+      source.buffer = buffer;
+      source.playbackRate.value =
+        typeof options.playbackRate === "number" && options.playbackRate > 0
+          ? options.playbackRate
+          : 1;
+      gain.gain.value = typeof options.volume === "number" ? options.volume : 1;
+      source.connect(gain);
+      gain.connect(this.audioContext.destination);
+      source.start(0);
+    } catch (error) {
+      // Effects are disposable; the main music resume path handles recoverable
+      // audio failures with a paused game state.
+    }
   }
 
   onEnded(handler) {
@@ -172,9 +204,9 @@ export class AudioControllerWeb {
     this.destroySource();
   }
 
-  resume() {
+  async resume() {
     if (this.playing || !this.buffer) return;
-    this.playFromOffset(this.offset || this.pausedAt || 0);
+    return this.playFromOffset(this.offset || this.pausedAt || 0);
   }
 
   stop() {

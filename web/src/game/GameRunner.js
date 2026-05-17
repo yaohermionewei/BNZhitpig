@@ -168,8 +168,12 @@ export class GameRunner {
     this.lastTimestamp = 0;
     this.started = false;
     this.isPaused = false;
+    this.pauseReason = null;
     this.introActive = false;
     this.introElapsed = 0;
+    this.startingAudio = false;
+    this.pendingAudioStart = false;
+    this.audioStartToken = 0;
     this.failureSequence = createFailureSequenceState();
     this.crowdMotion = createCrowdMotionState();
     this.rabbitWandAnimation = createRabbitWandAnimationState();
@@ -183,11 +187,19 @@ export class GameRunner {
     this.handlePointerDown = this.handlePointerDown.bind(this);
     this.handlePointerMove = this.handlePointerMove.bind(this);
     this.handlePointerUp = this.handlePointerUp.bind(this);
+    this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
+    this.handlePageHide = this.handlePageHide.bind(this);
+    this.handlePageShow = this.handlePageShow.bind(this);
+    this.handleFreeze = this.handleFreeze.bind(this);
+    this.handleResumeEvent = this.handleResumeEvent.bind(this);
+    this.handleWindowBlur = this.handleWindowBlur.bind(this);
+    this.handleWindowFocus = this.handleWindowFocus.bind(this);
   }
 
   async prepare() {
     this.onLoadingChange?.(true);
     this.installEvents();
+    this.installLifecycleEvents();
     this.installResizeObserver();
     this.resizeCanvas();
     this.drawWarmupFrame();
@@ -216,8 +228,12 @@ export class GameRunner {
     this.resetInputGesture();
     this.started = true;
     this.isPaused = false;
+    this.pauseReason = null;
     this.introActive = true;
     this.introElapsed = 0;
+    this.startingAudio = false;
+    this.pendingAudioStart = false;
+    this.audioStartToken += 1;
     this.resultPending = false;
     this.lastTimestamp = 0;
     this.stopLoop();
@@ -229,6 +245,80 @@ export class GameRunner {
     this.canvas.addEventListener("pointermove", this.handlePointerMove, { passive: false });
     this.canvas.addEventListener("pointerup", this.handlePointerUp, { passive: false });
     this.canvas.addEventListener("pointercancel", this.handlePointerUp, { passive: false });
+  }
+
+  installLifecycleEvents() {
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", this.handleVisibilityChange);
+      document.addEventListener("freeze", this.handleFreeze);
+      document.addEventListener("resume", this.handleResumeEvent);
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("pagehide", this.handlePageHide);
+      window.addEventListener("pageshow", this.handlePageShow);
+      window.addEventListener("blur", this.handleWindowBlur);
+      window.addEventListener("focus", this.handleWindowFocus);
+    }
+  }
+
+  removeLifecycleEvents() {
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+      document.removeEventListener("freeze", this.handleFreeze);
+      document.removeEventListener("resume", this.handleResumeEvent);
+    }
+    if (typeof window !== "undefined") {
+      window.removeEventListener("pagehide", this.handlePageHide);
+      window.removeEventListener("pageshow", this.handlePageShow);
+      window.removeEventListener("blur", this.handleWindowBlur);
+      window.removeEventListener("focus", this.handleWindowFocus);
+    }
+  }
+
+  handleVisibilityChange() {
+    if (document.hidden) {
+      this.handleLifecyclePause("visibility");
+    } else {
+      this.handleLifecycleReturn();
+    }
+  }
+
+  handlePageHide() {
+    this.handleLifecyclePause("pagehide");
+  }
+
+  handlePageShow() {
+    this.handleLifecycleReturn();
+  }
+
+  handleFreeze() {
+    this.handleLifecyclePause("freeze");
+  }
+
+  handleResumeEvent() {
+    this.handleLifecycleReturn();
+  }
+
+  handleWindowBlur() {
+    this.handleLifecyclePause("blur");
+  }
+
+  handleWindowFocus() {
+    this.handleLifecycleReturn();
+  }
+
+  handleLifecyclePause() {
+    if (!this.started || this.resultPending || this.failureSequence.active) return;
+    this.pause({ reason: "system" });
+  }
+
+  handleLifecycleReturn() {
+    if (!this.started || this.resultPending || this.disposed) return;
+    this.lastTimestamp = 0;
+    this.resizeCanvas();
+    if (this.pauseReason === "system") {
+      this.renderCurrentFrame();
+    }
   }
 
   installResizeObserver() {
@@ -279,7 +369,10 @@ export class GameRunner {
       const now = timestamp || performance.now();
       const dt = Math.min(0.05, (now - this.lastTimestamp) / 1000);
       this.lastTimestamp = now;
-      this.update(dt);
+      const updateResult = this.update(dt);
+      if (updateResult && typeof updateResult.catch === "function") {
+        updateResult.catch((error) => this.handleUpdateError(error));
+      }
       this.renderCurrentFrame();
       if (!this.isPaused && !this.disposed && !this.resultPending) {
         this.frameHandle = requestAnimationFrame(tick);
@@ -308,10 +401,27 @@ export class GameRunner {
     if (!this.started || this.isPaused) return;
 
     if (this.introActive) {
+      if (this.startingAudio) return;
       this.introElapsed = Math.min(INTRO_DURATION, this.introElapsed + dt);
       if (this.introElapsed >= INTRO_DURATION) {
-        this.introActive = false;
+        this.startingAudio = true;
+        this.pendingAudioStart = true;
+        const audioStartToken = ++this.audioStartToken;
         await this.audio.start(this.song.chart);
+        if (
+          audioStartToken !== this.audioStartToken ||
+          this.disposed ||
+          this.resultPending ||
+          this.isPaused ||
+          !this.started
+        ) {
+          this.audio.pause();
+          this.startingAudio = false;
+          return;
+        }
+        this.startingAudio = false;
+        this.pendingAudioStart = false;
+        this.introActive = false;
       }
     } else if (!this.failureSequence.active) {
       const currentTime = this.audio.getCurrentChartTime();
@@ -336,6 +446,14 @@ export class GameRunner {
         this.finishRun();
       }
     }
+  }
+
+  handleUpdateError(error) {
+    if (this.disposed || this.resultPending) return;
+    console.error("game update failed", error);
+    this.startingAudio = false;
+    this.pendingAudioStart = this.introActive && this.introElapsed >= INTRO_DURATION;
+    this.pause({ reason: "system", pauseAudio: false });
   }
 
   renderCurrentFrame() {
@@ -502,6 +620,7 @@ export class GameRunner {
 
   startFailureSequence() {
     if (this.failureSequence.active) return;
+    this.audioStartToken += 1;
     this.failureSequence.active = true;
     this.failureSequence.elapsed = 0;
     this.failureSequence.duration = FAILURE_SEQUENCE_DURATION;
@@ -649,30 +768,74 @@ export class GameRunner {
     );
   }
 
-  pause() {
+  pause(options = {}) {
     if (!this.started || this.isPaused) return;
+    const reason = options.reason === "system" ? "system" : "user";
     this.isPaused = true;
+    this.pauseReason = reason;
+    this.audioStartToken += 1;
+    this.startingAudio = false;
+    this.pendingAudioStart = this.pendingAudioStart || (
+      this.introActive && this.introElapsed >= INTRO_DURATION
+    );
     this.lastTimestamp = 0;
     this.resetInputGesture();
-    this.audio.pause();
+    if (options.pauseAudio !== false) {
+      this.audio.pause();
+    }
     this.stopLoop();
     this.renderCurrentFrame();
   }
 
-  resume() {
-    if (!this.isPaused) return;
-    this.isPaused = false;
-    this.lastTimestamp = 0;
+  async resume() {
+    if (!this.isPaused || this.startingAudio) return;
+    const audioStartToken = ++this.audioStartToken;
+    this.startingAudio = true;
     this.resetInputGesture();
-    this.audio.resume();
-    this.startLoop();
+    this.lastTimestamp = 0;
+    try {
+      if (this.pendingAudioStart) {
+        await this.audio.start(this.song.chart);
+      } else if (!this.introActive) {
+        await this.audio.resume();
+      }
+      if (
+        audioStartToken !== this.audioStartToken ||
+        this.disposed ||
+        this.resultPending ||
+        !this.started
+      ) {
+        this.audio.pause();
+        return;
+      }
+      this.isPaused = false;
+      this.pauseReason = null;
+      if (this.pendingAudioStart) {
+        this.pendingAudioStart = false;
+        this.introActive = false;
+      }
+      this.startLoop();
+    } catch (error) {
+      console.error("game audio resume failed", error);
+      this.isPaused = true;
+      this.pauseReason = "system";
+      this.renderCurrentFrame();
+    } finally {
+      if (audioStartToken === this.audioStartToken) {
+        this.startingAudio = false;
+      }
+    }
   }
 
   goHome() {
     if (this.resultPending) return;
+    this.audioStartToken += 1;
+    this.startingAudio = false;
+    this.pendingAudioStart = false;
     this.resultPending = true;
     this.started = false;
-    this.isPaused = true;
+    this.isPaused = false;
+    this.pauseReason = null;
     this.lastTimestamp = 0;
     this.resetInputGesture();
     this.stopLoop();
@@ -694,9 +857,13 @@ export class GameRunner {
 
   finishRun() {
     if (this.resultPending) return;
+    this.audioStartToken += 1;
+    this.startingAudio = false;
+    this.pendingAudioStart = false;
     this.resultPending = true;
     this.started = false;
     this.isPaused = true;
+    this.pauseReason = null;
     this.stopLoop();
     this.audio.destroy();
     this.preloadResultAssets();
@@ -708,6 +875,7 @@ export class GameRunner {
     this.disposed = true;
     this.stopLoop();
     this.audio.destroy();
+    this.removeLifecycleEvents();
     this.canvas.removeEventListener("pointerdown", this.handlePointerDown);
     this.canvas.removeEventListener("pointermove", this.handlePointerMove);
     this.canvas.removeEventListener("pointerup", this.handlePointerUp);
