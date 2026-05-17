@@ -3116,15 +3116,29 @@ function drawSpriteFrame(ctx, sprite, x, y, width, height, options = {}) {
   ctx.restore();
 }
 
+function getStageCompanionBobOffset(options = {}) {
+  const pixelBobPattern = Array.isArray(options.pixelBobPattern)
+    ? options.pixelBobPattern
+    : null;
+  if (pixelBobPattern && pixelBobPattern.length > 0) {
+    const speed = Math.max(0.001, options.pixelBobSpeed || 1);
+    const phase = options.phase || 0;
+    const frameIndex = Math.floor((options.currentTime * speed + phase) % pixelBobPattern.length);
+    return Math.round(pixelBobPattern[frameIndex] || 0);
+  }
+
+  return options.bobAmount
+    ? Math.sin(options.phase + options.currentTime * options.bobSpeed) * options.bobAmount
+    : 0;
+}
+
 function getStageCompanionLayout(sprite, centerX, feetY, targetHeight, options = {}) {
   if (!sprite) {
     return null;
   }
 
   const aspect = getSpriteAspect(sprite, options.fallbackAspect || 0.75);
-  const bobOffset = options.bobAmount
-    ? Math.sin(options.phase + options.currentTime * options.bobSpeed) * options.bobAmount
-    : 0;
+  const bobOffset = getStageCompanionBobOffset(options);
   const height = targetHeight;
   const widthScale = options.widthScale === undefined ? 1 : Math.max(0.12, options.widthScale);
   const width = height * aspect * widthScale;
@@ -3564,6 +3578,8 @@ const CROWD_TARGET_HEIGHT_BY_ID = Object.freeze({
   4: 58,
   5: 62,
 });
+const CROWD_IDLE_PIXEL_BOB_PATTERN = Object.freeze([0, -1, -2, -1, 0, 1, 0, 0]);
+const CROWD_IDLE_PIXEL_BOB_SPEED = 5.4;
 const CROWD_TURN_MIN_WIDTH_SCALE = 0.94;
 const RABBIT_TURN_MIN_WIDTH_SCALE = 0.94;
 
@@ -3734,11 +3750,11 @@ function drawCharacterScene(
       {
         currentTime,
         phase: placement.phase || 0,
-        bobAmount: animatedHeight * 0.01,
-        bobSpeed: 1.24,
+        pixelBobPattern: CROWD_IDLE_PIXEL_BOB_PATTERN,
+        pixelBobSpeed: CROWD_IDLE_PIXEL_BOB_SPEED,
         widthScale: facing.widthScale,
         shadowOffsetY: -animatedHeight * 0.028,
-        shadowFollowBob: 0.9,
+        shadowFollowBob: 0.45,
         shadowScaleX: 0.28,
         shadowScaleY: 0.062,
         glowFill: "rgba(90, 214, 255, 0.04)",
