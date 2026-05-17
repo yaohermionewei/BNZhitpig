@@ -682,7 +682,7 @@ button {
   position: relative;
   display: block;
   width: 100%;
-  padding: 1.2cqw;
+  padding: 0.9cqw;
   background: #6b3418;
   clip-path: polygon(
     var(--start-action-corner-step-2) 0,
@@ -712,7 +712,7 @@ button {
   --start-action-inner-corner-step: 0.65cqw;
   --start-action-inner-corner-step-2: 1.3cqw;
   width: 100%;
-  min-height: 12.267cqw;
+  min-height: 12.867cqw;
   padding: 0 3.2cqw;
   background: #ee8d4a;
   clip-path: polygon(
@@ -1889,7 +1889,7 @@ button {
 
 .result-secondary-wrap,
 .result-primary-wrap {
-  --result-button-frame: calc(var(--rpx) * 9);
+  --result-button-frame: calc(var(--rpx) * 6.75);
   --result-button-corner-step: calc(var(--rpx) * 6);
   --result-button-corner-step-2: calc(var(--rpx) * 12);
   --result-button-face-corner-step: calc(var(--rpx) * 5);
@@ -2439,7 +2439,7 @@ button {
 }
 
 .result-certificate-button {
-  --result-certificate-button-border-size: max(4px, 1.2cqw);
+  --result-certificate-button-border-size: max(3px, 0.9cqw);
   --result-certificate-button-corner-step: max(3px, 0.8cqw);
   --result-certificate-button-corner-step-2: max(6px, 1.6cqw);
   --result-certificate-button-face-corner-step: max(3px, 0.65cqw);
