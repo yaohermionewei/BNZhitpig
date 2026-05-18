@@ -191,6 +191,7 @@ function applySuccess(state, note, kind, diff, options = {}) {
     kind: "comboPulse",
     age: 0,
     duration: COMBO_PULSE_DURATION,
+    milestone: state.combo > 0 && state.combo % 10 === 0,
   });
 
   pushBurst(state, kind, note.id, {

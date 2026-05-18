@@ -175,6 +175,7 @@ const HUD_SPRITE_DIGIT_SHADOW_OFFSET_Y = 2;
 const HUD_SCORE_SLOT_TEXT = "0000000";
 const HUD_SCORE_PLACEHOLDER_COLOR = "rgba(247, 244, 232, 0.5)";
 const HUD_SCORE_PLACEHOLDER_SHADOW_COLOR = "rgba(65, 49, 18, 0.36)";
+const HUD_COMBO_SHADOW_COLOR = "rgba(92, 64, 31, 0.78)";
 const HUD_TIMELINE_TRACK_ALPHA = 0.16;
 const HUD_TIMELINE_PROGRESS_ALPHA = 0.42;
 const HUD_SONG_COVER_SIZE = 44;
@@ -188,6 +189,7 @@ const HUD_LIFE_COLUMN_TOP_RATIO = 0.46;
 const HUD_LIFE_COLUMN_MIN_TOP = 292;
 const HUD_LIFE_COLUMN_MAX_TOP = 382;
 const HUD_LIFE_COLUMN_GAP = 7;
+const HUD_LIFE_HEART_SCALE = 2.4;
 const HUD_TOP_MARGIN_FROM_PAUSE = 3;
 const HUD_COVER_BORDER_COLOR = "rgba(247, 244, 232, 0.72)";
 const HUD_COVER_INNER_BORDER_COLOR = "rgba(65, 49, 18, 0.34)";
@@ -204,8 +206,10 @@ const CENTER_COMBO_OFFSET_MAX = 276;
 const CENTER_COMBO_OFFSET_RATIO = 0.29;
 const CENTER_COMBO_LABEL_OFFSET_RATIO = 0.58;
 const CENTER_COMBO_PULSE_PEAK_SCALE = 1.55;
+const CENTER_COMBO_MILESTONE_PULSE_PEAK_SCALE = 1.75;
 const CENTER_COMBO_PULSE_SETTLE_DIP_SCALE = 0.98;
 const CENTER_COMBO_GHOST_MAX_ALPHA = 0.22;
+const CENTER_COMBO_MILESTONE_GHOST_MAX_ALPHA = 0.28;
 const CENTER_COMBO_GHOST_SCALE_BOOST = 0.12;
 const FEEDBACK_TEXT_MIN_OFFSET = 104;
 const FEEDBACK_TEXT_MAX_OFFSET = 140;
@@ -365,6 +369,7 @@ const UI_BRIGHT_TEXT = "#F7F4E8";
 const UI_WARM_SHADOW = "rgba(65, 49, 18, 0.72)";
 const UI_PANEL_SHADOW = "rgba(4, 8, 16, 0.68)";
 const UI_PANEL_DROP = "rgba(4, 8, 16, 0.34)";
+const HUD_HEART_OUTLINE_COLOR = "#FFD0DC";
 const HUD_HEART_FILLED_SPRITE = Object.freeze([
   "..oo..oo..",
   ".offooffo.",
@@ -744,11 +749,18 @@ function drawCleanText(ctx, text, x, y, options = {}) {
   const fontFamily = options.fontFamily || "sans-serif";
   const fontWeight = options.fontWeight || "400";
   const color = options.color || "#ffffff";
+  const shadowColor = options.shadowColor || null;
+  const shadowOffsetX = options.shadowOffsetX === undefined ? 0 : options.shadowOffsetX;
+  const shadowOffsetY = options.shadowOffsetY === undefined ? 0 : options.shadowOffsetY;
 
   ctx.save();
   ctx.textAlign = align;
   ctx.textBaseline = valign === "middle" ? "middle" : valign === "bottom" ? "bottom" : "top";
   ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  if (shadowColor && (shadowOffsetX !== 0 || shadowOffsetY !== 0)) {
+    ctx.fillStyle = shadowColor;
+    ctx.fillText(content, snapToGrid(x + shadowOffsetX, 1), snapToGrid(y + shadowOffsetY, 1));
+  }
   ctx.fillStyle = color;
   ctx.fillText(content, snapToGrid(x, 1), snapToGrid(y, 1));
   ctx.restore();
@@ -1271,6 +1283,34 @@ function drawPixelSpriteMatrix(ctx, spriteRows, x, y, scale, palette, alpha = 1)
   ctx.restore();
 }
 
+function drawScaledPixelSpriteMatrix(ctx, spriteRows, x, y, scale, palette, alpha = 1) {
+  const drawX = snapToGrid(x, 1);
+  const drawY = snapToGrid(y, 1);
+  const pixelSize = Math.max(1, scale);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.imageSmoothingEnabled = false;
+
+  spriteRows.forEach((row, rowIndex) => {
+    for (let columnIndex = 0; columnIndex < row.length; columnIndex += 1) {
+      const key = row[columnIndex];
+      const color = palette[key];
+      if (!color) {
+        continue;
+      }
+      const left = snapToGrid(drawX + columnIndex * pixelSize, 1);
+      const top = snapToGrid(drawY + rowIndex * pixelSize, 1);
+      const right = snapToGrid(drawX + (columnIndex + 1) * pixelSize, 1);
+      const bottom = snapToGrid(drawY + (rowIndex + 1) * pixelSize, 1);
+      ctx.fillStyle = color;
+      ctx.fillRect(left, top, Math.max(1, right - left), Math.max(1, bottom - top));
+    }
+  });
+
+  ctx.restore();
+}
+
 function drawPixelOvalShadow(ctx, centerX, centerY, radiusX, radiusY, color, alpha = 1) {
   const baseX = snapToGrid(centerX, 1);
   const baseY = snapToGrid(centerY, 1);
@@ -1430,7 +1470,7 @@ function drawPixelPanelSurface(ctx, x, y, width, height, options = {}) {
 }
 
 function drawPixelHeart(ctx, x, y, filled, scale = 3, alpha = 1) {
-  drawPixelSpriteMatrix(
+  drawScaledPixelSpriteMatrix(
     ctx,
     filled ? HUD_HEART_FILLED_SPRITE : HUD_HEART_EMPTY_SPRITE,
     x,
@@ -1438,11 +1478,11 @@ function drawPixelHeart(ctx, x, y, filled, scale = 3, alpha = 1) {
     scale,
     filled
       ? {
-          o: "#6f2330",
+          o: HUD_HEART_OUTLINE_COLOR,
           f: "#ef6a7d",
         }
       : {
-          o: "rgba(117, 40, 62, 0.98)",
+          o: HUD_HEART_OUTLINE_COLOR,
         },
     alpha
   );
@@ -1549,6 +1589,9 @@ function drawHudDigitText(ctx, text, x, y, options = {}) {
   const fontSize = options.fontSize || HUD_CLEAN_DIGIT_FONT_SIZE;
   const fontFamily = options.fontFamily || PIXEL_FONT_EN_FAMILY;
   const fontWeight = options.fontWeight || CLEAN_DIGIT_FONT_WEIGHT;
+  const shadowColor = options.shadowColor || null;
+  const shadowOffsetX = options.shadowOffsetX === undefined ? 0 : options.shadowOffsetX;
+  const shadowOffsetY = options.shadowOffsetY === undefined ? 0 : options.shadowOffsetY;
 
   drawCleanText(ctx, content, x, y, {
     align,
@@ -1557,6 +1600,9 @@ function drawHudDigitText(ctx, text, x, y, options = {}) {
     fontFamily,
     fontWeight,
     color: fillColor,
+    shadowColor,
+    shadowOffsetX,
+    shadowOffsetY,
   });
 }
 
@@ -4717,7 +4763,7 @@ function getTopHudLayout(viewport, state) {
   const maxLives = state.maxLives || 3;
   const pauseRect = getControlRects(viewport).pause;
   const topY = pauseRect.top + HUD_TOP_MARGIN_FROM_PAUSE;
-  const heartScale = 2;
+  const heartScale = HUD_LIFE_HEART_SCALE;
   const heartWidth = HUD_HEART_FILLED_SPRITE[0].length * heartScale;
   const heartsStartY = clamp(
     viewport.height * HUD_LIFE_COLUMN_TOP_RATIO,
@@ -4898,16 +4944,16 @@ function getLatestComboPulse(effects = []) {
   return null;
 }
 
-function getComboPulseScale(progress) {
+function getComboPulseScale(progress, peakScale = CENTER_COMBO_PULSE_PEAK_SCALE) {
   const clamped = clamp(progress, 0, 1);
 
   if (clamped < 0.16) {
-    return lerp(1, CENTER_COMBO_PULSE_PEAK_SCALE, easeOutCubic(clamped / 0.16));
+    return lerp(1, peakScale, easeOutCubic(clamped / 0.16));
   }
 
   if (clamped < 0.52) {
     return lerp(
-      CENTER_COMBO_PULSE_PEAK_SCALE,
+      peakScale,
       CENTER_COMBO_PULSE_SETTLE_DIP_SCALE,
       easeOutCubic((clamped - 0.16) / 0.36)
     );
@@ -4941,13 +4987,20 @@ function drawCenterComboHud(ctx, viewport, lane, state) {
   const pulseProgress = comboPulse
     ? clamp(comboPulse.age / Math.max(0.001, comboPulse.duration), 0, 1)
     : 1;
-  const pulseScale = comboPulse ? getComboPulseScale(pulseProgress) : 1;
+  const isMilestonePulse = !!comboPulse?.milestone;
+  const pulsePeakScale = isMilestonePulse
+    ? CENTER_COMBO_MILESTONE_PULSE_PEAK_SCALE
+    : CENTER_COMBO_PULSE_PEAK_SCALE;
+  const ghostMaxAlpha = isMilestonePulse
+    ? CENTER_COMBO_MILESTONE_GHOST_MAX_ALPHA
+    : CENTER_COMBO_GHOST_MAX_ALPHA;
+  const pulseScale = comboPulse ? getComboPulseScale(pulseProgress, pulsePeakScale) : 1;
   const ghostAlpha = comboPulse
-    ? CENTER_COMBO_GHOST_MAX_ALPHA * Math.pow(Math.max(0, 1 - pulseProgress / 0.3), 1.35)
+    ? ghostMaxAlpha * Math.pow(Math.max(0, 1 - pulseProgress / 0.3), 1.35)
     : 0;
   const comboAlpha = comboValue > 0 ? 0.96 : 0.34;
   const textColor = comboValue > 0 ? UI_BRIGHT_TEXT : HUD_SCORE_PLACEHOLDER_COLOR;
-  const shadowColor = comboValue > 0 ? UI_WARM_SHADOW : HUD_SCORE_PLACEHOLDER_SHADOW_COLOR;
+  const shadowColor = comboValue > 0 ? HUD_COMBO_SHADOW_COLOR : HUD_SCORE_PLACEHOLDER_SHADOW_COLOR;
 
   ctx.save();
   ctx.globalAlpha = comboAlpha;
@@ -4978,6 +5031,9 @@ function drawCenterComboHud(ctx, viewport, lane, state) {
     fontFamily: PIXEL_FONT_EN_FAMILY,
     fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
     color: textColor,
+    shadowColor,
+    shadowOffsetX: 1,
+    shadowOffsetY: 1,
   });
   ctx.restore();
   drawCleanTrackedText(ctx, "COMBO", centerX, labelY, {
