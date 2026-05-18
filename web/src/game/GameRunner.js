@@ -473,6 +473,7 @@ export class GameRunner {
           ? this.failureSequence.elapsed / Math.max(0.001, this.failureSequence.duration)
           : 0,
         selectedSongId: this.song.id,
+        songTitle: this.song.title,
         songCoverImage: this.songCoverImage,
         characterSprites: this.characterSprites,
         crowdMotion: this.crowdMotion,

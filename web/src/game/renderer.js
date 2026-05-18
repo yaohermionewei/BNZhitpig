@@ -179,6 +179,15 @@ const HUD_TIMELINE_TRACK_ALPHA = 0.16;
 const HUD_TIMELINE_PROGRESS_ALPHA = 0.42;
 const HUD_SONG_COVER_SIZE = 44;
 const HUD_SONG_COVER_GAP = 8;
+const HUD_SONG_TITLE_FONT_SIZE = 19;
+const HUD_SONG_TITLE_TRACKING = 0.2;
+const HUD_SCORE_PAUSE_GAP = 14;
+const HUD_SCORE_RIGHT_SAFE_GAP = 12;
+const HUD_LIFE_COLUMN_LEFT = 26;
+const HUD_LIFE_COLUMN_TOP_RATIO = 0.46;
+const HUD_LIFE_COLUMN_MIN_TOP = 292;
+const HUD_LIFE_COLUMN_MAX_TOP = 382;
+const HUD_LIFE_COLUMN_GAP = 7;
 const HUD_TOP_MARGIN_FROM_PAUSE = 3;
 const HUD_COVER_BORDER_COLOR = "rgba(247, 244, 232, 0.72)";
 const HUD_COVER_INNER_BORDER_COLOR = "rgba(65, 49, 18, 0.34)";
@@ -802,6 +811,44 @@ function drawCleanTrackedText(ctx, text, x, y, options = {}) {
   ctx.restore();
 }
 
+function getTrackedTextWidth(ctx, text, options = {}) {
+  const content = String(text || "");
+  if (!content) {
+    return 0;
+  }
+
+  const chars = Array.from(content);
+  const tracking = options.tracking === undefined ? 0 : options.tracking;
+  const fontSize = options.fontSize || 8;
+  const fontFamily = options.fontFamily || "sans-serif";
+  const fontWeight = options.fontWeight || "400";
+
+  ctx.save();
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  const width =
+    chars.reduce((sum, char) => sum + ctx.measureText(char).width, 0) +
+    tracking * Math.max(0, chars.length - 1);
+  ctx.restore();
+  return width;
+}
+
+function fitTextToWidth(ctx, text, maxWidth, options = {}) {
+  const content = String(text || "");
+  if (!content || getTrackedTextWidth(ctx, content, options) <= maxWidth) {
+    return content;
+  }
+
+  const chars = Array.from(content);
+  for (let count = chars.length - 1; count > 0; count -= 1) {
+    const candidate = `${chars.slice(0, count).join("")}...`;
+    if (getTrackedTextWidth(ctx, candidate, options) <= maxWidth) {
+      return candidate;
+    }
+  }
+
+  return "";
+}
+
 function getPixelTextSize(text, options = {}) {
   const scale = options.scale || 3;
   if (DEBUG_DISABLE_PIXEL_TEXT_RASTERIZATION) {
@@ -1395,7 +1442,7 @@ function drawPixelHeart(ctx, x, y, filled, scale = 3, alpha = 1) {
           f: "#ef6a7d",
         }
       : {
-          o: "rgba(124, 60, 74, 0.88)",
+          o: "rgba(117, 40, 62, 0.98)",
         },
     alpha
   );
@@ -4669,21 +4716,24 @@ function drawSongProgressTimeline(ctx, viewport, state) {
 function getTopHudLayout(viewport, state) {
   const maxLives = state.maxLives || 3;
   const pauseRect = getControlRects(viewport).pause;
+  const topY = pauseRect.top + HUD_TOP_MARGIN_FROM_PAUSE;
   const heartScale = 2;
   const heartWidth = HUD_HEART_FILLED_SPRITE[0].length * heartScale;
-  const heartGap = 4;
-  const heartsTotalWidth = maxLives * heartWidth + (maxLives - 1) * heartGap;
-  const heartsStartX = Math.max(16, pauseRect.left - 12 - heartsTotalWidth);
-  const heartsY = pauseRect.top + HUD_TOP_MARGIN_FROM_PAUSE;
+  const heartsStartY = clamp(
+    viewport.height * HUD_LIFE_COLUMN_TOP_RATIO,
+    HUD_LIFE_COLUMN_MIN_TOP,
+    HUD_LIFE_COLUMN_MAX_TOP
+  );
 
   return {
     pauseRect,
+    topY,
     maxLives,
     heartScale,
     heartWidth,
-    heartGap,
-    heartsStartX,
-    heartsY,
+    heartGap: HUD_LIFE_COLUMN_GAP,
+    heartsStartX: HUD_LIFE_COLUMN_LEFT,
+    heartsStartY,
   };
 }
 
@@ -4703,23 +4753,19 @@ function drawPixelCoverFrame(ctx, x, y, width, height) {
   ctx.restore();
 }
 
-function drawSongCoverScoreHud(ctx, viewport, state, uiState = {}, hudLayout = null) {
-  const scoreText = String(Math.max(0, Math.round(Number(state.score) || 0)));
+function drawSongInfoHud(ctx, viewport, uiState = {}, hudLayout = null) {
   const coverSize = Math.min(HUD_SONG_COVER_SIZE, Math.max(38, viewport.width * 0.11));
-  const topLayout = hudLayout || getTopHudLayout(viewport, state);
+  const topLayout = hudLayout || { topY: HUD_CARD_TOP };
   const coverLeft = 16;
-  const coverTop = topLayout.heartsY;
-  const scoreLeft = coverLeft + coverSize + HUD_SONG_COVER_GAP;
-  const labelHeight = HUD_LABEL_FONT_SIZE;
-  const digitHeight = getHudFontDigitTextMetrics(ctx, HUD_SCORE_SLOT_TEXT, {
-    fontSize: HUD_SCORE_FONT_SIZE,
+  const coverTop = topLayout.topY;
+  const titleLeft = coverLeft + coverSize + HUD_SONG_COVER_GAP;
+  const titleMaxWidth = Math.max(24, viewport.width * 0.46 - titleLeft);
+  const songTitle = fitTextToWidth(ctx, uiState.songTitle || "Ditto", titleMaxWidth, {
+    fontSize: HUD_SONG_TITLE_FONT_SIZE,
     fontFamily: PIXEL_FONT_EN_FAMILY,
-    fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
-  }).height;
-  const scoreGroupHeight = labelHeight + HUD_SCORE_GROUP_GAP + digitHeight;
-  const scoreTop = coverTop + Math.round((coverSize - scoreGroupHeight) / 2);
-  const labelTop = scoreTop;
-  const valueTop = labelTop + labelHeight + HUD_SCORE_GROUP_GAP;
+    fontWeight: HUD_LABEL_FONT_WEIGHT,
+    tracking: HUD_SONG_TITLE_TRACKING,
+  });
 
   ctx.save();
   drawPixelCoverFrame(ctx, coverLeft, coverTop, coverSize, coverSize);
@@ -4728,8 +4774,41 @@ function drawSongCoverScoreHud(ctx, viewport, state, uiState = {}, hudLayout = n
     ctx.fillRect(coverLeft, coverTop, coverSize, coverSize);
   }
 
-  drawCleanTrackedText(ctx, "SCORE", scoreLeft, labelTop, {
+  drawCleanTrackedText(ctx, songTitle, titleLeft, coverTop + coverSize / 2, {
     align: "left",
+    valign: "middle",
+    fontSize: HUD_SONG_TITLE_FONT_SIZE,
+    fontFamily: PIXEL_FONT_EN_FAMILY,
+    fontWeight: HUD_LABEL_FONT_WEIGHT,
+    color: UI_BRIGHT_TEXT,
+    shadowColor: UI_WARM_SHADOW,
+    shadowOffsetX: 1,
+    shadowOffsetY: 1,
+    tracking: HUD_SONG_TITLE_TRACKING,
+    paddingX: HUD_LABEL_GLYPH_PADDING_X,
+  });
+  ctx.restore();
+}
+
+function drawScorePauseHud(ctx, viewport, state, hudLayout = null) {
+  const scoreText = String(Math.max(0, Math.round(Number(state.score) || 0)));
+  const { pauseRect, topY } = hudLayout || getTopHudLayout(viewport, state);
+  const scoreRight = pauseRect.left - HUD_SCORE_PAUSE_GAP;
+  const labelTop = topY;
+  const valueTop = labelTop + HUD_LABEL_FONT_SIZE + HUD_SCORE_GROUP_GAP;
+  const scoreSlotWidth = getHudFontDigitTextMetrics(ctx, HUD_SCORE_SLOT_TEXT, {
+    fontSize: HUD_SCORE_FONT_SIZE,
+    fontFamily: PIXEL_FONT_EN_FAMILY,
+    fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
+  }).width;
+  const minLeft = Math.max(16, viewport.width * 0.46);
+  const availableWidth = Math.max(36, scoreRight - HUD_SCORE_RIGHT_SAFE_GAP - minLeft);
+  const scoreScale = Math.min(1, availableWidth / Math.max(1, scoreSlotWidth));
+  const scoreFontSize = Math.max(22, Math.round(HUD_SCORE_FONT_SIZE * scoreScale));
+
+  ctx.save();
+  drawCleanTrackedText(ctx, "SCORE", scoreRight, labelTop, {
+    align: "right",
     valign: "top",
     fontSize: HUD_LABEL_FONT_SIZE,
     fontFamily: PIXEL_FONT_EN_FAMILY,
@@ -4739,10 +4818,10 @@ function drawSongCoverScoreHud(ctx, viewport, state, uiState = {}, hudLayout = n
     paddingX: HUD_LABEL_GLYPH_PADDING_X,
   });
 
-  drawHudScoreValue(ctx, scoreText, scoreLeft - 1, valueTop, {
-    align: "left",
+  drawHudScoreValue(ctx, scoreText, scoreRight, valueTop, {
+    align: "right",
     valign: "top",
-    fontSize: HUD_SCORE_FONT_SIZE,
+    fontSize: scoreFontSize,
     fontFamily: PIXEL_FONT_EN_FAMILY,
     fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
     color: UI_BRIGHT_TEXT,
@@ -4750,30 +4829,10 @@ function drawSongCoverScoreHud(ctx, viewport, state, uiState = {}, hudLayout = n
   ctx.restore();
 }
 
-function drawLifePauseHud(ctx, viewport, state, hudLayout = null) {
-  const {
-    maxLives,
-    pauseRect,
-    heartScale,
-    heartWidth,
-    heartGap,
-    heartsStartX,
-    heartsY,
-  } = hudLayout || getTopHudLayout(viewport, state);
+function drawPauseButtonHud(ctx, viewport, state, hudLayout = null) {
+  const { pauseRect } = hudLayout || getTopHudLayout(viewport, state);
 
   ctx.save();
-  for (let index = 0; index < maxLives; index += 1) {
-    const filled = index >= maxLives - (state.lives || 0);
-    drawPixelHeart(
-      ctx,
-      heartsStartX + index * (heartWidth + heartGap),
-      heartsY,
-      filled,
-      heartScale,
-      filled ? 1 : 0.68
-    );
-  }
-
   drawPixelHudPlate(
     ctx,
     pauseRect.left,
@@ -4792,6 +4851,41 @@ function drawLifePauseHud(ctx, viewport, state, hudLayout = null) {
   ctx.fillRect(pauseRect.left + 8, pauseRect.top + 7, 2, 11);
   ctx.fillRect(pauseRect.left + 15, pauseRect.top + 7, 2, 11);
   ctx.restore();
+}
+
+function drawLifeHud(ctx, viewport, state, hudLayout = null) {
+  const {
+    maxLives,
+    heartScale,
+    heartWidth,
+    heartGap,
+    heartsStartX,
+    heartsStartY,
+  } = hudLayout || getTopHudLayout(viewport, state);
+
+  ctx.save();
+  for (let index = 0; index < maxLives; index += 1) {
+    const filled = index >= maxLives - (state.lives || 0);
+    drawPixelHeart(
+      ctx,
+      heartsStartX,
+      heartsStartY + index * (heartWidth + heartGap),
+      filled,
+      heartScale,
+      filled ? 1 : 0.92
+    );
+  }
+  ctx.restore();
+}
+
+function drawSongCoverScoreHud(ctx, viewport, state, uiState = {}, hudLayout = null) {
+  drawSongInfoHud(ctx, viewport, uiState, hudLayout);
+  drawScorePauseHud(ctx, viewport, state, hudLayout);
+}
+
+function drawLifePauseHud(ctx, viewport, state, hudLayout = null) {
+  drawLifeHud(ctx, viewport, state, hudLayout);
+  drawPauseButtonHud(ctx, viewport, state, hudLayout);
 }
 
 function getLatestComboPulse(effects = []) {
