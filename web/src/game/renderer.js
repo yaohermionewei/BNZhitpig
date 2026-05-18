@@ -47,6 +47,9 @@ const RABBIT_HIT_SHEET = Object.freeze({
   bodyCenterRatio: 170 / 372,
   duration: 0.18,
 });
+const RABBIT_IDLE_PIXEL_BOB_PATTERN = Object.freeze([0, -1, -2, -1, 0, 1, 0, 0]);
+const RABBIT_IDLE_PIXEL_BOB_SPEED = 5.4;
+const RABBIT_IDLE_PIXEL_BOB_PHASE = 0.7;
 const NOTE_ENTRY_Y = 183;
 const STAGE_CARPET_TOP = 205;
 const LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH = 402;
@@ -71,6 +74,9 @@ const IMPACT_ZONE_EDGE_PADDING = 6;
 const IMPACT_ZONE_CARPET_WIDTH_BASELINE = 328.06;
 const IMPACT_ZONE_ELLIPSE_TO_CARPET_RATIO = 209.4 / IMPACT_ZONE_CARPET_WIDTH_BASELINE;
 const IMPACT_ZONE_LINE_TO_CARPET_RATIO = 182.2 / IMPACT_ZONE_CARPET_WIDTH_BASELINE;
+const IMPACT_ZONE_ELLIPSE_Y_OFFSET = 2;
+const IMPACT_ZONE_INNER_ELLIPSE_Y_OFFSET = 2;
+const IMPACT_ZONE_HIGHLIGHT_Y_OFFSET = 1;
 const NOTE_ENTRY_FADE_DISTANCE = 22;
 const NOTE_ENTRY_SOFT_FADE_DISTANCE = 42;
 const RABBIT_OCCLUSION_SOFT_FADE_DISTANCE = 28;
@@ -160,6 +166,8 @@ const HUD_LABEL_TRACKING = 0.6;
 const HUD_LABEL_GLYPH_PADDING_X = 0;
 const CLEAN_DIGIT_FONT_WEIGHT = "400";
 const HUD_CLEAN_DIGIT_FONT_SIZE = 30;
+const HUD_SCORE_FONT_SIZE = 35;
+const HUD_SCORE_FONT_VISUAL_HEIGHT_RATIO = 0.58;
 const HUD_SPRITE_DIGIT_SCALE = 2.2;
 const HUD_SPRITE_DIGIT_GAP = 0;
 const HUD_SPRITE_DIGIT_SHADOW_OFFSET_X = 2;
@@ -167,6 +175,29 @@ const HUD_SPRITE_DIGIT_SHADOW_OFFSET_Y = 2;
 const HUD_SCORE_SLOT_TEXT = "0000000";
 const HUD_SCORE_PLACEHOLDER_COLOR = "rgba(247, 244, 232, 0.5)";
 const HUD_SCORE_PLACEHOLDER_SHADOW_COLOR = "rgba(65, 49, 18, 0.36)";
+const HUD_TIMELINE_TRACK_ALPHA = 0.16;
+const HUD_TIMELINE_PROGRESS_ALPHA = 0.42;
+const HUD_SONG_COVER_SIZE = 44;
+const HUD_SONG_COVER_GAP = 8;
+const HUD_TOP_MARGIN_FROM_PAUSE = 3;
+const HUD_COVER_BORDER_COLOR = "rgba(247, 244, 232, 0.72)";
+const HUD_COVER_INNER_BORDER_COLOR = "rgba(65, 49, 18, 0.34)";
+const HUD_COVER_SHADOW_COLOR = "rgba(4, 8, 16, 0.08)";
+const HUD_SCORE_GROUP_GAP = 4;
+const CENTER_COMBO_NUMBER_MIN_SIZE = 56;
+const CENTER_COMBO_NUMBER_MAX_SIZE = 64;
+const CENTER_COMBO_NUMBER_WIDTH_RATIO = 0.145;
+const CENTER_COMBO_LABEL_MIN_SIZE = 18;
+const CENTER_COMBO_LABEL_MAX_SIZE = 22;
+const CENTER_COMBO_LABEL_WIDTH_RATIO = 0.052;
+const CENTER_COMBO_OFFSET_MIN = 224;
+const CENTER_COMBO_OFFSET_MAX = 276;
+const CENTER_COMBO_OFFSET_RATIO = 0.29;
+const CENTER_COMBO_LABEL_OFFSET_RATIO = 0.58;
+const CENTER_COMBO_PULSE_PEAK_SCALE = 1.55;
+const CENTER_COMBO_PULSE_SETTLE_DIP_SCALE = 0.98;
+const CENTER_COMBO_GHOST_MAX_ALPHA = 0.22;
+const CENTER_COMBO_GHOST_SCALE_BOOST = 0.12;
 const FEEDBACK_TEXT_MIN_OFFSET = 104;
 const FEEDBACK_TEXT_MAX_OFFSET = 140;
 const FEEDBACK_TEXT_OFFSET_RATIO = 0.135;
@@ -1482,19 +1513,117 @@ function drawHudDigitText(ctx, text, x, y, options = {}) {
   });
 }
 
+function getHudFontDigitTextMetrics(ctx, text, options = {}) {
+  const content = String(text || "");
+  const fontSize = options.fontSize || HUD_SCORE_FONT_SIZE;
+  const fontFamily = options.fontFamily || PIXEL_FONT_EN_FAMILY;
+  const fontWeight = options.fontWeight || CLEAN_DIGIT_FONT_WEIGHT;
+
+  if (!content) {
+    return {
+      width: 0,
+      height: Math.max(1, Math.ceil(fontSize * HUD_SCORE_FONT_VISUAL_HEIGHT_RATIO)),
+      ascent: Math.max(1, Math.ceil(fontSize * HUD_SCORE_FONT_VISUAL_HEIGHT_RATIO)),
+      descent: 0,
+    };
+  }
+
+  ctx.save();
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  const metrics = ctx.measureText(content);
+  ctx.restore();
+
+  const measuredHeight =
+    Number.isFinite(metrics.actualBoundingBoxAscent) &&
+    Number.isFinite(metrics.actualBoundingBoxDescent) &&
+    metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent > 0
+      ? metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+      : fontSize * HUD_SCORE_FONT_VISUAL_HEIGHT_RATIO;
+  const ascent =
+    Number.isFinite(metrics.actualBoundingBoxAscent) && metrics.actualBoundingBoxAscent > 0
+      ? metrics.actualBoundingBoxAscent
+      : measuredHeight;
+  const descent =
+    Number.isFinite(metrics.actualBoundingBoxDescent) && metrics.actualBoundingBoxDescent > 0
+      ? metrics.actualBoundingBoxDescent
+      : 0;
+
+  return {
+    width: metrics.width || 0,
+    height: Math.max(1, Math.ceil(measuredHeight)),
+    ascent,
+    descent,
+  };
+}
+
+function drawHudFontDigitText(ctx, text, x, y, options = {}) {
+  const content = String(text || "");
+  if (!content) {
+    return;
+  }
+
+  const align = options.align || "left";
+  const valign = options.valign || "top";
+  const fontSize = options.fontSize || HUD_SCORE_FONT_SIZE;
+  const fontFamily = options.fontFamily || PIXEL_FONT_EN_FAMILY;
+  const fontWeight = options.fontWeight || CLEAN_DIGIT_FONT_WEIGHT;
+  const color = options.color || UI_BRIGHT_TEXT;
+  const shadowColor = options.shadowColor || null;
+  const shadowOffsetX =
+    options.shadowOffsetX === undefined ? HUD_SPRITE_DIGIT_SHADOW_OFFSET_X : options.shadowOffsetX;
+  const shadowOffsetY =
+    options.shadowOffsetY === undefined ? HUD_SPRITE_DIGIT_SHADOW_OFFSET_Y : options.shadowOffsetY;
+  const metrics = getHudFontDigitTextMetrics(ctx, content, {
+    fontSize,
+    fontFamily,
+    fontWeight,
+  });
+  let drawX = x;
+  let drawY = y;
+
+  if (align === "center") {
+    drawX -= metrics.width / 2;
+  } else if (align === "right") {
+    drawX -= metrics.width;
+  }
+
+  if (valign === "middle") {
+    drawY -= metrics.height / 2;
+  } else if (valign === "bottom") {
+    drawY -= metrics.height;
+  }
+
+  const baselineX = snapToGrid(drawX, 1);
+  const baselineY = snapToGrid(drawY + metrics.ascent, 1);
+
+  ctx.save();
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  if (shadowColor && (shadowOffsetX !== 0 || shadowOffsetY !== 0)) {
+    ctx.fillStyle = shadowColor;
+    ctx.fillText(content, baselineX + shadowOffsetX, baselineY + shadowOffsetY);
+  }
+  ctx.fillStyle = color;
+  ctx.fillText(content, baselineX, baselineY);
+  ctx.restore();
+}
+
 function drawHudScoreValue(ctx, score, x, y, options = {}) {
   const numericScore = Math.max(0, Math.round(Number(score) || 0));
   const scoreText = String(numericScore);
-  const scale = options.scale || HUD_SPRITE_DIGIT_SCALE;
-  const gap = options.gap === undefined ? HUD_SPRITE_DIGIT_GAP : options.gap;
+  const fontSize = options.fontSize || HUD_SCORE_FONT_SIZE;
+  const fontFamily = options.fontFamily || PIXEL_FONT_EN_FAMILY;
+  const fontWeight = options.fontWeight || CLEAN_DIGIT_FONT_WEIGHT;
 
   if (scoreText.length >= HUD_SCORE_SLOT_TEXT.length) {
-    drawHudDigitText(ctx, scoreText, x, y, {
+    drawHudFontDigitText(ctx, scoreText, x, y, {
       ...options,
-      useSpriteDigits: true,
-      scale,
-      gap,
+      fontSize,
+      fontFamily,
+      fontWeight,
       color: options.color || UI_BRIGHT_TEXT,
+      shadowColor: options.shadowColor || UI_WARM_SHADOW,
     });
     return;
   }
@@ -1503,9 +1632,19 @@ function drawHudScoreValue(ctx, score, x, y, options = {}) {
     numericScore <= 0
       ? HUD_SCORE_SLOT_TEXT
       : HUD_SCORE_SLOT_TEXT.slice(0, HUD_SCORE_SLOT_TEXT.length - scoreText.length);
-  const slotMetrics = getHudDigitTextMetrics(HUD_SCORE_SLOT_TEXT, scale, gap);
+  const slotMetrics = getHudFontDigitTextMetrics(ctx, HUD_SCORE_SLOT_TEXT, {
+    fontSize,
+    fontFamily,
+    fontWeight,
+  });
   const scoreMetrics =
-    numericScore > 0 ? getHudDigitTextMetrics(scoreText, scale, gap) : { width: 0 };
+    numericScore > 0
+      ? getHudFontDigitTextMetrics(ctx, scoreText, {
+          fontSize,
+          fontFamily,
+          fontWeight,
+        })
+      : { width: 0 };
   let slotX = snapToGrid(x, 1);
 
   if (options.align === "center") {
@@ -1514,12 +1653,12 @@ function drawHudScoreValue(ctx, score, x, y, options = {}) {
     slotX -= slotMetrics.width;
   }
 
-  drawHudDigitText(ctx, slotText, slotX, y, {
+  drawHudFontDigitText(ctx, slotText, slotX, y, {
     ...options,
     align: "left",
-    useSpriteDigits: true,
-    scale,
-    gap,
+    fontSize,
+    fontFamily,
+    fontWeight,
     color: HUD_SCORE_PLACEHOLDER_COLOR,
     shadowColor: HUD_SCORE_PLACEHOLDER_SHADOW_COLOR,
   });
@@ -1528,13 +1667,14 @@ function drawHudScoreValue(ctx, score, x, y, options = {}) {
     return;
   }
 
-  drawHudDigitText(ctx, scoreText, slotX + slotMetrics.width - scoreMetrics.width, y, {
+  drawHudFontDigitText(ctx, scoreText, slotX + slotMetrics.width - scoreMetrics.width, y, {
     ...options,
     align: "left",
-    useSpriteDigits: true,
-    scale,
-    gap,
+    fontSize,
+    fontFamily,
+    fontWeight,
     color: options.color || UI_BRIGHT_TEXT,
+    shadowColor: options.shadowColor || UI_WARM_SHADOW,
   });
 }
 
@@ -1551,6 +1691,42 @@ function drawHudComboValue(ctx, combo, x, y, options = {}) {
         ? options.shadowColor
         : HUD_SCORE_PLACEHOLDER_SHADOW_COLOR,
   });
+}
+
+function drawImageCover(ctx, image, x, y, width, height, options = {}) {
+  if (!image) {
+    return false;
+  }
+
+  const sourceWidth = Math.max(1, image.width || 1);
+  const sourceHeight = Math.max(1, image.height || 1);
+  const targetWidth = Math.max(1, width);
+  const targetHeight = Math.max(1, height);
+  const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight);
+  const cropWidth = targetWidth / scale;
+  const cropHeight = targetHeight / scale;
+  const sourceX = Math.max(0, (sourceWidth - cropWidth) / 2);
+  const sourceY = Math.max(0, (sourceHeight - cropHeight) / 2);
+  const drawX = snapToGrid(x, 1);
+  const drawY = snapToGrid(y, 1);
+
+  ctx.save();
+  if (options.alpha !== undefined) {
+    ctx.globalAlpha = options.alpha;
+  }
+  ctx.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    Math.min(sourceWidth, cropWidth),
+    Math.min(sourceHeight, cropHeight),
+    drawX,
+    drawY,
+    targetWidth,
+    targetHeight
+  );
+  ctx.restore();
+  return true;
 }
 
 function drawPixelHudPlate(ctx, x, y, width, height, options = {}) {
@@ -2840,7 +3016,8 @@ function getImpactZoneVisualMetrics(viewport, lane, sceneBackgroundImage) {
 }
 
 function drawImpactZone(ctx, viewport, lane, sceneBackgroundImage) {
-  const zoneY = lane.targetY + lerp(8, 2, lane.cameraProgress);
+  const zoneY =
+    lane.targetY + lerp(8, -4, lane.cameraProgress) + IMPACT_ZONE_ELLIPSE_Y_OFFSET;
   const { zoneRadiusX, lineWidth } = getImpactZoneVisualMetrics(
     viewport,
     lane,
@@ -2858,8 +3035,24 @@ function drawImpactZone(ctx, viewport, lane, sceneBackgroundImage) {
   ctx.save();
   drawPixelEllipseFill(ctx, lane.centerX, zoneY + 3, zoneRadiusX + 4, zoneRadiusY + 3, UI_PANEL_SHADOW, 0.24);
   drawPixelEllipseFill(ctx, lane.centerX, zoneY, zoneRadiusX, zoneRadiusY, UI_GOLD_OUTER, 0.42);
-  drawPixelEllipseFill(ctx, lane.centerX, zoneY, innerRadiusX, innerRadiusY, UI_PANEL_BLUE, 0.3);
-  drawPixelEllipseFill(ctx, lane.centerX, zoneY - 1, highlightRadiusX, highlightRadiusY, UI_BRIGHT_TEXT, 0.12);
+  drawPixelEllipseFill(
+    ctx,
+    lane.centerX,
+    zoneY + IMPACT_ZONE_INNER_ELLIPSE_Y_OFFSET,
+    innerRadiusX,
+    innerRadiusY,
+    UI_PANEL_BLUE,
+    0.3
+  );
+  drawPixelEllipseFill(
+    ctx,
+    lane.centerX,
+    zoneY + IMPACT_ZONE_HIGHLIGHT_Y_OFFSET,
+    highlightRadiusX,
+    highlightRadiusY,
+    UI_BRIGHT_TEXT,
+    0.12
+  );
 
   ctx.fillStyle = UI_PANEL_SHADOW;
   ctx.fillRect(barLeft, barY + 3, barWidth, 2);
@@ -3422,11 +3615,14 @@ function getRabbitSceneLayout(
     rabbitRender.sourceRect && rabbitFacingBack
       ? (0.5 - rabbitRender.bodyCenterRatio) * rabbitWidth
       : 0;
+  const rabbitBobOffset = getStageCompanionBobOffset({
+    currentTime,
+    phase: RABBIT_IDLE_PIXEL_BOB_PHASE,
+    pixelBobPattern: RABBIT_IDLE_PIXEL_BOB_PATTERN,
+    pixelBobSpeed: RABBIT_IDLE_PIXEL_BOB_SPEED,
+  });
   const rabbitX = lane.centerX - rabbitWidth / 2 + rabbitAnchorOffsetX;
-  const rabbitY =
-    rabbitFeetY -
-    rabbitHeight +
-    (rabbitFacingBack ? Math.sin(currentTime * 2) * rabbitHeight * 0.01 : 0);
+  const rabbitY = rabbitFeetY - rabbitHeight + rabbitBobOffset;
   const getLayerLayout = (render, alpha, xOffset = 0) => {
     if (!render || !render.sprite || alpha <= 0.001) {
       return null;
@@ -3440,10 +3636,7 @@ function getRabbitSceneLayout(
         ? (0.5 - render.bodyCenterRatio) * layerWidth
         : 0;
     const layerX = lane.centerX - layerWidth / 2 + layerAnchorOffsetX + xOffset;
-    const layerY =
-      rabbitFeetY -
-      rabbitHeight +
-      (layerFacingBack ? Math.sin(currentTime * 2) * rabbitHeight * 0.01 : 0);
+    const layerY = rabbitFeetY - rabbitHeight + rabbitBobOffset;
 
     return {
       sprite: render.sprite,
@@ -4446,6 +4639,10 @@ function drawEffects(ctx, viewport, lane, effects, characterSprites = {}) {
       return;
     }
 
+    if (effect.kind === "comboPulse") {
+      return;
+    }
+
     if (effect.kind === "damage") {
       drawDamageVignette(ctx, viewport, progress);
       return;
@@ -4455,134 +4652,127 @@ function drawEffects(ctx, viewport, lane, effects, characterSprites = {}) {
   });
 }
 
-function drawHud(ctx, viewport, state, uiState = {}) {
+function drawSongProgressTimeline(ctx, viewport, state) {
+  const duration = Math.max(0.001, Number(state.chart?.duration) || 0);
+  const progress = clamp((Number(state.currentTime) || 0) / duration, 0, 1);
+  const trackHeight = 3;
+
+  ctx.save();
+  ctx.globalAlpha = HUD_TIMELINE_TRACK_ALPHA;
+  ctx.fillStyle = UI_BRIGHT_TEXT;
+  ctx.fillRect(0, 0, viewport.width, trackHeight);
+  ctx.globalAlpha = HUD_TIMELINE_PROGRESS_ALPHA;
+  ctx.fillRect(0, 0, Math.round(viewport.width * progress), trackHeight);
+  ctx.restore();
+}
+
+function getTopHudLayout(viewport, state) {
   const maxLives = state.maxLives || 3;
-  const hudPlateFill = HUD_PLATE_FILL;
-  const hudPlateShadow = HUD_PLATE_SHADOW;
-  const scoreRect = {
-    left: 16,
-    top: HUD_CARD_TOP,
-    width: 136,
-    height: 48,
-  };
-  const heartsRect = {
-    left: scoreRect.left + 6,
-    top: 18,
-    width: 116,
-    height: 24,
-  };
-  const comboRect = {
-    left: viewport.width - 98,
-    top: HUD_CARD_TOP,
-    width: 82,
-    height: 48,
-  };
   const pauseRect = getControlRects(viewport).pause;
-  const scoreText = String(Math.max(0, Math.round(Number(state.score) || 0)));
-  const comboText = String(Math.max(0, Math.round(Number(state.combo) || 0)));
   const heartScale = 2;
   const heartWidth = HUD_HEART_FILLED_SPRITE[0].length * heartScale;
   const heartGap = 4;
   const heartsTotalWidth = maxLives * heartWidth + (maxLives - 1) * heartGap;
-  const heartsStartX = heartsRect.left + Math.round((heartsRect.width - heartsTotalWidth) / 2);
-  const heartsY = pauseRect.top + 3;
+  const heartsStartX = Math.max(16, pauseRect.left - 12 - heartsTotalWidth);
+  const heartsY = pauseRect.top + HUD_TOP_MARGIN_FROM_PAUSE;
 
-  const drawHudCard = (rect, label, value, options = {}) => {
-    const align = options.align || "left";
-    const baseContentX = align === "right" ? rect.left + rect.width - 12 : rect.left + 12;
-    const labelX = baseContentX + (options.labelOffsetX || 0);
-    const valueX = baseContentX + (options.valueOffsetX || 0);
-
-    drawCleanTrackedText(ctx, label, labelX, rect.top + HUD_LABEL_OFFSET_Y, {
-      align,
-      valign: "top",
-      fontSize: options.labelFontSize || HUD_LABEL_FONT_SIZE,
-      fontFamily: PIXEL_FONT_EN_FAMILY,
-      fontWeight: HUD_LABEL_FONT_WEIGHT,
-      color: UI_GOLD_TEXT,
-      tracking: HUD_LABEL_TRACKING,
-      paddingX: HUD_LABEL_GLYPH_PADDING_X,
-    });
-
-    drawHudDigitText(ctx, value, valueX, rect.top + HUD_VALUE_OFFSET_Y, {
-      align,
-      valign: "top",
-      useSpriteDigits: true,
-      scale: HUD_SPRITE_DIGIT_SCALE,
-      gap: HUD_SPRITE_DIGIT_GAP,
-      color: UI_BRIGHT_TEXT,
-    });
+  return {
+    pauseRect,
+    maxLives,
+    heartScale,
+    heartWidth,
+    heartGap,
+    heartsStartX,
+    heartsY,
   };
-  const drawScoreHudCard = (rect, label, value, options = {}) => {
-    const align = options.align || "left";
-    const baseContentX = align === "right" ? rect.left + rect.width - 12 : rect.left + 12;
-    const labelX = baseContentX + (options.labelOffsetX || 0);
-    const valueX = baseContentX + (options.valueOffsetX || 0);
+}
 
-    drawCleanTrackedText(ctx, label, labelX, rect.top + HUD_LABEL_OFFSET_Y, {
-      align,
-      valign: "top",
-      fontSize: options.labelFontSize || HUD_LABEL_FONT_SIZE,
-      fontFamily: PIXEL_FONT_EN_FAMILY,
-      fontWeight: HUD_LABEL_FONT_WEIGHT,
-      color: UI_GOLD_TEXT,
-      tracking: HUD_LABEL_TRACKING,
-      paddingX: HUD_LABEL_GLYPH_PADDING_X,
-    });
+function drawPixelCoverFrame(ctx, x, y, width, height) {
+  const left = snapToGrid(x, 1);
+  const top = snapToGrid(y, 1);
+  const frameWidth = snapToGrid(width, 1);
+  const frameHeight = snapToGrid(height, 1);
 
-    drawHudScoreValue(ctx, value, valueX, rect.top + HUD_VALUE_OFFSET_Y, {
-      align,
-      valign: "top",
-      scale: HUD_SPRITE_DIGIT_SCALE,
-      gap: HUD_SPRITE_DIGIT_GAP,
-      color: UI_BRIGHT_TEXT,
-    });
-  };
-  const drawComboHudCard = (rect, label, value, options = {}) => {
-    const align = options.align || "left";
-    const baseContentX = align === "right" ? rect.left + rect.width - 12 : rect.left + 12;
-    const labelX = baseContentX + (options.labelOffsetX || 0);
-    const valueX = baseContentX + (options.valueOffsetX || 0);
+  ctx.save();
+  ctx.fillStyle = HUD_COVER_SHADOW_COLOR;
+  ctx.fillRect(left + 2, top + 2, frameWidth, frameHeight);
+  ctx.fillStyle = HUD_COVER_BORDER_COLOR;
+  ctx.fillRect(left - 1, top - 1, frameWidth + 2, frameHeight + 2);
+  ctx.fillStyle = HUD_COVER_INNER_BORDER_COLOR;
+  ctx.fillRect(left, top, frameWidth, frameHeight);
+  ctx.restore();
+}
 
-    drawCleanTrackedText(ctx, label, labelX, rect.top + HUD_LABEL_OFFSET_Y, {
-      align,
-      valign: "top",
-      fontSize: options.labelFontSize || HUD_LABEL_FONT_SIZE,
-      fontFamily: PIXEL_FONT_EN_FAMILY,
-      fontWeight: HUD_LABEL_FONT_WEIGHT,
-      color: UI_GOLD_TEXT,
-      tracking: HUD_LABEL_TRACKING,
-      paddingX: HUD_LABEL_GLYPH_PADDING_X,
-    });
+function drawSongCoverScoreHud(ctx, viewport, state, uiState = {}, hudLayout = null) {
+  const scoreText = String(Math.max(0, Math.round(Number(state.score) || 0)));
+  const coverSize = Math.min(HUD_SONG_COVER_SIZE, Math.max(38, viewport.width * 0.11));
+  const topLayout = hudLayout || getTopHudLayout(viewport, state);
+  const coverLeft = 16;
+  const coverTop = topLayout.heartsY;
+  const scoreLeft = coverLeft + coverSize + HUD_SONG_COVER_GAP;
+  const labelHeight = HUD_LABEL_FONT_SIZE;
+  const digitHeight = getHudFontDigitTextMetrics(ctx, HUD_SCORE_SLOT_TEXT, {
+    fontSize: HUD_SCORE_FONT_SIZE,
+    fontFamily: PIXEL_FONT_EN_FAMILY,
+    fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
+  }).height;
+  const scoreGroupHeight = labelHeight + HUD_SCORE_GROUP_GAP + digitHeight;
+  const scoreTop = coverTop + Math.round((coverSize - scoreGroupHeight) / 2);
+  const labelTop = scoreTop;
+  const valueTop = labelTop + labelHeight + HUD_SCORE_GROUP_GAP;
 
-    drawHudComboValue(ctx, value, valueX, rect.top + HUD_VALUE_OFFSET_Y, {
-      align,
-      valign: "top",
-      scale: HUD_SPRITE_DIGIT_SCALE,
-      gap: HUD_SPRITE_DIGIT_GAP,
-      color: UI_BRIGHT_TEXT,
-    });
-  };
+  ctx.save();
+  drawPixelCoverFrame(ctx, coverLeft, coverTop, coverSize, coverSize);
+  if (!drawImageCover(ctx, uiState.songCoverImage, coverLeft, coverTop, coverSize, coverSize)) {
+    ctx.fillStyle = "rgba(247, 244, 232, 0.18)";
+    ctx.fillRect(coverLeft, coverTop, coverSize, coverSize);
+  }
+
+  drawCleanTrackedText(ctx, "SCORE", scoreLeft, labelTop, {
+    align: "left",
+    valign: "top",
+    fontSize: HUD_LABEL_FONT_SIZE,
+    fontFamily: PIXEL_FONT_EN_FAMILY,
+    fontWeight: HUD_LABEL_FONT_WEIGHT,
+    color: UI_GOLD_TEXT,
+    tracking: HUD_LABEL_TRACKING,
+    paddingX: HUD_LABEL_GLYPH_PADDING_X,
+  });
+
+  drawHudScoreValue(ctx, scoreText, scoreLeft - 1, valueTop, {
+    align: "left",
+    valign: "top",
+    fontSize: HUD_SCORE_FONT_SIZE,
+    fontFamily: PIXEL_FONT_EN_FAMILY,
+    fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
+    color: UI_BRIGHT_TEXT,
+  });
+  ctx.restore();
+}
+
+function drawLifePauseHud(ctx, viewport, state, hudLayout = null) {
+  const {
+    maxLives,
+    pauseRect,
+    heartScale,
+    heartWidth,
+    heartGap,
+    heartsStartX,
+    heartsY,
+  } = hudLayout || getTopHudLayout(viewport, state);
 
   ctx.save();
   for (let index = 0; index < maxLives; index += 1) {
+    const filled = index >= maxLives - (state.lives || 0);
     drawPixelHeart(
       ctx,
       heartsStartX + index * (heartWidth + heartGap),
       heartsY,
-      index < (state.lives || 0),
+      filled,
       heartScale,
-      index < (state.lives || 0) ? 1 : 0.68
+      filled ? 1 : 0.68
     );
   }
-
-  drawScoreHudCard(scoreRect, "SCORE", scoreText, {
-    valueOffsetX: -1,
-  });
-  drawComboHudCard(comboRect, "COMBO", comboText, {
-    align: "right",
-    valueOffsetX: -1,
-  });
 
   drawPixelHudPlate(
     ctx,
@@ -4594,13 +4784,132 @@ function drawHud(ctx, viewport, state, uiState = {}) {
       cut: 6,
       step: 2,
       shadowOffset: 2,
-      shadowColor: hudPlateShadow,
-      fillColor: hudPlateFill,
+      shadowColor: HUD_PLATE_SHADOW,
+      fillColor: HUD_PLATE_FILL,
     }
   );
   ctx.fillStyle = UI_BRIGHT_TEXT;
   ctx.fillRect(pauseRect.left + 8, pauseRect.top + 7, 2, 11);
   ctx.fillRect(pauseRect.left + 15, pauseRect.top + 7, 2, 11);
+  ctx.restore();
+}
+
+function getLatestComboPulse(effects = []) {
+  for (let index = effects.length - 1; index >= 0; index -= 1) {
+    const effect = effects[index];
+    if (effect.kind === "comboPulse") {
+      return effect;
+    }
+  }
+  return null;
+}
+
+function getComboPulseScale(progress) {
+  const clamped = clamp(progress, 0, 1);
+
+  if (clamped < 0.16) {
+    return lerp(1, CENTER_COMBO_PULSE_PEAK_SCALE, easeOutCubic(clamped / 0.16));
+  }
+
+  if (clamped < 0.52) {
+    return lerp(
+      CENTER_COMBO_PULSE_PEAK_SCALE,
+      CENTER_COMBO_PULSE_SETTLE_DIP_SCALE,
+      easeOutCubic((clamped - 0.16) / 0.36)
+    );
+  }
+
+  return lerp(CENTER_COMBO_PULSE_SETTLE_DIP_SCALE, 1, easeOutCubic((clamped - 0.52) / 0.48));
+}
+
+function drawCenterComboHud(ctx, viewport, lane, state) {
+  const comboValue = Math.max(0, Math.round(Number(state.combo) || 0));
+  const comboText = String(comboValue);
+  const numberSize = clamp(
+    viewport.width * CENTER_COMBO_NUMBER_WIDTH_RATIO,
+    CENTER_COMBO_NUMBER_MIN_SIZE,
+    CENTER_COMBO_NUMBER_MAX_SIZE
+  );
+  const labelSize = clamp(
+    viewport.width * CENTER_COMBO_LABEL_WIDTH_RATIO,
+    CENTER_COMBO_LABEL_MIN_SIZE,
+    CENTER_COMBO_LABEL_MAX_SIZE
+  );
+  const comboOffset = clamp(
+    viewport.height * CENTER_COMBO_OFFSET_RATIO,
+    CENTER_COMBO_OFFSET_MIN,
+    CENTER_COMBO_OFFSET_MAX
+  );
+  const centerX = lane.centerX;
+  const numberY = lane.targetY - comboOffset;
+  const labelY = numberY + numberSize * CENTER_COMBO_LABEL_OFFSET_RATIO;
+  const comboPulse = getLatestComboPulse(state.effects);
+  const pulseProgress = comboPulse
+    ? clamp(comboPulse.age / Math.max(0.001, comboPulse.duration), 0, 1)
+    : 1;
+  const pulseScale = comboPulse ? getComboPulseScale(pulseProgress) : 1;
+  const ghostAlpha = comboPulse
+    ? CENTER_COMBO_GHOST_MAX_ALPHA * Math.pow(Math.max(0, 1 - pulseProgress / 0.3), 1.35)
+    : 0;
+  const comboAlpha = comboValue > 0 ? 0.96 : 0.34;
+  const textColor = comboValue > 0 ? UI_BRIGHT_TEXT : HUD_SCORE_PLACEHOLDER_COLOR;
+  const shadowColor = comboValue > 0 ? UI_WARM_SHADOW : HUD_SCORE_PLACEHOLDER_SHADOW_COLOR;
+
+  ctx.save();
+  ctx.globalAlpha = comboAlpha;
+  if (ghostAlpha > 0) {
+    ctx.save();
+    ctx.globalAlpha = ghostAlpha;
+    ctx.translate(centerX, numberY);
+    ctx.scale(pulseScale + CENTER_COMBO_GHOST_SCALE_BOOST, pulseScale + CENTER_COMBO_GHOST_SCALE_BOOST);
+    drawHudDigitText(ctx, comboText, 0, 0, {
+      align: "center",
+      valign: "middle",
+      useSpriteDigits: false,
+      fontSize: numberSize,
+      fontFamily: PIXEL_FONT_EN_FAMILY,
+      fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
+      color: UI_BRIGHT_TEXT,
+    });
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.translate(centerX, numberY);
+  ctx.scale(pulseScale, pulseScale);
+  drawHudDigitText(ctx, comboText, 0, 0, {
+    align: "center",
+    valign: "middle",
+    useSpriteDigits: false,
+    fontSize: numberSize,
+    fontFamily: PIXEL_FONT_EN_FAMILY,
+    fontWeight: CLEAN_DIGIT_FONT_WEIGHT,
+    color: textColor,
+  });
+  ctx.restore();
+  drawCleanTrackedText(ctx, "COMBO", centerX, labelY, {
+    align: "center",
+    valign: "top",
+    fontSize: labelSize,
+    fontFamily: PIXEL_FONT_EN_FAMILY,
+    fontWeight: HUD_LABEL_FONT_WEIGHT,
+    color: comboValue > 0 ? UI_BRIGHT_TEXT : HUD_SCORE_PLACEHOLDER_COLOR,
+    shadowColor,
+    shadowOffsetX: 1,
+    shadowOffsetY: 1,
+    tracking: 0.35,
+  });
+  ctx.restore();
+}
+
+function drawHud(ctx, viewport, state, uiState = {}, lane = null) {
+  ctx.save();
+  const topHudLayout = getTopHudLayout(viewport, state);
+  drawSongProgressTimeline(ctx, viewport, state);
+  drawSongCoverScoreHud(ctx, viewport, state, uiState, topHudLayout);
+  drawLifePauseHud(ctx, viewport, state, topHudLayout);
+  if (lane) {
+    drawCenterComboHud(ctx, viewport, lane, state);
+  }
   ctx.restore();
   ctx.textAlign = "left";
 }
@@ -5287,7 +5596,7 @@ function renderFrame(ctx, viewport, state, uiState = {}) {
     drawEffects(ctx, viewport, lane, state.effects, uiState.characterSprites);
   }
   if (!uiState.gameOverOverlayActive) {
-    drawHud(ctx, viewport, state, uiState);
+    drawHud(ctx, viewport, state, uiState, lane);
   }
   if (uiState.gameOverOverlayActive) {
     drawGameOverOverlay(ctx, viewport, uiState.gameOverOverlayProgress || 0);

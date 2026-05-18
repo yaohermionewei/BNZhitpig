@@ -9,6 +9,7 @@ const NOTE_SCORE_WEIGHTS = Object.freeze({
 });
 const DEFAULT_MAX_LIVES = 5;
 const END_RUN_ON_ZERO_LIVES = true;
+const COMBO_PULSE_DURATION = 0.36;
 
 function cloneNotes(chart) {
   return chart.notes.map((note, index) => ({
@@ -185,6 +186,12 @@ function applySuccess(state, note, kind, diff, options = {}) {
     addScore(state, getNoteScore(note, kind));
     state.judgementText = "Good";
   }
+
+  addEffect(state, {
+    kind: "comboPulse",
+    age: 0,
+    duration: COMBO_PULSE_DURATION,
+  });
 
   pushBurst(state, kind, note.id, {
     direction: options.direction || note.direction,
