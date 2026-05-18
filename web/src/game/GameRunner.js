@@ -18,7 +18,7 @@ import { buildResultSummary } from "./result.js";
 import { normalizeStartTheme, getStartThemeLoadingColors } from "../utils/start-theme.js";
 
 const INTRO_DURATION = 0.82;
-const FAILURE_SEQUENCE_DURATION = 0.46;
+const ENDING_SEQUENCE_DURATION = 1.5;
 const DIRECTION_GESTURE_MIN_DISTANCE = 28;
 const DIRECTION_GESTURE_AXIS_RATIO = 1.15;
 const RABBIT_WAND_SWING_VARIANT = 2;
@@ -46,7 +46,7 @@ function randomBetween(min, max) {
 }
 
 function createFailureSequenceState() {
-  return { active: false, elapsed: 0, duration: 1 };
+  return { active: false, elapsed: 0, duration: 1, kind: "failed" };
 }
 
 function createRabbitWandAnimationState() {
@@ -443,7 +443,11 @@ export class GameRunner {
           this.finishRun();
         }
       } else {
-        this.finishRun();
+        if (!this.failureSequence.active) {
+          this.startFailureSequence("completed");
+        } else if (failureSequenceFinished) {
+          this.finishRun();
+        }
       }
     }
   }
@@ -472,6 +476,7 @@ export class GameRunner {
         gameOverOverlayProgress: this.failureSequence
           ? this.failureSequence.elapsed / Math.max(0.001, this.failureSequence.duration)
           : 0,
+        gameOverOverlayKind: this.failureSequence?.kind || "failed",
         selectedSongId: this.song.id,
         songTitle: this.song.title,
         songCoverImage: this.songCoverImage,
@@ -619,15 +624,18 @@ export class GameRunner {
     );
   }
 
-  startFailureSequence() {
+  startFailureSequence(kind = "failed") {
     if (this.failureSequence.active) return;
-    this.audioStartToken += 1;
     this.failureSequence.active = true;
     this.failureSequence.elapsed = 0;
-    this.failureSequence.duration = FAILURE_SEQUENCE_DURATION;
+    this.failureSequence.duration = ENDING_SEQUENCE_DURATION;
+    this.failureSequence.kind = kind;
     this.resetInputGesture();
-    this.audio.pause();
-    this.audio.playEffect(GAME_OVER_EFFECT_SOURCE, { playbackRate: 0.76, volume: 1 });
+    if (kind === "failed") {
+      this.audioStartToken += 1;
+      this.audio.pause();
+      this.audio.playEffect(GAME_OVER_EFFECT_SOURCE, { playbackRate: 0.76, volume: 1 });
+    }
   }
 
   updateFailureSequence(dt) {
@@ -848,6 +856,10 @@ export class GameRunner {
     if (this.started && this.state?.ended) {
       if (this.state.failed) {
         if (!this.failureSequence.active) this.startFailureSequence();
+        return false;
+      }
+      if (!this.failureSequence.active) {
+        this.startFailureSequence("completed");
         return false;
       }
       this.finishRun();

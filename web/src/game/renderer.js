@@ -217,6 +217,12 @@ const FEEDBACK_TEXT_MAX_OFFSET = 140;
 const FEEDBACK_TEXT_OFFSET_RATIO = 0.135;
 const FEEDBACK_TEXT_TRACKING = 0.4;
 const GAME_OVER_TEXT_TRACKING = 1.6;
+const ENDING_OVERLAY_ZH_FONT_FAMILY = `"PixelZhFusion", "PingFang SC", "Helvetica Neue", sans-serif`;
+const ENDING_OVERLAY_TITLE_TRACKING = 0.8;
+const ENDING_OVERLAY_SUBTITLE_TRACKING = 1.1;
+const ENDING_OVERLAY_COMPLETED_GOLD = "#FAE18A";
+const ENDING_OVERLAY_COMPLETED_SHADOW = "rgba(105, 63, 24, 0.92)";
+const ENDING_OVERLAY_FAILED_SHADOW = "rgba(34, 16, 24, 0.68)";
 const PERFECT_FEEDBACK_MAIN = "#6EDE7D";
 const GOOD_FEEDBACK_MAIN = "#8BDDFF";
 const MISS_FEEDBACK_MAIN = "#FF7F90";
@@ -819,6 +825,77 @@ function drawCleanTrackedText(ctx, text, x, y, options = {}) {
     ctx.fillStyle = color;
     ctx.fillText(char, cursorX, baselineY);
     cursorX += charWidths[index] + tracking;
+  });
+
+  ctx.restore();
+}
+
+function drawSegmentedTrackedText(ctx, segments, x, y, options = {}) {
+  const normalizedSegments = segments
+    .map((segment) => ({
+      text: segment?.text === undefined || segment?.text === null ? "" : String(segment.text),
+      color: segment?.color || options.color || "#ffffff",
+    }))
+    .filter((segment) => segment.text);
+
+  if (normalizedSegments.length === 0) {
+    return;
+  }
+
+  const tracking = options.tracking === undefined ? 0 : options.tracking;
+  const align = options.align || "left";
+  const valign = options.valign || "top";
+  const fontSize = options.fontSize || 8;
+  const fontFamily = options.fontFamily || "sans-serif";
+  const fontWeight = options.fontWeight || "400";
+  const shadowColor = options.shadowColor || null;
+  const shadowOffsetX = options.shadowOffsetX === undefined ? 0 : options.shadowOffsetX;
+  const shadowOffsetY = options.shadowOffsetY === undefined ? 0 : options.shadowOffsetY;
+  const glyphs = [];
+
+  ctx.save();
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
+  normalizedSegments.forEach((segment) => {
+    Array.from(segment.text).forEach((char) => {
+      glyphs.push({
+        char,
+        color: segment.color,
+        width: ctx.measureText(char).width,
+      });
+    });
+  });
+
+  const totalWidth =
+    glyphs.reduce((sum, glyph) => sum + glyph.width, 0) + tracking * Math.max(0, glyphs.length - 1);
+  let drawX = x;
+  let drawY = y;
+
+  if (align === "center") {
+    drawX -= totalWidth / 2;
+  } else if (align === "right") {
+    drawX -= totalWidth;
+  }
+
+  if (valign === "middle") {
+    drawY -= fontSize * 0.5;
+  } else if (valign === "bottom") {
+    drawY -= fontSize;
+  }
+
+  let cursorX = snapToGrid(drawX, 1);
+  const baselineY = snapToGrid(drawY, 1);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+
+  glyphs.forEach((glyph) => {
+    if (shadowColor) {
+      ctx.fillStyle = shadowColor;
+      ctx.fillText(glyph.char, cursorX + shadowOffsetX, baselineY + shadowOffsetY);
+    }
+    ctx.fillStyle = glyph.color;
+    ctx.fillText(glyph.char, cursorX, baselineY);
+    cursorX += glyph.width + tracking;
   });
 
   ctx.restore();
@@ -5663,26 +5740,111 @@ function drawPauseOverlay(ctx, viewport, options = {}) {
   ctx.textBaseline = "alphabetic";
 }
 
-function drawGameOverOverlay(ctx, viewport, progress = 1) {
+function getEndingOverlayHitCount(state) {
+  return Math.max(
+    0,
+    Math.round(Number(state?.hits?.perfect || 0) + Number(state?.hits?.good || 0))
+  );
+}
+
+function getEndingTitleScale(progress) {
   const clamped = clamp(progress, 0, 1);
-  const eased = easeOutCubic(clamped);
-  const veilAlpha = 0.22 + clamped * 0.42;
-  const titleScale = 2.2 + eased * 0.8;
-  const titleY = snapToGrid(viewport.height * 0.47 - clamped * 6, 1);
+  return lerp(0.8, 1.2, easeOutCubic(clamped));
+}
+
+function getEndingOverlayVeilAlpha(kind, progress) {
+  const clamped = clamp(progress, 0, 1);
+
+  if (kind === "completed") {
+    return 0.36 + easeOutCubic(clamped) * 0.32;
+  }
+
+  return 0.18 + clamped * 0.4;
+}
+
+function drawCompletedEndingSparkles(ctx, centerX, centerY, progress, scale = 1) {
+  const clamped = clamp(progress, 0, 1);
+  const twinkleA = 0.72 + Math.sin(clamped * Math.PI * 8) * 0.24;
+  const twinkleB = 0.68 + Math.sin(clamped * Math.PI * 8 + Math.PI * 0.58) * 0.22;
+  const twinkleC = 0.62 + Math.sin(clamped * Math.PI * 8 + Math.PI * 1.12) * 0.2;
+  const starScaleA = (0.98 + Math.sin(clamped * Math.PI * 8 + Math.PI * 0.2) * 0.1) * scale;
+  const starScaleB = (0.92 + Math.sin(clamped * Math.PI * 8 + Math.PI * 0.82) * 0.08) * scale;
+  const colors = {
+    outline: "#b46d22",
+    core: "#ffd75f",
+    highlight: "#fff7ca",
+  };
 
   ctx.save();
-  ctx.fillStyle = `rgba(16, 8, 7, ${veilAlpha.toFixed(3)})`;
+  ctx.imageSmoothingEnabled = false;
+  drawPixelImpactStar(ctx, centerX - 120 * scale, centerY - 22 * scale, 5.4 * starScaleA, colors, twinkleA);
+  drawPixelImpactStar(ctx, centerX + 118 * scale, centerY - 19 * scale, 5.4 * starScaleB, colors, twinkleB);
+  drawPixelImpactStar(ctx, centerX - 82 * scale, centerY + 31 * scale, 4.4 * starScaleB, colors, twinkleC);
+  drawPixelImpactStar(ctx, centerX + 84 * scale, centerY + 30 * scale, 4.4 * starScaleA, colors, twinkleA * 0.86);
+  drawPixelImpactStar(ctx, centerX - 151 * scale, centerY + 6 * scale, 3.4 * starScaleB, colors, twinkleB * 0.72);
+  drawPixelImpactStar(ctx, centerX + 151 * scale, centerY + 4 * scale, 3.4 * starScaleA, colors, twinkleC * 0.74);
+  ctx.restore();
+}
+
+function drawEndingOverlay(ctx, viewport, state, options = {}) {
+  const progress = options.progress === undefined ? 1 : options.progress;
+  const kind = options.kind === "completed" ? "completed" : "failed";
+  const clamped = clamp(progress, 0, 1);
+  const veilAlpha = getEndingOverlayVeilAlpha(kind, clamped);
+  const titleScale = getEndingTitleScale(clamped);
+  const centerX = viewport.width / 2;
+  const centerY = snapToGrid(viewport.height * 0.47 - clamped * 5, 1);
+  const shadowColor =
+    kind === "completed" ? ENDING_OVERLAY_COMPLETED_SHADOW : ENDING_OVERLAY_FAILED_SHADOW;
+
+  ctx.save();
+  ctx.fillStyle = `rgba(8, 7, 10, ${veilAlpha.toFixed(3)})`;
   ctx.fillRect(0, 0, viewport.width, viewport.height);
 
-  drawCleanTrackedText(ctx, "GAME OVER", viewport.width / 2, titleY, {
-    align: "center",
-    valign: "middle",
-    fontSize: 18 * titleScale,
-    fontFamily: PIXEL_FONT_EN_FAMILY,
-    fontWeight: "400",
-    color: MISS_FEEDBACK_MAIN,
-    tracking: GAME_OVER_TEXT_TRACKING,
-  });
+  if (kind === "completed") {
+    drawCompletedEndingSparkles(ctx, centerX, centerY, clamped, titleScale);
+    drawCleanTrackedText(ctx, "爆锤圆满结束！", centerX, centerY, {
+      align: "center",
+      valign: "middle",
+      fontSize: 27 * titleScale,
+      fontFamily: ENDING_OVERLAY_ZH_FONT_FAMILY,
+      fontWeight: "400",
+      color: ENDING_OVERLAY_COMPLETED_GOLD,
+      shadowColor,
+      shadowOffsetX: 2,
+      shadowOffsetY: 2,
+      tracking: ENDING_OVERLAY_TITLE_TRACKING,
+    });
+  } else {
+    const hitCount = getEndingOverlayHitCount(state);
+    drawSegmentedTrackedText(ctx, [
+      { text: "爆锤方猪", color: MISS_FEEDBACK_MAIN },
+      { text: hitCount, color: UI_BRIGHT_TEXT },
+      { text: "次", color: MISS_FEEDBACK_MAIN },
+    ], centerX, centerY - 20, {
+      align: "center",
+      valign: "middle",
+      fontSize: 27 * titleScale,
+      fontFamily: ENDING_OVERLAY_ZH_FONT_FAMILY,
+      fontWeight: "400",
+      shadowColor,
+      shadowOffsetX: 2,
+      shadowOffsetY: 2,
+      tracking: ENDING_OVERLAY_TITLE_TRACKING,
+    });
+    drawCleanTrackedText(ctx, "未完待续", centerX, centerY + 25, {
+      align: "center",
+      valign: "middle",
+      fontSize: 22 * titleScale,
+      fontFamily: ENDING_OVERLAY_ZH_FONT_FAMILY,
+      fontWeight: "400",
+      color: MISS_FEEDBACK_MAIN,
+      shadowColor,
+      shadowOffsetX: 2,
+      shadowOffsetY: 2,
+      tracking: ENDING_OVERLAY_SUBTITLE_TRACKING,
+    });
+  }
 
   ctx.restore();
   ctx.textAlign = "left";
@@ -5751,7 +5913,10 @@ function renderFrame(ctx, viewport, state, uiState = {}) {
     drawHud(ctx, viewport, state, uiState, lane);
   }
   if (uiState.gameOverOverlayActive) {
-    drawGameOverOverlay(ctx, viewport, uiState.gameOverOverlayProgress || 0);
+    drawEndingOverlay(ctx, viewport, state, {
+      progress: uiState.gameOverOverlayProgress || 0,
+      kind: uiState.gameOverOverlayKind,
+    });
   } else if (uiState.paused && !uiState.useDomPauseOverlay) {
     drawPauseOverlay(ctx, viewport, {
       startTheme: uiState.startTheme,
