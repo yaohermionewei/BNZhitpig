@@ -51,6 +51,7 @@ const RABBIT_IDLE_PIXEL_BOB_PATTERN = Object.freeze([0, -1, -2, -1, 0, 1, 0, 0])
 const RABBIT_IDLE_PIXEL_BOB_SPEED = 5.4;
 const RABBIT_IDLE_PIXEL_BOB_PHASE = 0.7;
 const NOTE_ENTRY_Y = 183;
+const NOTE_FALL_SPEED_MULTIPLIER = 1.3;
 const STAGE_CARPET_TOP = 205;
 const LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH = 402;
 const LANE_HIT_FLASH_CALIBRATION_BASE_HEIGHT = 782;
@@ -2552,7 +2553,8 @@ function getLaneMetrics(viewport, introProgress = 1) {
     bottom,
     noteEntryY: NOTE_ENTRY_Y,
     targetY,
-    pixelsPerSecond: viewport.height * lerp(0.34, 0.42, transition.cameraProgress),
+    pixelsPerSecond:
+      viewport.height * lerp(0.34, 0.42, transition.cameraProgress) * NOTE_FALL_SPEED_MULTIPLIER,
     cameraProgress: transition.cameraProgress,
     rabbitTurnProgress: transition.rabbitTurnProgress,
     introAmount: transition.introAmount,
