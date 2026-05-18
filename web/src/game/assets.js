@@ -31,7 +31,7 @@ const GAME_SCENE_BACKGROUND_SOURCES = {
 
 export const RESULT_CERTIFICATE_BACKGROUND_SOURCES = Object.freeze({
   dark: "/assets/images/结算页新dark.runtime.webp",
-  light: "",
+  light: "/assets/images/结算页新light.runtime.webp",
 });
 
 export const RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES = Object.freeze({

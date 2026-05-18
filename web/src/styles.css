@@ -2085,6 +2085,10 @@ button {
   background: #120d12;
 }
 
+.result-certificate-page.page-light {
+  background: #e8c08c;
+}
+
 .result-certificate-background {
   position: absolute;
   inset: 0;
@@ -2465,6 +2469,12 @@ button {
   color: #f3e7d5;
   text-align: center;
   pointer-events: auto;
+}
+
+.result-certificate-page.page-light .result-certificate-button {
+  --result-certificate-button-fill: #ee8d4a;
+  --result-certificate-button-border-color: #6b3418;
+  color: #fff0d7;
 }
 
 .result-certificate-button-shadow {

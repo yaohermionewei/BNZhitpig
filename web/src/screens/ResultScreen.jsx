@@ -700,11 +700,11 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     () => (summary ? decorateSummary(summary) : null),
     [summary]
   );
+  const certificateBackgroundSrc = getResultCertificateBackgroundSource(normalizedStartTheme);
+  const usesCertificateResult = Boolean(decoratedSummary && certificateBackgroundSrc);
   const [currentRabbitFrame, setCurrentRabbitFrame] = useState(0);
   const [isLeavingHome, setIsLeavingHome] = useState(false);
-  const [isPreparingResult, setIsPreparingResult] = useState(
-    Boolean(decoratedSummary && normalizedStartTheme === "dark")
-  );
+  const [isPreparingResult, setIsPreparingResult] = useState(usesCertificateResult);
   const homeTimerRef = useRef(0);
 
   useEffect(() => {
@@ -723,7 +723,7 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   );
 
   useEffect(() => {
-    if (!decoratedSummary || normalizedStartTheme !== "dark") {
+    if (!usesCertificateResult) {
       setIsPreparingResult(false);
       return undefined;
     }
@@ -751,6 +751,7 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     decoratedSummary?.completedAt,
     decoratedSummary?.rankImageSrc,
     decoratedSummary?.songCoverImageSrc,
+    usesCertificateResult,
     normalizedStartTheme,
   ]);
 
@@ -798,7 +799,7 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     );
   }
 
-  if (normalizedStartTheme === "dark") {
+  if (usesCertificateResult) {
     return (
       <div className={`${pageClasses} result-certificate-page`}>
         {!isPreparingResult && (
