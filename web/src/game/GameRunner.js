@@ -172,6 +172,7 @@ export class GameRunner {
     this.pauseReason = null;
     this.introActive = false;
     this.introElapsed = 0;
+    this.magicVisualTime = 0;
     this.startingAudio = false;
     this.pendingAudioStart = false;
     this.audioStartToken = 0;
@@ -232,6 +233,7 @@ export class GameRunner {
     this.pauseReason = null;
     this.introActive = true;
     this.introElapsed = 0;
+    this.magicVisualTime = 0;
     this.startingAudio = false;
     this.pendingAudioStart = false;
     this.audioStartToken += 1;
@@ -370,6 +372,9 @@ export class GameRunner {
       const now = timestamp || performance.now();
       const dt = Math.min(0.05, (now - this.lastTimestamp) / 1000);
       this.lastTimestamp = now;
+      if (this.started && !this.isPaused) {
+        this.magicVisualTime += dt;
+      }
       const updateResult = this.update(dt);
       if (updateResult && typeof updateResult.catch === "function") {
         updateResult.catch((error) => this.handleUpdateError(error));
@@ -486,6 +491,7 @@ export class GameRunner {
         audioDebugText: "",
         introProgress,
         sceneTime,
+        magicVisualTime: this.magicVisualTime,
         showLaneBase: false,
         gameplayActive: this.started && !this.introActive,
         rabbitWandAnimation: this.rabbitWandAnimation,

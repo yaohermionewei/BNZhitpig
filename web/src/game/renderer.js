@@ -26,6 +26,20 @@ const PIG_BASE_HEIGHT = 48;
 const PIG_FRONT_DRAW_SCALE = 0.93;
 const PIG_SIDE_DRAW_SCALE = 0.98;
 const PIG_GLASSES_LAUNCH_WIDTH_RATIO = 1.15;
+const SWIPE_PIG_ARROW_FILL = "#ffdc73";
+const SWIPE_PIG_ARROW_HIGHLIGHT = "#fff2a8";
+const SWIPE_PIG_ARROW_SHADOW = "rgba(55, 32, 12, 0.38)";
+const SWIPE_PIG_ARROW_MASK = Object.freeze([
+  "....X....",
+  "....XX...",
+  "....XXX..",
+  "XXXXXXXX.",
+  "XXXXXXXXX",
+  "XXXXXXXX.",
+  "....XXX..",
+  "....XX...",
+  "....X....",
+]);
 const HOLD_TAIL_BASE_HEIGHT = 24;
 const HOLD_TAIL_DRAW_SCALE = 0.92;
 const HOLD_BODY_SEGMENT_BASE = 7;
@@ -78,6 +92,40 @@ const IMPACT_ZONE_LINE_TO_CARPET_RATIO = 182.2 / IMPACT_ZONE_CARPET_WIDTH_BASELI
 const IMPACT_ZONE_ELLIPSE_Y_OFFSET = 2;
 const IMPACT_ZONE_INNER_ELLIPSE_Y_OFFSET = 2;
 const IMPACT_ZONE_HIGHLIGHT_Y_OFFSET = 1;
+const IMPACT_ZONE_MAGIC_DUST_SEEDS = Object.freeze([
+  Object.freeze({ x: 0.04, phase: 0.07, size: 2, speed: 0.82, drift: -1.2 }),
+  Object.freeze({ x: 0.1, phase: 0.29, size: 1, speed: 0.96, drift: 0.8 }),
+  Object.freeze({ x: 0.17, phase: 0.42, size: 1, speed: 0.74, drift: -0.7 }),
+  Object.freeze({ x: 0.24, phase: 0.73, size: 1, speed: 0.9, drift: 1.1 }),
+  Object.freeze({ x: 0.31, phase: 0.18, size: 2, speed: 0.78, drift: -0.5 }),
+  Object.freeze({ x: 0.39, phase: 0.91, size: 1, speed: 0.88, drift: 1.4 }),
+  Object.freeze({ x: 0.47, phase: 0.64, size: 1, speed: 1.02, drift: -1 }),
+  Object.freeze({ x: 0.55, phase: 0.48, size: 1, speed: 0.84, drift: 0.7 }),
+  Object.freeze({ x: 0.59, phase: 0.31, size: 2, speed: 0.76, drift: -1.3 }),
+  Object.freeze({ x: 0.66, phase: 0.11, size: 1, speed: 0.94, drift: 1 }),
+  Object.freeze({ x: 0.73, phase: 0.82, size: 1, speed: 0.8, drift: -0.8 }),
+  Object.freeze({ x: 0.8, phase: 0.69, size: 1, speed: 0.98, drift: 1.2 }),
+  Object.freeze({ x: 0.88, phase: 0.53, size: 2, speed: 0.72, drift: -0.9 }),
+  Object.freeze({ x: 0.93, phase: 0.36, size: 1, speed: 0.92, drift: 0.6 }),
+  Object.freeze({ x: 0.97, phase: 0.24, size: 1, speed: 0.86, drift: -0.4 }),
+]);
+const IMPACT_ZONE_RING_DUST_SEEDS = Object.freeze([
+  Object.freeze({ angle: 0.06, phase: 0.12, size: 1, speed: 0.66, drift: -0.8 }),
+  Object.freeze({ angle: 0.18, phase: 0.58, size: 1, speed: 0.72, drift: 0.5 }),
+  Object.freeze({ angle: 0.31, phase: 0.34, size: 2, speed: 0.62, drift: -0.3 }),
+  Object.freeze({ angle: 0.43, phase: 0.81, size: 1, speed: 0.78, drift: 0.9 }),
+  Object.freeze({ angle: 0.58, phase: 0.22, size: 1, speed: 0.68, drift: -0.6 }),
+  Object.freeze({ angle: 0.71, phase: 0.67, size: 2, speed: 0.64, drift: 0.4 }),
+  Object.freeze({ angle: 0.84, phase: 0.45, size: 1, speed: 0.74, drift: -0.7 }),
+  Object.freeze({ angle: 0.94, phase: 0.06, size: 1, speed: 0.7, drift: 0.6 }),
+  Object.freeze({ angle: 0.12, phase: 0.76, size: 1, speed: 0.69, drift: 0.8 }),
+  Object.freeze({ angle: 0.37, phase: 0.18, size: 1, speed: 0.73, drift: -0.5 }),
+  Object.freeze({ angle: 0.64, phase: 0.92, size: 1, speed: 0.67, drift: 0.7 }),
+  Object.freeze({ angle: 0.9, phase: 0.31, size: 1, speed: 0.75, drift: -0.6 }),
+  Object.freeze({ angle: 0.25, phase: 0.04, size: 2, speed: 0.71, drift: 0.5 }),
+  Object.freeze({ angle: 0.5, phase: 0.44, size: 1, speed: 0.76, drift: -0.8 }),
+  Object.freeze({ angle: 0.77, phase: 0.86, size: 2, speed: 0.65, drift: 0.6 }),
+]);
 const NOTE_ENTRY_FADE_DISTANCE = 22;
 const NOTE_ENTRY_SOFT_FADE_DISTANCE = 42;
 const RABBIT_OCCLUSION_SOFT_FADE_DISTANCE = 28;
@@ -563,6 +611,45 @@ function easeOutCubic(value) {
 
 function easeInOutSine(value) {
   return -(Math.cos(Math.PI * value) - 1) / 2;
+}
+
+function triangleWave(value) {
+  const normalized = ((value % 1) + 1) % 1;
+  return 1 - Math.abs(normalized * 2 - 1);
+}
+
+function getMagicDustLife(sceneTime, seed) {
+  return (sceneTime * (seed.speed || 0.8) + seed.phase) % 1;
+}
+
+function getMagicDustAlpha(life) {
+  if (life < 0.15) {
+    return easeOutCubic(life / 0.15);
+  }
+
+  if (life < 0.54) {
+    return 1;
+  }
+
+  return 1 - easeInOutSine((life - 0.54) / 0.46);
+}
+
+function getMagicDustSize(seed, life) {
+  const baseSize = seed.size || 1;
+
+  if (life < 0.18) {
+    return Math.max(1, baseSize);
+  }
+
+  if (life < 0.46) {
+    return Math.min(3, baseSize + 1);
+  }
+
+  if (life > 0.84) {
+    return 1;
+  }
+
+  return baseSize;
 }
 
 function drawRoundedRect(ctx, x, y, width, height, radius) {
@@ -1440,6 +1527,44 @@ function drawPixelEllipseFill(ctx, centerX, centerY, radiusX, radiusY, color, al
   ctx.restore();
 }
 
+function drawPixelEllipseStroke(ctx, centerX, centerY, radiusX, radiusY, thickness, color, alpha = 1) {
+  const baseX = snapToGrid(centerX, 1);
+  const baseY = snapToGrid(centerY, 1);
+  const safeRadiusX = Math.max(2, Math.round(radiusX));
+  const safeRadiusY = Math.max(2, Math.round(radiusY));
+  const safeThickness = Math.max(1, Math.round(thickness));
+  const innerRadiusX = Math.max(1, safeRadiusX - safeThickness);
+  const innerRadiusY = Math.max(1, safeRadiusY - safeThickness);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = color;
+
+  for (let row = -safeRadiusY; row <= safeRadiusY; row += 1) {
+    const outerRatio = 1 - (row * row) / (safeRadiusY * safeRadiusY || 1);
+    if (outerRatio < 0) {
+      continue;
+    }
+
+    const outerSpan = Math.max(1, Math.round(safeRadiusX * Math.sqrt(outerRatio)));
+    const innerRatio = 1 - (row * row) / (innerRadiusY * innerRadiusY || 1);
+    const innerSpan = innerRatio > 0 ? Math.round(innerRadiusX * Math.sqrt(innerRatio)) : 0;
+    const y = baseY + row;
+
+    if (innerSpan <= 0) {
+      ctx.fillRect(baseX - outerSpan, y, outerSpan * 2 + 1, 1);
+      continue;
+    }
+
+    const bandWidth = Math.max(1, outerSpan - innerSpan);
+    ctx.fillRect(baseX - outerSpan, y, bandWidth, 1);
+    ctx.fillRect(baseX + innerSpan + 1, y, bandWidth, 1);
+  }
+
+  ctx.restore();
+}
+
 function drawPixelStampRing(
   ctx,
   centerX,
@@ -1474,6 +1599,262 @@ function drawPixelStampRing(
     }
     visited.add(key);
     ctx.fillRect(drawX - halfStamp, drawY - halfStamp, safeStampSize, safeStampSize);
+  }
+
+  ctx.restore();
+}
+
+function drawMagicEllipseBorder(ctx, centerX, centerY, radiusX, radiusY, pulse) {
+  const borderPulse = 0.9 + pulse * 0.1;
+
+  drawPixelEllipseStroke(
+    ctx,
+    centerX,
+    centerY,
+    radiusX + 3,
+    radiusY + 2,
+    2,
+    "#EAB14A",
+    0.28 * borderPulse
+  );
+  drawPixelEllipseStroke(
+    ctx,
+    centerX,
+    centerY,
+    radiusX + 1,
+    radiusY,
+    1,
+    "#FFF0B0",
+    0.18 * borderPulse
+  );
+  drawPixelEllipseStroke(
+    ctx,
+    centerX,
+    centerY,
+    radiusX - 2,
+    Math.max(4, radiusY - 2),
+    1,
+    "#C9832F",
+    0.12 * borderPulse
+  );
+}
+
+function drawMagicEllipseSweep(ctx, centerX, centerY, radiusX, radiusY, sceneTime) {
+  const safeRadiusX = Math.max(2, Math.round(radiusX + 3));
+  const safeRadiusY = Math.max(2, Math.round(radiusY + 2));
+  const cycle = (sceneTime / 4.8) % 1;
+  const sweepCenter = cycle * Math.PI * 2;
+  const sweepArc = Math.PI * 2 * 0.09;
+  const stepCount = 18;
+  const visited = new Set();
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+
+  for (let index = 0; index <= stepCount; index += 1) {
+    const localProgress = index / stepCount;
+    const localOffset = (localProgress - 0.5) * sweepArc;
+    const angle = sweepCenter + localOffset;
+    const edgeFade = 1 - Math.abs(localProgress - 0.5) * 2;
+    const alpha = easeInOutSine(Math.max(0, edgeFade)) * 0.42;
+    const drawX = snapToGrid(centerX + Math.cos(angle) * safeRadiusX, 1);
+    const drawY = snapToGrid(centerY + Math.sin(angle) * safeRadiusY, 1);
+    const key = `${drawX}:${drawY}`;
+
+    if (visited.has(key) || alpha <= 0.03) {
+      continue;
+    }
+    visited.add(key);
+
+    ctx.globalAlpha = alpha * 0.48;
+    ctx.fillStyle = "#FFE08A";
+    ctx.fillRect(drawX - 1, drawY, 3, 1);
+    ctx.fillRect(drawX, drawY - 1, 1, 3);
+
+    ctx.globalAlpha = alpha * 0.78;
+    ctx.fillStyle = "#FFF9D6";
+    ctx.fillRect(drawX, drawY, 1, 1);
+  }
+
+  ctx.restore();
+}
+
+function drawMagicEnergyLine(ctx, options) {
+  const {
+    left,
+    y,
+    width,
+    sceneTime,
+    pulse,
+  } = options;
+  const lineLeft = snapToGrid(left, 1);
+  const lineY = snapToGrid(y, 1);
+  const lineWidth = Math.max(1, snapToGrid(width, 1));
+  const centerY = lineY + 3;
+  const diamondLeft = lineLeft;
+  const diamondRight = lineLeft + lineWidth;
+  const holdPastNode = 12;
+  const taperLength = 26;
+  const taperSteps = 7;
+  const fullLeft = snapToGrid(diamondLeft - holdPastNode, 1);
+  const fullRight = snapToGrid(diamondRight + holdPastNode, 1);
+  const coreLeft = snapToGrid(fullLeft - taperLength, 1);
+  const coreRight = snapToGrid(fullRight + taperLength, 1);
+  const coreWidth = Math.max(8, coreRight - coreLeft);
+  const shimmerCycle = (sceneTime / 2.05) % 1;
+  const shimmerEase = easeInOutSine(shimmerCycle);
+  const shimmerAlpha = triangleWave(shimmerCycle) * 0.16;
+  const shimmerWidth = Math.max(10, Math.round(lineWidth * 0.08));
+  const shimmerX = snapToGrid(
+    coreLeft - shimmerWidth + (coreWidth + shimmerWidth * 2) * shimmerEase,
+    1
+  );
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+
+  ctx.globalAlpha = 0.13 + pulse * 0.03;
+  ctx.fillStyle = "#5A3515";
+  ctx.fillRect(fullLeft - 2, centerY + 5, fullRight - fullLeft + 4, 1);
+
+  const glowSegments = [
+    { row: -4, inset: 5, step: 25, width: 15, height: 1, alpha: 0.14, offset: 0 },
+    { row: -3, inset: 4, step: 17, width: 13, height: 1, alpha: 0.24, offset: 7 },
+    { row: -2, inset: 3, step: 12, width: 11, height: 1, alpha: 0.38, offset: 2 },
+    { row: -1, inset: 2, step: 11, width: 12, height: 1, alpha: 0.42, offset: 5 },
+    { row: 2, inset: 2, step: 11, width: 12, height: 1, alpha: 0.42, offset: 1 },
+    { row: 3, inset: 3, step: 13, width: 12, height: 1, alpha: 0.34, offset: 8 },
+    { row: 4, inset: 5, step: 19, width: 14, height: 1, alpha: 0.22, offset: 3 },
+    { row: 5, inset: 7, step: 28, width: 14, height: 1, alpha: 0.12, offset: 12 },
+  ];
+
+  glowSegments.forEach((segment) => {
+    ctx.globalAlpha = segment.alpha * (0.92 + pulse * 0.16);
+    ctx.fillStyle = Math.abs(segment.row) <= 2 ? "#FFE08A" : "#D69A3B";
+
+    for (
+      let x = fullLeft + segment.inset + segment.offset;
+      x < fullRight - segment.inset;
+      x += segment.step
+    ) {
+      const distanceFromCenter = Math.abs(x + segment.width / 2 - (lineLeft + lineWidth / 2));
+      const centerFalloff = 1 - clamp(distanceFromCenter / (lineWidth / 2), 0, 1) * 0.25;
+      ctx.globalAlpha = segment.alpha * centerFalloff * (0.92 + pulse * 0.16);
+      ctx.fillRect(snapToGrid(x, 1), centerY + segment.row, segment.width, segment.height);
+    }
+  });
+
+  const drawTaperedEnergyLayer = (segment) => {
+    const bodyLeft = fullLeft + segment.inset;
+    const bodyRight = fullRight - segment.inset;
+    const bodyWidth = Math.max(1, bodyRight - bodyLeft);
+    const sideTaperLength = Math.max(4, Math.round(taperLength * (segment.taperScale || 1)));
+    const stepCount = segment.taperSteps || taperSteps;
+    const stepWidth = Math.max(2, Math.ceil(sideTaperLength / stepCount));
+    const minAlphaRatio = segment.minAlphaRatio === undefined ? 0.08 : segment.minAlphaRatio;
+    const minHeight = segment.minHeight === undefined ? 0 : segment.minHeight;
+
+    ctx.fillStyle = segment.color;
+    ctx.globalAlpha = segment.alpha;
+    ctx.fillRect(bodyLeft, centerY + segment.yOffset, bodyWidth, segment.height);
+
+    for (let step = 0; step < stepCount; step += 1) {
+      const progress = (step + 0.5) / stepCount;
+      const easedProgress = easeInOutSine(progress);
+      const alpha = segment.alpha * lerp(0.78, minAlphaRatio, easedProgress);
+      let segmentHeight = segment.height;
+
+      if (alpha <= 0.025) {
+        continue;
+      }
+
+      if (segment.height > minHeight && progress > 0.52) {
+        segmentHeight = Math.max(minHeight, segment.height - 1);
+      }
+
+      if (segmentHeight <= 0) {
+        continue;
+      }
+
+      const taperY =
+        centerY + segment.yOffset + Math.max(0, Math.floor((segment.height - segmentHeight) / 2));
+      const leftX = bodyLeft - stepWidth * (step + 1);
+      const rightX = bodyRight + stepWidth * step;
+
+      ctx.globalAlpha = alpha;
+      ctx.fillRect(leftX, taperY, stepWidth, segmentHeight);
+      ctx.fillRect(rightX, taperY, stepWidth, segmentHeight);
+    }
+  };
+
+  [
+    {
+      inset: 0,
+      alpha: 0.98,
+      color: "#FFF3BE",
+      yOffset: 0,
+      height: 2,
+      minHeight: 1,
+      minAlphaRatio: 0.16,
+      taperScale: 1,
+    },
+    {
+      inset: 1,
+      alpha: 0.82,
+      color: "#FFE08A",
+      yOffset: -1,
+      height: 1,
+      minHeight: 1,
+      minAlphaRatio: 0.1,
+      taperScale: 0.88,
+    },
+    {
+      inset: 1,
+      alpha: 0.72,
+      color: "#FFE08A",
+      yOffset: 2,
+      height: 1,
+      minHeight: 1,
+      minAlphaRatio: 0.1,
+      taperScale: 0.88,
+    },
+    {
+      inset: 4,
+      alpha: 0.42,
+      color: "#F3B54E",
+      yOffset: -2,
+      height: 1,
+      minHeight: 0,
+      minAlphaRatio: 0.05,
+      taperScale: 0.66,
+    },
+    {
+      inset: 5,
+      alpha: 0.34,
+      color: "#F3B54E",
+      yOffset: 3,
+      height: 1,
+      minHeight: 0,
+      minAlphaRatio: 0.04,
+      taperScale: 0.58,
+    },
+  ].forEach(drawTaperedEnergyLayer);
+
+  if (shimmerAlpha > 0.015) {
+    ctx.beginPath();
+    ctx.rect(coreLeft - 2, centerY - 3, coreWidth + 4, 7);
+    ctx.clip();
+    ctx.globalAlpha = shimmerAlpha;
+    ctx.fillStyle = "#FFF9DA";
+    ctx.fillRect(shimmerX, centerY - 1, shimmerWidth, 3);
+    ctx.globalAlpha = shimmerAlpha * 0.68;
+    ctx.fillStyle = "#FFE79A";
+    ctx.fillRect(shimmerX + 2, centerY - 2, Math.max(4, shimmerWidth - 4), 1);
+    ctx.fillRect(shimmerX + 3, centerY + 2, Math.max(3, shimmerWidth - 6), 1);
+    ctx.globalAlpha = shimmerAlpha * 0.24;
+    ctx.fillStyle = "#FFF0B0";
+    ctx.fillRect(shimmerX - 4, centerY - 3, shimmerWidth + 8, 1);
+    ctx.fillRect(shimmerX - 3, centerY + 3, shimmerWidth + 6, 1);
   }
 
   ctx.restore();
@@ -3196,7 +3577,7 @@ function getImpactZoneVisualMetrics(viewport, lane, sceneBackgroundImage) {
   };
 }
 
-function drawImpactZone(ctx, viewport, lane, sceneBackgroundImage) {
+function drawImpactZone(ctx, viewport, lane, sceneBackgroundImage, sceneTime = 0, magicVisualTime = sceneTime) {
   const zoneY =
     lane.targetY + lerp(8, -4, lane.cameraProgress) + IMPACT_ZONE_ELLIPSE_Y_OFFSET;
   const { zoneRadiusX, lineWidth } = getImpactZoneVisualMetrics(
@@ -3212,18 +3593,23 @@ function drawImpactZone(ctx, viewport, lane, sceneBackgroundImage) {
   const barLeft = snapToGrid(lane.centerX - lineWidth / 2, 1);
   const barY = snapToGrid(lane.targetY - 2, 1);
   const barWidth = snapToGrid(lineWidth, 1);
+  const magicPulse = 0.5 + Math.sin(sceneTime * 2.2) * 0.5;
+  const anchorAlpha = 0.78 + magicPulse * 0.14;
+  const energyLeft = barLeft + 7;
+  const energyRight = barLeft + barWidth - 7;
+  const energyWidth = Math.max(8, energyRight - energyLeft);
 
   ctx.save();
-  drawPixelEllipseFill(ctx, lane.centerX, zoneY + 3, zoneRadiusX + 4, zoneRadiusY + 3, UI_PANEL_SHADOW, 0.24);
-  drawPixelEllipseFill(ctx, lane.centerX, zoneY, zoneRadiusX, zoneRadiusY, UI_GOLD_OUTER, 0.42);
+  drawPixelEllipseFill(ctx, lane.centerX, zoneY + 3, zoneRadiusX + 4, zoneRadiusY + 3, UI_PANEL_SHADOW, 0.14);
+  drawPixelEllipseFill(ctx, lane.centerX, zoneY, zoneRadiusX, zoneRadiusY, "#B89043", 0.14 + magicPulse * 0.03);
   drawPixelEllipseFill(
     ctx,
     lane.centerX,
     zoneY + IMPACT_ZONE_INNER_ELLIPSE_Y_OFFSET,
     innerRadiusX,
     innerRadiusY,
-    UI_PANEL_BLUE,
-    0.3
+    "#7C5D2F",
+    0.1 + magicPulse * 0.025
   );
   drawPixelEllipseFill(
     ctx,
@@ -3231,22 +3617,71 @@ function drawImpactZone(ctx, viewport, lane, sceneBackgroundImage) {
     zoneY + IMPACT_ZONE_HIGHLIGHT_Y_OFFSET,
     highlightRadiusX,
     highlightRadiusY,
-    UI_BRIGHT_TEXT,
-    0.12
+    "#FFE8A6",
+    0.06 + magicPulse * 0.02
   );
+  drawMagicEllipseBorder(ctx, lane.centerX, zoneY, zoneRadiusX, zoneRadiusY, magicPulse);
+  drawMagicEllipseSweep(ctx, lane.centerX, zoneY, zoneRadiusX, zoneRadiusY, magicVisualTime);
 
-  ctx.fillStyle = UI_PANEL_SHADOW;
-  ctx.fillRect(barLeft, barY + 3, barWidth, 2);
-  ctx.fillStyle = UI_GOLD_OUTER;
-  ctx.fillRect(barLeft, barY, barWidth, 4);
-  ctx.fillRect(barLeft - 4, barY + 1, 4, 2);
-  ctx.fillRect(barLeft + barWidth, barY + 1, 4, 2);
-  ctx.fillStyle = UI_GOLD_INNER;
-  ctx.fillRect(barLeft + 4, barY + 1, Math.max(8, barWidth - 8), 2);
-  ctx.fillStyle = UI_BRIGHT_TEXT;
-  ctx.fillRect(barLeft + 10, barY + 1, Math.max(6, barWidth - 20), 1);
-  drawPixelDiamond(ctx, barLeft + 6, barY + 2, 3, UI_GOLD_INNER, 0.92);
-  drawPixelDiamond(ctx, barLeft + barWidth - 6, barY + 2, 3, UI_GOLD_INNER, 0.92);
+  drawMagicEnergyLine(ctx, {
+    left: energyLeft,
+    y: barY,
+    width: energyWidth,
+    sceneTime,
+    pulse: magicPulse,
+  });
+
+  drawPixelDiamond(ctx, barLeft + 7, barY + 2, 5, "#6E431A", 0.18 + magicPulse * 0.08);
+  drawPixelDiamond(ctx, barLeft + 7, barY + 2, 4, "#D69A3B", anchorAlpha);
+  drawPixelDiamond(ctx, barLeft + 7, barY + 2, 2, "#FFF0B8", 0.78 + magicPulse * 0.16);
+  drawPixelDiamond(ctx, barLeft + barWidth - 7, barY + 2, 5, "#6E431A", 0.18 + magicPulse * 0.08);
+  drawPixelDiamond(ctx, barLeft + barWidth - 7, barY + 2, 4, "#D69A3B", anchorAlpha);
+  drawPixelDiamond(ctx, barLeft + barWidth - 7, barY + 2, 2, "#FFF0B8", 0.78 + magicPulse * 0.16);
+
+  IMPACT_ZONE_MAGIC_DUST_SEEDS.forEach((seed, index) => {
+    const life = getMagicDustLife(sceneTime, seed);
+    const rise = easeOutCubic(life);
+    const sway = Math.sin(sceneTime * 1.35 + seed.phase * Math.PI * 2 + index * 0.5);
+    const dustX = barLeft + barWidth * seed.x + sway * (1.8 + Math.abs(seed.drift || 0));
+    const dustY = barY + 3 - rise * (18 + (index % 4) * 3);
+    const dustAlpha = getMagicDustAlpha(life) * (0.34 + seed.size * 0.12);
+    const dustSize = getMagicDustSize(seed, life);
+
+    if (dustAlpha > 0.04) {
+      drawPixelSpark(
+        ctx,
+        dustX,
+        dustY,
+        dustSize,
+        "#D69A3B",
+        dustSize > 1 ? "#FFF0B8" : "#FFE08A",
+        dustAlpha
+      );
+    }
+  });
+
+  IMPACT_ZONE_RING_DUST_SEEDS.forEach((seed, index) => {
+    const angle = seed.angle * Math.PI * 2 + sceneTime * 0.08;
+    const life = getMagicDustLife(sceneTime, seed);
+    const rise = easeOutCubic(life);
+    const sway = Math.sin(sceneTime * 1.1 + index * 0.8) * (seed.drift || 0);
+    const ringX = lane.centerX + Math.cos(angle) * (zoneRadiusX + 4);
+    const ringY = zoneY + Math.sin(angle) * (zoneRadiusY + 3) - rise * (14 + (index % 3) * 5);
+    const ringAlpha = getMagicDustAlpha(life) * (0.78 + seed.size * 0.08);
+    const ringSize = getMagicDustSize(seed, life);
+
+    if (ringAlpha > 0.04) {
+      drawPixelSpark(
+        ctx,
+        ringX + sway,
+        ringY,
+        ringSize,
+        "#D69A3B",
+        "#FFF0B8",
+        ringAlpha
+      );
+    }
+  });
   ctx.restore();
 }
 
@@ -4246,6 +4681,64 @@ function drawPigShadow(ctx, x, y, width, height, alpha = 1) {
   );
 }
 
+function drawSwipePigDirectionArrow(ctx, x, y, direction, width, height, alpha = 1) {
+  if (direction !== "left" && direction !== "right") {
+    return;
+  }
+
+  const sign = direction === "right" ? 1 : -1;
+  const mask = SWIPE_PIG_ARROW_MASK;
+  const maskRows = mask.length;
+  const maskColumns = mask[0]?.length || 1;
+  const targetArrowHeight = snapToGrid(clamp(height * 0.62, 23, 34), 1);
+  const blockSize = Math.max(2, Math.round(targetArrowHeight / maskRows));
+  const arrowWidth = blockSize * maskColumns;
+  const arrowHeight = blockSize * maskRows;
+  const centerX = snapToGrid(x + sign * (width * 0.58 + arrowWidth * 0.36), 1);
+  const centerY = snapToGrid(y - height * 0.04, 1);
+  const left = snapToGrid(centerX - arrowWidth / 2, 1);
+  const top = snapToGrid(centerY - arrowHeight / 2, 1);
+  const shadowOffsetX = snapToGrid(sign * 2, 1);
+  const shadowOffsetY = 3;
+  const shouldMirror = direction === "left";
+  const drawMask = (offsetX, offsetY, fillStyle, filterBlock) => {
+    ctx.fillStyle = fillStyle;
+    mask.forEach((row, rowIndex) => {
+      for (let columnIndex = 0; columnIndex < maskColumns; columnIndex += 1) {
+        const sourceColumnIndex = shouldMirror ? maskColumns - 1 - columnIndex : columnIndex;
+        if (row[sourceColumnIndex] !== "X") {
+          continue;
+        }
+
+        if (filterBlock && !filterBlock(rowIndex, columnIndex, sourceColumnIndex)) {
+          continue;
+        }
+
+        ctx.fillRect(
+          snapToGrid(left + columnIndex * blockSize + offsetX, 1),
+          snapToGrid(top + rowIndex * blockSize + offsetY, 1),
+          blockSize,
+          blockSize
+        );
+      }
+    });
+  };
+
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = "transparent";
+  ctx.imageSmoothingEnabled = false;
+
+  drawMask(shadowOffsetX, shadowOffsetY, SWIPE_PIG_ARROW_SHADOW);
+  drawMask(0, 0, SWIPE_PIG_ARROW_FILL);
+  drawMask(0, 0, SWIPE_PIG_ARROW_HIGHLIGHT, (rowIndex, columnIndex) => {
+    return rowIndex <= 3 && columnIndex <= Math.floor(maskColumns * 0.62);
+  });
+
+  ctx.restore();
+}
+
 function drawPig(ctx, characterSprites, x, y, scale, direction = null, options = {}) {
   const { sprite, mirrorX } = getPigSpriteAsset(characterSprites, direction, options);
   if (!sprite) {
@@ -4261,6 +4754,9 @@ function drawPig(ctx, characterSprites, x, y, scale, direction = null, options =
 
   if (showShadow) {
     drawPigShadow(ctx, x, y, width, height, 1);
+  }
+  if (showShadow) {
+    drawSwipePigDirectionArrow(ctx, x, y, direction, width, height, options.arrowAlpha ?? 1);
   }
   drawSpriteFrame(ctx, sprite, left, top, width, height, {
     mirrorX,
@@ -5896,6 +6392,8 @@ function renderFrame(ctx, viewport, state, uiState = {}) {
   const lane = getLaneMetrics(viewport, uiState.introProgress);
   const sceneTime =
     typeof uiState.sceneTime === "number" ? uiState.sceneTime : state.currentTime;
+  const magicVisualTime =
+    typeof uiState.magicVisualTime === "number" ? uiState.magicVisualTime : sceneTime;
   const startTheme = normalizeStartTheme(uiState.startTheme);
   const gameplayActive = !!uiState.gameplayActive;
   const showLaneBase = uiState.showLaneBase !== false;
@@ -5922,7 +6420,7 @@ function renderFrame(ctx, viewport, state, uiState = {}) {
   drawLane(ctx, viewport, lane, state.effects, uiState.characterSprites, {
     showLaneBase,
   });
-  drawImpactZone(ctx, viewport, lane, sceneBackground);
+  drawImpactZone(ctx, viewport, lane, sceneBackground, sceneTime, magicVisualTime);
   if (gameplayActive) {
     drawNotes(ctx, viewport, lane, state, {
       characterSprites: uiState.characterSprites,
