@@ -16,6 +16,7 @@ import {
 } from "./assets.js";
 import { buildResultSummary } from "./result.js";
 import { normalizeStartTheme, getStartThemeLoadingColors } from "../utils/start-theme.js";
+import { LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 
 const INTRO_DURATION = 0.82;
 const ENDING_SEQUENCE_DURATION = 1.5;
@@ -138,7 +139,7 @@ function waitForCriticalPixelFonts() {
 
   const fontLoads = [
     document.fonts.load('400 24px "PixelEnPrimary"', "Bunnies PERFECT START"),
-    document.fonts.load('400 24px "PixelZhFusion"', "爆锤方猪开始进入魔法世界"),
+    document.fonts.load('400 24px "PixelZhFusion"', `爆锤方猪开始${LOADING_FONT_SAMPLE}`),
   ];
   const timeout = new Promise((resolve) => {
     window.setTimeout(() => resolve(false), CRITICAL_FONT_LOAD_TIMEOUT_MS);

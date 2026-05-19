@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { GameRunner } from "../game/GameRunner.js";
+import { LOADING_COPY } from "../utils/loading-copy.js";
+import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
 export default function GameScreen({ song, startTheme, onFinish, onHome }) {
   const canvasRef = useRef(null);
@@ -44,9 +46,11 @@ export default function GameScreen({ song, startTheme, onFinish, onHome }) {
     <div className={`screen game-screen screen-${startTheme}`}>
       <canvas ref={canvasRef} className="game-canvas" />
       {loading && (
-        <div className="loading-overlay">
-          <div className="loading-spinner" />
-        </div>
+        <MagicLoadingOverlay
+          theme={startTheme}
+          text={LOADING_COPY.prepareAttack}
+          className="game-loading-overlay"
+        />
       )}
       {error && <div className="error-overlay">{error}</div>}
     </div>

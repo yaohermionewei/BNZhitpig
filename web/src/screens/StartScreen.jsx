@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { songs } from "../game/songs.js";
+import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
+import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 import {
   START_CLOUDS,
   START_LOADING_MIN_DURATION_MS,
   getStartCharacterStageAnchors,
   getStartBackdropStageOffsetY,
-  getLoadingSubtitleImageSrc,
   getPigFrameSources,
   getRabbitFrameSources,
   getStartBackdropSrc,
@@ -45,6 +46,19 @@ function preloadStartImages() {
   );
 
   return Promise.allSettled(sources.map((src) => preloadImage(src)));
+}
+
+function waitForStartFonts() {
+  if (typeof document === "undefined" || !document.fonts) {
+    return Promise.resolve(false);
+  }
+
+  const fontLoads = [
+    document.fonts.load('400 24px "PixelZhFusion"', LOADING_FONT_SAMPLE),
+    document.fonts.ready,
+  ];
+
+  return Promise.allSettled(fontLoads).then(() => true);
 }
 
 function getMeasuredStageLayout(stageElement, heroElement) {
@@ -111,7 +125,6 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
   const startBackdropSrc = getStartBackdropSrc(startTheme);
   const themeToggleIconSrc = getThemeToggleIconSrc(startTheme);
   const startSongMarkSrc = getStartSongMarkSrc(startTheme);
-  const loadingSubtitleImageSrc = getLoadingSubtitleImageSrc(startTheme);
 
   useLayoutEffect(() => {
     let animationFrame = 0;
@@ -159,7 +172,11 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
   useEffect(() => {
     let cancelled = false;
 
-    Promise.allSettled([preloadStartImages(), wait(START_LOADING_MIN_DURATION_MS)]).then(() => {
+    Promise.allSettled([
+      preloadStartImages(),
+      waitForStartFonts(),
+      wait(START_LOADING_MIN_DURATION_MS),
+    ]).then(() => {
       if (!cancelled) {
         setPageReady(true);
       }
@@ -358,17 +375,11 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
       </div>
 
       {!pageReady && (
-        <div className={`start-loading-overlay start-loading-overlay-${startTheme}`}>
-          <div className="start-loading-spinner" />
-          <div className="start-loading-copy">
-            <img
-              className="start-loading-subtitle-image"
-              src={loadingSubtitleImageSrc}
-              alt="进入魔法世界"
-              draggable="false"
-            />
-          </div>
-        </div>
+        <MagicLoadingOverlay
+          theme={startTheme}
+          text={LOADING_COPY.enterWorld}
+          className="start-loading-overlay"
+        />
       )}
     </div>
   );

@@ -66,17 +66,6 @@ const START_SONG_MARK_SOURCES = Object.freeze({
   light: "/assets/images/ui/start-song-rabbit-mark-light.png",
 });
 
-const START_LOADING_TEXT_IMAGE_SOURCES = Object.freeze({
-  dark: Object.freeze({
-    enter: "/assets/images/进入魔法世界.dark.png",
-    resultReturn: "/assets/images/回到魔法世界.dark.png",
-  }),
-  light: Object.freeze({
-    enter: "/assets/images/进入魔法世界....png",
-    resultReturn: "/assets/images/回到魔法世界....png",
-  }),
-});
-
 const CLOUD_TONE_BY_CHAR = Object.freeze({
   B: "body",
   H: "highlight",
@@ -512,13 +501,6 @@ export function getStartSongMarkSrc(theme) {
   return START_SONG_MARK_SOURCES[theme] || START_SONG_MARK_SOURCES[DEFAULT_START_THEME];
 }
 
-export function getLoadingSubtitleImageSrc(theme, key = "enter") {
-  const themeSources =
-    START_LOADING_TEXT_IMAGE_SOURCES[theme] ||
-    START_LOADING_TEXT_IMAGE_SOURCES[DEFAULT_START_THEME];
-  return themeSources[key] || themeSources.enter;
-}
-
 export function getStartCriticalImageSources(theme) {
   const normalizedTheme = theme === START_THEMES.light ? START_THEMES.light : START_THEMES.dark;
   return Array.from(
@@ -526,7 +508,6 @@ export function getStartCriticalImageSources(theme) {
       getStartBackdropSrc(normalizedTheme),
       getThemeToggleIconSrc(normalizedTheme),
       getStartSongMarkSrc(normalizedTheme),
-      getLoadingSubtitleImageSrc(normalizedTheme),
       ...getRabbitFrameSources(normalizedTheme),
       ...getPigFrameSources(normalizedTheme),
     ])

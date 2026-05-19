@@ -34,11 +34,6 @@ export const RESULT_CERTIFICATE_BACKGROUND_SOURCES = Object.freeze({
   light: "/assets/images/结算页新light.runtime.webp",
 });
 
-export const RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES = Object.freeze({
-  dark: "/assets/images/回到魔法世界.dark.png",
-  light: "/assets/images/回到魔法世界....png",
-});
-
 export const DEFAULT_RESULT_SONG_COVER_SOURCE =
   "/assets/images/song-covers/ditto.cover.pixel.png";
 
@@ -81,15 +76,11 @@ export function getCharacterAssetSources(theme) {
 export function getResultPreloadSources(theme, extraSources = []) {
   const normalizedTheme = normalizeStartTheme(theme);
   const backgroundSource = getResultCertificateBackgroundSource(normalizedTheme);
-  const subtitleSource =
-    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES[normalizedTheme] ||
-    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES.dark;
 
   return Array.from(
     new Set(
       [
         backgroundSource,
-        subtitleSource,
         DEFAULT_RESULT_SONG_COVER_SOURCE,
         RESULT_SHARE_ICON_SOURCE,
         ...Object.values(RESULT_RANK_IMAGE_SOURCES),

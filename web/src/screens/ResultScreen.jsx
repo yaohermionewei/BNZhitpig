@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DEFAULT_RESULT_SONG_COVER_SOURCE,
-  RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES,
   RESULT_RANK_IMAGE_SOURCES,
   getResultCertificateBackgroundSource,
   preloadResultAssets,
 } from "../game/assets.js";
+import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
+import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
 const RABBIT_FRAME_SOURCES = Object.freeze([
   "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
@@ -347,6 +348,7 @@ function waitForResultFonts(summary) {
   const fontLoads = [
     document.fonts.load('400 24px "PixelZhFusion"', summary?.rankTitle || "魔力觉醒的兔宝"),
     document.fonts.load('400 24px "PixelZhFusion"', summary?.rankSubtitle || "回到魔法世界"),
+    document.fonts.load('400 24px "PixelZhFusion"', LOADING_FONT_SAMPLE),
     document.fonts.load('400 24px "PixelEnPrimary"', summary?.displayScore || "00000"),
     document.fonts.ready,
   ];
@@ -674,23 +676,13 @@ function ResultBackground({ startTheme, summary }) {
   );
 }
 
-function LeavingOverlay({ startTheme }) {
-  const subtitleImage =
-    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES[startTheme] ||
-    RESULT_LEAVING_SUBTITLE_IMAGE_SOURCES.dark;
-
+function ResultLoadingOverlay({ startTheme, text }) {
   return (
-    <div className={`result-leaving-overlay result-leaving-overlay-${startTheme}`}>
-      <div className="result-leaving-spinner" />
-      <div className="result-leaving-copy">
-        <img
-          className="result-leaving-subtitle-image"
-          src={subtitleImage}
-          alt="回到魔法世界"
-          draggable="false"
-        />
-      </div>
-    </div>
+    <MagicLoadingOverlay
+      theme={startTheme}
+      text={text}
+      className="result-loading-overlay"
+    />
   );
 }
 
@@ -794,7 +786,12 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
             </ResultButton>
           </div>
         </div>
-        {isLeavingHome && <LeavingOverlay startTheme={normalizedStartTheme} />}
+        {isLeavingHome && (
+          <ResultLoadingOverlay
+            startTheme={normalizedStartTheme}
+            text={LOADING_COPY.returnWorld}
+          />
+        )}
       </div>
     );
   }
@@ -810,8 +807,17 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
             onHome={handleHomeTap}
           />
         )}
-        {(isPreparingResult || isLeavingHome) && (
-          <LeavingOverlay startTheme={normalizedStartTheme} />
+        {isPreparingResult && !isLeavingHome && (
+          <ResultLoadingOverlay
+            startTheme={normalizedStartTheme}
+            text={LOADING_COPY.reportOutput}
+          />
+        )}
+        {isLeavingHome && (
+          <ResultLoadingOverlay
+            startTheme={normalizedStartTheme}
+            text={LOADING_COPY.returnWorld}
+          />
         )}
       </div>
     );
@@ -964,7 +970,12 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
         </div>
       </div>
 
-      {isLeavingHome && <LeavingOverlay startTheme={normalizedStartTheme} />}
+      {isLeavingHome && (
+        <ResultLoadingOverlay
+          startTheme={normalizedStartTheme}
+          text={LOADING_COPY.returnWorld}
+        />
+      )}
     </div>
   );
 }
