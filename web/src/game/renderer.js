@@ -189,8 +189,17 @@ const HUD_LIFE_COLUMN_LEFT = 26;
 const HUD_LIFE_COLUMN_TOP_RATIO = 0.46;
 const HUD_LIFE_COLUMN_MIN_TOP = 292;
 const HUD_LIFE_COLUMN_MAX_TOP = 382;
-const HUD_LIFE_COLUMN_GAP = 7;
-const HUD_LIFE_HEART_SCALE = 2.4;
+const HUD_LIFE_BAR_WIDTH = 16;
+const HUD_LIFE_BAR_HEIGHT_MIN = 116;
+const HUD_LIFE_BAR_HEIGHT_MAX = 158;
+const HUD_LIFE_BAR_HEIGHT_RATIO = 0.18;
+const HUD_LIFE_BAR_BORDER_COLOR = "#FFD0DC";
+const HUD_LIFE_BAR_SHADOW_COLOR = "rgba(34, 16, 24, 0.44)";
+const HUD_LIFE_BAR_EMPTY_COLOR = "rgba(38, 24, 34, 0.62)";
+const HUD_LIFE_BAR_INNER_BORDER_COLOR = "rgba(34, 16, 24, 0.86)";
+const HUD_LIFE_BAR_FILL_COLOR = "#EF6A7D";
+const HUD_LIFE_BAR_FILL_HIGHLIGHT = "#FFB0BA";
+const HUD_LIFE_BAR_TICK_COLOR = "rgba(255, 208, 220, 0.22)";
 const HUD_TOP_MARGIN_FROM_PAUSE = 3;
 const HUD_COVER_BORDER_COLOR = "rgba(247, 244, 232, 0.72)";
 const HUD_COVER_INNER_BORDER_COLOR = "rgba(65, 49, 18, 0.34)";
@@ -4842,9 +4851,12 @@ function getTopHudLayout(viewport, state) {
   const maxLives = state.maxLives || 3;
   const pauseRect = getControlRects(viewport).pause;
   const topY = pauseRect.top + HUD_TOP_MARGIN_FROM_PAUSE;
-  const heartScale = HUD_LIFE_HEART_SCALE;
-  const heartWidth = HUD_HEART_FILLED_SPRITE[0].length * heartScale;
-  const heartsStartY = clamp(
+  const lifeBarHeight = clamp(
+    viewport.height * HUD_LIFE_BAR_HEIGHT_RATIO,
+    HUD_LIFE_BAR_HEIGHT_MIN,
+    HUD_LIFE_BAR_HEIGHT_MAX
+  );
+  const lifeBarTop = clamp(
     viewport.height * HUD_LIFE_COLUMN_TOP_RATIO,
     HUD_LIFE_COLUMN_MIN_TOP,
     HUD_LIFE_COLUMN_MAX_TOP
@@ -4854,11 +4866,10 @@ function getTopHudLayout(viewport, state) {
     pauseRect,
     topY,
     maxLives,
-    heartScale,
-    heartWidth,
-    heartGap: HUD_LIFE_COLUMN_GAP,
-    heartsStartX: HUD_LIFE_COLUMN_LEFT,
-    heartsStartY,
+    lifeBarLeft: HUD_LIFE_COLUMN_LEFT,
+    lifeBarTop,
+    lifeBarWidth: HUD_LIFE_BAR_WIDTH,
+    lifeBarHeight,
   };
 }
 
@@ -4981,24 +4992,54 @@ function drawPauseButtonHud(ctx, viewport, state, hudLayout = null) {
 function drawLifeHud(ctx, viewport, state, hudLayout = null) {
   const {
     maxLives,
-    heartScale,
-    heartWidth,
-    heartGap,
-    heartsStartX,
-    heartsStartY,
+    lifeBarLeft,
+    lifeBarTop,
+    lifeBarWidth,
+    lifeBarHeight,
   } = hudLayout || getTopHudLayout(viewport, state);
+  const lives = clamp(Number(state.lives) || 0, 0, maxLives);
+  const fillRatio = maxLives > 0 ? clamp(lives / maxLives, 0, 1) : 0;
+  const outerLeft = snapToGrid(lifeBarLeft, 1);
+  const outerTop = snapToGrid(lifeBarTop, 1);
+  const outerWidth = snapToGrid(lifeBarWidth, 1);
+  const outerHeight = snapToGrid(lifeBarHeight, 1);
+  const innerInset = 4;
+  const innerLeft = outerLeft + innerInset;
+  const innerTop = outerTop + innerInset;
+  const innerWidth = Math.max(1, outerWidth - innerInset * 2);
+  const innerHeight = Math.max(1, outerHeight - innerInset * 2);
+  const fillHeight = Math.round(innerHeight * fillRatio);
+  const fillTop = innerTop + innerHeight - fillHeight;
+  const tickGap = Math.max(12, Math.round(innerHeight / 6));
 
   ctx.save();
-  for (let index = 0; index < maxLives; index += 1) {
-    const filled = index >= maxLives - (state.lives || 0);
-    drawPixelHeart(
-      ctx,
-      heartsStartX,
-      heartsStartY + index * (heartWidth + heartGap),
-      filled,
-      heartScale,
-      filled ? 1 : 0.92
-    );
+  drawPixelCutRect(ctx, outerLeft + 2, outerTop + 2, outerWidth, outerHeight, 4, 2);
+  ctx.fillStyle = HUD_LIFE_BAR_SHADOW_COLOR;
+  ctx.fill();
+  drawPixelCutRect(ctx, outerLeft, outerTop, outerWidth, outerHeight, 4, 2);
+  ctx.fillStyle = HUD_LIFE_BAR_BORDER_COLOR;
+  ctx.fill();
+  drawPixelCutRect(ctx, outerLeft + 2, outerTop + 2, outerWidth - 4, outerHeight - 4, 3, 2);
+  ctx.fillStyle = HUD_LIFE_BAR_INNER_BORDER_COLOR;
+  ctx.fill();
+  ctx.fillStyle = HUD_LIFE_BAR_EMPTY_COLOR;
+  ctx.fillRect(innerLeft, innerTop, innerWidth, innerHeight);
+
+  if (fillHeight > 0) {
+    ctx.fillStyle = HUD_LIFE_BAR_FILL_COLOR;
+    ctx.fillRect(innerLeft, fillTop, innerWidth, fillHeight);
+
+    if (innerWidth >= 4) {
+      ctx.fillStyle = HUD_LIFE_BAR_FILL_HIGHLIGHT;
+      ctx.fillRect(innerLeft + 1, fillTop + 1, 1, Math.max(0, fillHeight - 2));
+    }
+  }
+
+  ctx.fillStyle = "rgba(247, 244, 232, 0.28)";
+  ctx.fillRect(innerLeft, innerTop, innerWidth, 1);
+  ctx.fillStyle = HUD_LIFE_BAR_TICK_COLOR;
+  for (let y = innerTop + tickGap; y < innerTop + innerHeight; y += tickGap) {
+    ctx.fillRect(innerLeft, y, innerWidth, 1);
   }
   ctx.restore();
 }
