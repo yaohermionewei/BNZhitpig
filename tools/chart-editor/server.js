@@ -5,8 +5,26 @@ const { URL } = require("url");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const PUBLIC_DIR = path.join(__dirname, "public");
-const AUDIO_DIR = path.join(ROOT, "miniprogram", "assets", "audio");
-const CHART_PATH = path.join(ROOT, "miniprogram", "assets", "charts", "ditto.editable.chart.js");
+const AUDIO_DIR = path.join(ROOT, "web", "public", "assets", "audio");
+const CHART_TARGETS = [
+  {
+    key: "web-src",
+    path: path.join(ROOT, "web", "src", "game", "ditto.editable.chart.js"),
+    format: "esm",
+  },
+  {
+    key: "web-public",
+    path: path.join(ROOT, "web", "public", "assets", "charts", "ditto.editable.chart.js"),
+    format: "cjs",
+  },
+  {
+    key: "miniprogram",
+    path: path.join(ROOT, "miniprogram", "assets", "charts", "ditto.editable.chart.js"),
+    format: "cjs",
+  },
+];
+const PRIMARY_CHART_TARGET = CHART_TARGETS[0];
+const CHART_PATH = PRIMARY_CHART_TARGET.path;
 const BACKUP_DIR = path.join(__dirname, "backups");
 const PORT = Number(process.env.CHART_EDITOR_PORT || 4317);
 
@@ -75,8 +93,17 @@ function sendFile(request, response, filePath) {
 }
 
 function loadEditableChart() {
-  delete require.cache[require.resolve(CHART_PATH)];
-  return require(CHART_PATH);
+  const rawChartModule = fs.readFileSync(CHART_PATH, "utf8");
+  let rawChart = rawChartModule.trim();
+
+  if (rawChart.startsWith("export default")) {
+    rawChart = rawChart.replace(/^export\s+default\s+/, "");
+  } else if (rawChart.startsWith("module.exports")) {
+    rawChart = rawChart.replace(/^module\.exports\s*=\s*/, "");
+  }
+
+  rawChart = rawChart.replace(/;\s*$/, "");
+  return JSON.parse(rawChart);
 }
 
 function roundTime(value) {
@@ -189,21 +216,24 @@ function normalizeChart(rawChart) {
   return chart;
 }
 
-function serializeChart(chart) {
-  return `module.exports = ${JSON.stringify(chart, null, 2)};\n`;
+function serializeChart(chart, format = "cjs") {
+  const assignment = format === "esm" ? "export default " : "module.exports = ";
+  return `${assignment}${JSON.stringify(chart, null, 2)};\n`;
 }
 
-function createChartBackup() {
-  if (!fs.existsSync(CHART_PATH)) {
-    return null;
-  }
-
+function createChartBackups() {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const backupName = `ditto.editable.chart.${timestamp}.js`;
-  const backupPath = path.join(BACKUP_DIR, backupName);
-  fs.copyFileSync(CHART_PATH, backupPath);
-  return path.relative(ROOT, backupPath);
+  return CHART_TARGETS.map((target) => {
+    if (!fs.existsSync(target.path)) {
+      return null;
+    }
+
+    const backupName = `${target.key}.ditto.editable.chart.${timestamp}.js`;
+    const backupPath = path.join(BACKUP_DIR, backupName);
+    fs.copyFileSync(target.path, backupPath);
+    return path.relative(ROOT, backupPath);
+  }).filter(Boolean);
 }
 
 function readRequestBody(request) {
@@ -228,6 +258,7 @@ async function handleApi(request, response, url) {
     return sendJson(response, 200, {
       chart,
       chartPath: path.relative(ROOT, CHART_PATH),
+      chartPaths: CHART_TARGETS.map((target) => path.relative(ROOT, target.path)),
       audioUrl: chart.audioSrc,
     });
   }
@@ -237,14 +268,17 @@ async function handleApi(request, response, url) {
       const rawBody = await readRequestBody(request);
       const parsed = JSON.parse(rawBody || "{}");
       const chart = normalizeChart(parsed.chart);
-      const backupPath = createChartBackup();
-      fs.writeFileSync(CHART_PATH, serializeChart(chart));
+      const backupPaths = createChartBackups();
+
+      CHART_TARGETS.forEach((target) => {
+        fs.writeFileSync(target.path, serializeChart(chart, target.format));
+      });
 
       return sendJson(response, 200, {
         ok: true,
         chart,
         savedAt: new Date().toISOString(),
-        backupPath,
+        backupPaths,
       });
     } catch (error) {
       return sendJson(response, 400, {
@@ -300,5 +334,8 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Chart editor running at http://127.0.0.1:${PORT}`);
-  console.log(`Editing chart: ${path.relative(ROOT, CHART_PATH)}`);
+  console.log(`Editing primary chart: ${path.relative(ROOT, CHART_PATH)}`);
+  console.log(
+    `Syncing charts: ${CHART_TARGETS.map((target) => path.relative(ROOT, target.path)).join(", ")}`
+  );
 });

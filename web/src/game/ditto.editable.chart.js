@@ -4,7 +4,7 @@ export default {
   "bpmHint": 134,
   "audioSrc": "/assets/audio/ditto.m4a",
   "audioStartTime": 0,
-  "duration": 186.797,
+  "duration": 186.297,
   "windows": {
     "perfect": 0.07,
     "good": 0.12,
@@ -12,1513 +12,1513 @@ export default {
   },
   "notes": [
     {
-      "time": 2.003,
+      "time": 1.503,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 3.557
+      "endTime": 3.057
     },
     {
-      "time": 4.236,
+      "time": 3.736,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 5.76,
+      "time": 5.26,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 7.597,
+      "time": 7.097,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 9.132,
+      "time": 8.632,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 11.805
+      "endTime": 11.305
     },
     {
-      "time": 12.81,
+      "time": 12.31,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 14.601,
+      "time": 14.101,
       "size": 1.08,
       "accent": true,
       "direction": "left"
     },
     {
-      "time": 15.049,
+      "time": 14.549,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 15.273,
+      "time": 14.773,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 15.496,
+      "time": 14.996,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 16.391,
+      "time": 15.891,
       "size": 1.08,
       "accent": true,
       "direction": "right"
     },
     {
-      "time": 16.84,
+      "time": 16.34,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 17.064,
+      "time": 16.564,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 17.287,
+      "time": 16.787,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 18.184,
+      "time": 17.684,
       "size": 1.08,
       "accent": true,
       "direction": "left"
     },
     {
-      "time": 18.631,
+      "time": 18.131,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 18.855,
+      "time": 18.355,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 19.078,
+      "time": 18.578,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 19.973,
+      "time": 19.473,
       "size": 1.08,
       "accent": true,
       "direction": "right"
     },
     {
-      "time": 20.87,
+      "time": 20.37,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 21.765,
+      "time": 21.265,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 22.213,
+      "time": 21.713,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 22.661,
+      "time": 22.161,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 23.556,
+      "time": 23.056,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 24.452,
+      "time": 23.952,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 25.347,
+      "time": 24.847,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 25.795,
+      "time": 25.295,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 26.243,
+      "time": 25.743,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 27.138,
+      "time": 26.638,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 29.187,
+      "time": 28.687,
       "size": 1.16,
       "accent": true
     },
     {
-      "time": 29.718,
+      "time": 29.218,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 29.961,
+      "time": 29.461,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 30.184,
+      "time": 29.684,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 30.407,
+      "time": 29.907,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 30.631,
+      "time": 30.131,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 31.699,
+      "time": 31.199,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 31.923,
+      "time": 31.423,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 32.147,
+      "time": 31.647,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 32.37,
+      "time": 31.87,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 33.495,
+      "time": 32.995,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 33.719,
+      "time": 33.219,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 33.943,
+      "time": 33.443,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 34.166,
+      "time": 33.666,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 35.198,
+      "time": 34.698,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 35.646,
+      "time": 35.146,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 36.093,
+      "time": 35.593,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 37.011
+      "endTime": 36.511
     },
     {
-      "time": 37.437,
+      "time": 36.937,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 37.661,
+      "time": 37.161,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 37.876,
+      "time": 37.376,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 38.729
+      "endTime": 38.229
     },
     {
-      "time": 39.228,
+      "time": 38.728,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 39.452,
+      "time": 38.952,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 39.675,
+      "time": 39.175,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 42.023
+      "endTime": 41.523
     },
     {
-      "time": 43.577,
+      "time": 43.077,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 44.047,
+      "time": 43.547,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 44.265,
+      "time": 43.765,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 44.464,
+      "time": 43.964,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 44.703,
+      "time": 44.203,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 44.915,
+      "time": 44.415,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 45.37,
+      "time": 44.87,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 45.83,
+      "time": 45.33,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 46.045,
+      "time": 45.545,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 46.227,
+      "time": 45.727,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 46.42,
+      "time": 45.92,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 46.623,
+      "time": 46.123,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 47.856,
+      "time": 47.356,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 48.065,
+      "time": 47.565,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 48.263,
+      "time": 47.763,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 48.47,
+      "time": 47.97,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 49.036,
+      "time": 48.536,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 50.421,
+      "time": 49.921,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 51.33
+      "endTime": 50.83
     },
     {
-      "time": 51.765,
+      "time": 51.265,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 51.989,
+      "time": 51.489,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 52.213,
+      "time": 51.713,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 53.104
+      "endTime": 52.604
     },
     {
-      "time": 53.556,
+      "time": 53.056,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 53.78,
+      "time": 53.28,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 54.004,
+      "time": 53.504,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 55.371
+      "endTime": 54.871
     },
     {
-      "time": 55.914,
+      "time": 55.414,
       "size": 0.94,
       "accent": false,
       "label": "i got"
     },
     {
-      "time": 56.346,
+      "time": 55.846,
       "size": 0.94,
       "accent": false,
       "label": "no"
     },
     {
-      "time": 56.749,
+      "time": 56.249,
       "size": 0.94,
       "accent": false,
       "label": "time"
     },
     {
-      "time": 57.227,
+      "time": 56.727,
       "size": 0.94,
       "accent": false,
       "label": "to"
     },
     {
-      "time": 57.585,
+      "time": 57.085,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 58.816,
+      "endTime": 58.316,
       "label": "lose"
     },
     {
-      "time": 59.46,
+      "time": 58.96,
       "size": 1.08,
       "accent": true,
       "label": "ki"
     },
     {
-      "time": 59.895,
+      "time": 59.395,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 60.352,
+      "time": 59.852,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 60.814,
+      "time": 60.314,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 61.168,
+      "time": 60.668,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 62.399,
+      "endTime": 61.899,
       "label": "lose"
     },
     {
-      "time": 63.098,
+      "time": 62.598,
       "size": 0.94,
       "accent": false,
       "label": "po"
     },
     {
-      "time": 63.537,
+      "time": 63.037,
       "size": 0.94,
       "accent": false,
       "label": "go"
     },
     {
-      "time": 63.954,
+      "time": 63.454,
       "size": 0.94,
       "accent": false,
       "label": "xi"
     },
     {
-      "time": 64.362,
+      "time": 63.862,
       "size": 0.94,
       "accent": false,
       "label": "ba"
     },
     {
-      "time": 64.898,
+      "time": 64.398,
       "size": 1.08,
       "accent": true,
       "label": "ra"
     },
     {
-      "time": 65.197,
+      "time": 64.697,
       "size": 0.94,
       "accent": false,
       "label": "ta"
     },
     {
-      "time": 65.478,
+      "time": 64.978,
       "size": 0.94,
       "accent": false,
       "label": "ta"
     },
     {
-      "time": 65.788,
+      "time": 65.288,
       "size": 1.08,
       "accent": true,
       "label": "ta"
     },
     {
-      "time": 66.071,
+      "time": 65.571,
       "size": 0.94,
       "accent": false,
       "label": "wu"
     },
     {
-      "time": 66.429,
+      "time": 65.929,
       "size": 0.94,
       "accent": false,
       "label": "lin"
     },
     {
-      "time": 66.687,
+      "time": 66.187,
       "size": 1.08,
       "accent": true,
       "label": "xin"
     },
     {
-      "time": 67.003,
+      "time": 66.503,
       "size": 0.94,
       "accent": false,
       "label": "jia"
     },
     {
-      "time": 67.437,
+      "time": 66.937,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 67.773,
+      "time": 67.273,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 68.108,
+      "time": 67.608,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 68.333,
+      "time": 67.833,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 68.863
+      "endTime": 68.363
     },
     {
-      "time": 70.123,
+      "time": 69.623,
       "size": 1.08,
       "accent": true,
       "label": "got"
     },
     {
-      "time": 70.646,
+      "time": 70.146,
       "size": 0.94,
       "accent": false,
       "label": "no"
     },
     {
-      "time": 71.117,
+      "time": 70.617,
       "size": 1.08,
       "accent": true,
       "label": "thing"
     },
     {
-      "time": 71.511,
+      "time": 71.011,
       "size": 1.08,
       "accent": true,
       "label": "to"
     },
     {
-      "time": 72.098,
+      "time": 71.598,
       "size": 1.16,
       "accent": true,
       "kind": "hold",
-      "endTime": 73.179,
+      "endTime": 72.679,
       "label": "lose"
     },
     {
-      "time": 73.705,
+      "time": 73.205,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 74.153,
+      "time": 73.653,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 74.601,
+      "time": 74.101,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 75.049,
+      "time": 74.549,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 75.65,
+      "time": 75.15,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 76.054,
+      "endTime": 75.554,
       "label": "gu"
     },
     {
-      "time": 76.447,
+      "time": 75.947,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 76.799,
+      "endTime": 76.299,
       "label": "wuwa"
     },
     {
-      "time": 77.265,
+      "time": 76.765,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 77.713,
+      "endTime": 77.213,
       "label": "wuwa"
     },
     {
-      "time": 78.174,
+      "time": 77.674,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 78.759,
+      "endTime": 78.259,
       "label": "wuwa"
     },
     {
-      "time": 79.155,
+      "time": 78.655,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 79.526,
+      "time": 79.026,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 79.75,
+      "time": 79.25,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 79.974,
+      "time": 79.474,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 80.422,
+      "time": 79.922,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 80.708,
+      "time": 80.208,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 81.003,
+      "time": 80.503,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 81.329,
+      "time": 80.829,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 81.765,
+      "time": 81.265,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 82.213,
+      "time": 81.713,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 82.437,
+      "time": 81.937,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 82.661,
+      "time": 82.161,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 83.415
+      "endTime": 82.915
     },
     {
-      "time": 84.549,
+      "time": 84.049,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 84.997,
+      "time": 84.497,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 85.49,
+      "time": 84.99,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 85.917,
+      "time": 85.417,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 86.319,
+      "time": 85.819,
       "size": 1.16,
       "accent": true
     },
     {
-      "time": 86.69,
+      "time": 86.19,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 86.914,
+      "time": 86.414,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 87.138,
+      "time": 86.638,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 88.034,
+      "time": 87.534,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 88.481,
+      "time": 87.981,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 88.705,
+      "time": 88.205,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 88.929,
+      "time": 88.429,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 89.825,
+      "time": 89.325,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 90.273,
+      "time": 89.773,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 90.496,
+      "time": 89.996,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 90.72,
+      "time": 90.22,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 91.616,
+      "time": 91.116,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 92.064,
+      "time": 91.564,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 92.671,
+      "time": 92.171,
       "size": 1.08,
       "accent": false,
       "kind": "hold",
-      "endTime": 93.119
+      "endTime": 92.619
     },
     {
-      "time": 93.529,
+      "time": 93.029,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 93.855,
+      "time": 93.355,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 94.302,
+      "time": 93.802,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 95.198,
+      "time": 94.698,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 95.646,
+      "time": 95.146,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 95.87,
+      "time": 95.37,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 96.093,
+      "time": 95.593,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 96.541,
+      "time": 96.041,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 96.989,
+      "time": 96.489,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 97.437,
+      "time": 96.937,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 97.884,
+      "time": 97.384,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 98.781,
+      "time": 98.281,
       "size": 1.08,
       "accent": true,
       "label": "i"
     },
     {
-      "time": 99.227,
+      "time": 98.727,
       "size": 1.08,
       "accent": true,
       "label": "dont"
     },
     {
-      "time": 99.675,
+      "time": 99.175,
       "size": 1.08,
       "accent": true,
       "label": "want"
     },
     {
-      "time": 100.123,
+      "time": 99.623,
       "size": 1.08,
       "accent": true,
       "label": "to"
     },
     {
-      "time": 100.571,
+      "time": 100.071,
       "size": 1.16,
       "accent": true
     },
     {
-      "time": 101.019,
+      "time": 100.519,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 101.243,
+      "time": 100.743,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 101.467,
+      "time": 100.967,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 102.362,
+      "time": 101.862,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 102.81,
+      "time": 102.31,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 103.034,
+      "time": 102.534,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 103.258,
+      "time": 102.758,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 103.757,
+      "time": 103.257,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 104.153,
+      "time": 103.653,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 104.601,
+      "time": 104.101,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 104.825,
+      "time": 104.325,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 105.049,
+      "time": 104.549,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 105.944,
+      "time": 105.444,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 106.392,
+      "time": 105.892,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 106.84,
+      "time": 106.34,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 107.287,
+      "time": 106.787,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 107.511,
+      "time": 107.011,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 107.735,
+      "time": 107.235,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 108.183,
+      "time": 107.683,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 108.631,
+      "time": 108.131,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 109.526,
+      "time": 109.026,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 109.974,
+      "time": 109.474,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 110.422,
+      "time": 109.922,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 110.87,
+      "time": 110.37,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 111.317,
+      "time": 110.817,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 111.765,
+      "time": 111.265,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 112.213,
+      "time": 111.713,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 112.66,
+      "time": 112.16,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 113.325
+      "endTime": 112.825
     },
     {
-      "time": 114.999,
+      "time": 114.499,
       "size": 1.16,
       "accent": true
     },
     {
-      "time": 117.116,
+      "time": 116.616,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 118.689,
+      "time": 118.189,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 120.676,
+      "time": 120.176,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 122.147,
+      "time": 121.647,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 123.143
+      "endTime": 122.643
     },
     {
-      "time": 124.003,
+      "time": 123.503,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 125.115
+      "endTime": 124.615
     },
     {
-      "time": 125.761,
+      "time": 125.261,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 126.953,
+      "endTime": 126.453,
       "label": "准备前面拍手"
     },
     {
-      "time": 127.518,
+      "time": 127.018,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 129.227,
+      "time": 128.727,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 129.613
+      "endTime": 129.113
     },
     {
-      "time": 129.838,
+      "time": 129.338,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 130.571,
+      "time": 130.071,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 131.467,
+      "time": 130.967,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 132.362,
+      "time": 131.862,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 133.258,
+      "time": 132.758,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 134.153,
+      "time": 133.653,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 135.049,
+      "time": 134.549,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 135.944,
+      "time": 135.444,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 136.84,
+      "time": 136.34,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 137.735,
+      "time": 137.235,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 138.631,
+      "time": 138.131,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 139.526,
+      "time": 139.026,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 140.422,
+      "time": 139.922,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 141.317,
+      "time": 140.817,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 141.765,
+      "time": 141.265,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 142.213,
+      "time": 141.713,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 142.661,
+      "time": 142.161,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 143.108,
+      "time": 142.608,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 143.556,
+      "time": 143.056,
       "size": 1.16,
       "accent": true
     },
     {
-      "time": 144.004,
+      "time": 143.504,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 144.228,
+      "time": 143.728,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 144.452,
+      "time": 143.952,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 145.348,
+      "time": 144.848,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 145.795,
+      "time": 145.295,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 146.019,
+      "time": 145.519,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 146.243,
+      "time": 145.743,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 147.139,
+      "time": 146.639,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 147.587,
+      "time": 147.087,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 147.81,
+      "time": 147.31,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 148.034,
+      "time": 147.534,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 148.93,
+      "time": 148.43,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 149.378,
+      "time": 148.878,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 149.825,
+      "time": 149.325,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 150.273,
+      "time": 149.773,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 150.497,
+      "time": 149.997,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 150.721,
+      "time": 150.221,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 151.169,
+      "time": 150.669,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 151.616,
+      "time": 151.116,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 152.512,
+      "time": 152.012,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 152.96,
+      "time": 152.46,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 153.184,
+      "time": 152.684,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 153.407,
+      "time": 152.907,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 153.855,
+      "time": 153.355,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 154.303,
+      "time": 153.803,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 154.751,
+      "time": 154.251,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 155.198,
+      "time": 154.698,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 156.094,
+      "time": 155.594,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 156.542,
+      "time": 156.042,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 156.989,
+      "time": 156.489,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 157.437,
+      "time": 156.937,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 157.885,
+      "time": 157.385,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 158.333,
+      "time": 157.833,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 158.557,
+      "time": 158.057,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 158.781,
+      "time": 158.281,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 159.676,
+      "time": 159.176,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 160.124,
+      "time": 159.624,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 160.348,
+      "time": 159.848,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 160.572,
+      "time": 160.072,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 161.467,
+      "time": 160.967,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 161.915,
+      "time": 161.415,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 162.139,
+      "time": 161.639,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 162.363,
+      "time": 161.863,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 163.258,
+      "time": 162.758,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 163.706,
+      "time": 163.206,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 164.154,
+      "time": 163.654,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 164.601,
+      "time": 164.101,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 164.825,
+      "time": 164.325,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 165.049,
+      "time": 164.549,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 165.497,
+      "time": 164.997,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 165.945,
+      "time": 165.445,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 166.84,
+      "time": 166.34,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 167.288,
+      "time": 166.788,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 167.736,
+      "time": 167.236,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 168.184,
+      "time": 167.684,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 168.631,
+      "time": 168.131,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 169.079,
+      "time": 168.579,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 169.527,
+      "time": 169.027,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 169.808,
+      "time": 169.308,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 170.198,
+      "time": 169.698,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 170.779
+      "endTime": 170.279
     },
     {
-      "time": 172.445,
+      "time": 171.945,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 174.001,
+      "time": 173.501,
       "size": 1.08,
       "accent": false,
       "kind": "hold",
-      "endTime": 175.883
+      "endTime": 175.383
     },
     {
-      "time": 176.219,
+      "time": 175.719,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 177.586,
+      "time": 177.086,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 179.377,
+      "time": 178.877,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 181.169,
+      "time": 180.669,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 183.997
+      "endTime": 183.497
     }
   ],
   "meta": {
@@ -1530,140 +1530,140 @@ export default {
     "sourceBeatmapId": 4869686,
     "sourceDifficulty": "Futsuu",
     "alignment": "starts-at-audio-head",
-    "firstNote": 0.273,
-    "lastNote": 182.959,
-    "noteDensity": "285 notes / 182.959s",
-    "updatedAt": "2026-04-15T15:00:36.029Z"
+    "firstNote": 1.503,
+    "lastNote": 183.497,
+    "noteDensity": "284 notes / 183.497s",
+    "updatedAt": "2026-05-24T07:52:12.633Z"
   },
   "holdDebugMarkers": [
     {
-      "time": 2.003,
-      "endTime": 3.557,
+      "time": 1.503,
+      "endTime": 3.057,
       "label": ""
     },
     {
-      "time": 9.132,
-      "endTime": 11.805,
+      "time": 8.632,
+      "endTime": 11.305,
       "label": ""
     },
     {
-      "time": 36.093,
-      "endTime": 37.011,
+      "time": 35.593,
+      "endTime": 36.511,
       "label": ""
     },
     {
-      "time": 37.876,
-      "endTime": 38.729,
+      "time": 37.376,
+      "endTime": 38.229,
       "label": ""
     },
     {
-      "time": 39.675,
-      "endTime": 42.023,
+      "time": 39.175,
+      "endTime": 41.523,
       "label": ""
     },
     {
-      "time": 50.421,
-      "endTime": 51.33,
+      "time": 49.921,
+      "endTime": 50.83,
       "label": ""
     },
     {
-      "time": 52.213,
-      "endTime": 53.104,
+      "time": 51.713,
+      "endTime": 52.604,
       "label": ""
     },
     {
-      "time": 54.004,
-      "endTime": 55.371,
+      "time": 53.504,
+      "endTime": 54.871,
       "label": ""
     },
     {
-      "time": 57.585,
-      "endTime": 58.816,
+      "time": 57.085,
+      "endTime": 58.316,
       "label": "lose"
     },
     {
-      "time": 61.168,
-      "endTime": 62.399,
+      "time": 60.668,
+      "endTime": 61.899,
       "label": "lose"
     },
     {
-      "time": 68.333,
-      "endTime": 68.863,
+      "time": 67.833,
+      "endTime": 68.363,
       "label": ""
     },
     {
-      "time": 72.098,
-      "endTime": 73.179,
+      "time": 71.598,
+      "endTime": 72.679,
       "label": "lose"
     },
     {
-      "time": 75.65,
-      "endTime": 76.054,
+      "time": 75.15,
+      "endTime": 75.554,
       "label": "gu"
     },
     {
-      "time": 76.447,
-      "endTime": 76.799,
+      "time": 75.947,
+      "endTime": 76.299,
       "label": "wuwa"
     },
     {
-      "time": 77.265,
-      "endTime": 77.713,
+      "time": 76.765,
+      "endTime": 77.213,
       "label": "wuwa"
     },
     {
-      "time": 78.174,
-      "endTime": 78.759,
+      "time": 77.674,
+      "endTime": 78.259,
       "label": "wuwa"
     },
     {
-      "time": 82.661,
-      "endTime": 83.415,
+      "time": 82.161,
+      "endTime": 82.915,
       "label": ""
     },
     {
-      "time": 92.671,
-      "endTime": 93.119,
+      "time": 92.171,
+      "endTime": 92.619,
       "label": ""
     },
     {
-      "time": 112.66,
-      "endTime": 113.325,
+      "time": 112.16,
+      "endTime": 112.825,
       "label": ""
     },
     {
-      "time": 122.147,
-      "endTime": 123.143,
+      "time": 121.647,
+      "endTime": 122.643,
       "label": ""
     },
     {
-      "time": 124.003,
-      "endTime": 125.115,
+      "time": 123.503,
+      "endTime": 124.615,
       "label": ""
     },
     {
-      "time": 125.761,
-      "endTime": 126.953,
+      "time": 125.261,
+      "endTime": 126.453,
       "label": "准备前面拍手"
     },
     {
-      "time": 129.227,
-      "endTime": 129.613,
+      "time": 128.727,
+      "endTime": 129.113,
       "label": ""
     },
     {
-      "time": 170.198,
-      "endTime": 170.779,
+      "time": 169.698,
+      "endTime": 170.279,
       "label": ""
     },
     {
-      "time": 174.001,
-      "endTime": 175.883,
+      "time": 173.501,
+      "endTime": 175.383,
       "label": ""
     },
     {
-      "time": 181.169,
-      "endTime": 183.997,
+      "time": 180.669,
+      "endTime": 183.497,
       "label": ""
     }
   ]
