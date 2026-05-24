@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { getDefaultSong } from "./game/songs.js";
 import { getStartTheme, setStartTheme, START_THEMES } from "./utils/start-theme.js";
 import StageShell from "./screens/StageShell.jsx";
@@ -10,6 +10,9 @@ import { unlockAudioForUserGesture } from "./game/AudioControllerWeb.js";
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
   : null;
+const AMBIENT_BGM_SRC = "/assets/audio/home-loop-bgm-quiet.m4a";
+const AMBIENT_BGM_VOLUME = 1;
+const AMBIENT_BGM_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 
 function getLoadingShimmerDebugPreviewMode() {
   if (!import.meta.env.DEV || typeof window === "undefined") {
@@ -19,6 +22,88 @@ function getLoadingShimmerDebugPreviewMode() {
   return new URLSearchParams(window.location.search).get("debugLoading") === "1";
 }
 
+function getAmbientBgmArea(screen, debugLoadingMode) {
+  if (debugLoadingMode) return "off";
+  return screen === "start" || screen === "result" ? screen : "off";
+}
+
+function useAmbientBgm(playbackArea) {
+  const audioRef = useRef(null);
+  const previousPlaybackAreaRef = useRef("off");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const shouldPlay = playbackArea !== "off";
+    let cancelled = false;
+    let unlockBound = false;
+    const audio =
+      audioRef.current ||
+      Object.assign(new Audio(AMBIENT_BGM_SRC), {
+        loop: true,
+        preload: "auto",
+        volume: AMBIENT_BGM_VOLUME,
+      });
+    audioRef.current = audio;
+
+    function removeUnlockListeners() {
+      if (!unlockBound) return;
+      AMBIENT_BGM_UNLOCK_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, handleUserUnlock);
+      });
+      unlockBound = false;
+    }
+
+    function bindUnlockListeners() {
+      if (unlockBound || cancelled || !shouldPlay) return;
+      AMBIENT_BGM_UNLOCK_EVENTS.forEach((eventName) => {
+        window.addEventListener(eventName, handleUserUnlock, { once: true, passive: true });
+      });
+      unlockBound = true;
+    }
+
+    function playAmbientBgm() {
+      audio.volume = AMBIENT_BGM_VOLUME;
+      const playPromise = audio.play();
+      if (!playPromise || typeof playPromise.then !== "function") {
+        return;
+      }
+
+      playPromise
+        .then(removeUnlockListeners)
+        .catch(() => {
+          if (!cancelled && shouldPlay) {
+            bindUnlockListeners();
+          }
+        });
+    }
+
+    function handleUserUnlock() {
+      removeUnlockListeners();
+      if (cancelled || !shouldPlay) return;
+      playAmbientBgm();
+    }
+
+    if (shouldPlay) {
+      if (previousPlaybackAreaRef.current !== playbackArea) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      playAmbientBgm();
+    } else {
+      removeUnlockListeners();
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    previousPlaybackAreaRef.current = playbackArea;
+
+    return () => {
+      cancelled = true;
+      removeUnlockListeners();
+    };
+  }, [playbackArea]);
+}
+
 export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
   const [screen, setScreen] = useState("start");
@@ -26,6 +111,7 @@ export default function App() {
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
   const [resultSummary, setResultSummary] = useState(null);
   const song = selectedSong || getDefaultSong();
+  useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode));
 
   const appState = useMemo(
     () => ({
