@@ -112,14 +112,15 @@ function useAmbientBgm(playbackArea) {
 }
 
 function getRandomResultVoiceClip() {
-  if (resultVoiceClips.length <= 0) return "";
+  if (resultVoiceClips.length <= 0) return null;
   const index = Math.floor(Math.random() * resultVoiceClips.length);
-  return resultVoiceClips[index] || "";
+  return resultVoiceClips[index] || null;
 }
 
 function useResultVoice(screen, resultKey) {
   const sourceRef = useRef(null);
-  const pendingClipSrcRef = useRef("");
+  const gainRef = useRef(null);
+  const pendingClipRef = useRef(null);
   const lastPlayedKeyRef = useRef(null);
 
   useEffect(() => {
@@ -141,15 +142,29 @@ function useResultVoice(screen, resultKey) {
     function stopResultVoice() {
       window.clearTimeout(playTimer);
       removeUnlockListeners();
-      if (!sourceRef.current) return;
-      try {
-        sourceRef.current.onended = null;
-        sourceRef.current.stop();
-      } catch (error) {
-        // The clip may have already ended.
+      pendingClipRef.current = null;
+      if (sourceRef.current) {
+        try {
+          sourceRef.current.onended = null;
+          sourceRef.current.stop();
+        } catch (error) {
+          // The clip may have already ended.
+        }
+        try {
+          sourceRef.current.disconnect();
+        } catch (error) {
+          // Source may already be disconnected.
+        }
+      }
+      if (gainRef.current) {
+        try {
+          gainRef.current.disconnect();
+        } catch (error) {
+          // Gain may already be disconnected.
+        }
       }
       sourceRef.current = null;
-      pendingClipSrcRef.current = "";
+      gainRef.current = null;
     }
 
     function bindUnlockListeners() {
@@ -160,25 +175,43 @@ function useResultVoice(screen, resultKey) {
       unlockBound = true;
     }
 
-    async function playResultVoice(clipSrc) {
+    async function playResultVoice(clip) {
       try {
+        if (!clip?.src) return;
         const audioContext = await getAudioContext();
         if (cancelled || !shouldPlay || audioContext.state !== "running") {
           bindUnlockListeners();
           return;
         }
-        const buffer = await loadAudioBuffer(clipSrc);
+        const buffer = await loadAudioBuffer(clip.src);
         if (cancelled || !shouldPlay) return;
         stopResultVoice();
         const source = audioContext.createBufferSource();
+        const gain = audioContext.createGain();
         source.buffer = buffer;
-        source.connect(audioContext.destination);
+        gain.gain.value = typeof clip.volume === "number" && clip.volume > 0 ? clip.volume : 1;
+        source.connect(gain);
+        gain.connect(audioContext.destination);
         source.onended = () => {
           if (sourceRef.current === source) {
             sourceRef.current = null;
           }
+          if (gainRef.current === gain) {
+            gainRef.current = null;
+          }
+          try {
+            source.disconnect();
+          } catch (error) {
+            // Source may already be disconnected by cleanup.
+          }
+          try {
+            gain.disconnect();
+          } catch (error) {
+            // Gain may already be disconnected by cleanup.
+          }
         };
         sourceRef.current = source;
+        gainRef.current = gain;
         source.start(0);
         removeUnlockListeners();
       } catch (error) {
@@ -191,9 +224,9 @@ function useResultVoice(screen, resultKey) {
     function handleUserUnlock() {
       removeUnlockListeners();
       if (cancelled || !shouldPlay) return;
-      const clipSrc = pendingClipSrcRef.current;
-      if (clipSrc) {
-        playResultVoice(clipSrc);
+      const clip = pendingClipRef.current;
+      if (clip?.src) {
+        playResultVoice(clip);
       }
     }
 
@@ -213,19 +246,19 @@ function useResultVoice(screen, resultKey) {
     }
 
     stopResultVoice();
-    const clipSrc = getRandomResultVoiceClip();
+    const clip = getRandomResultVoiceClip();
     lastPlayedKeyRef.current = resultKey;
-    if (!clipSrc) {
+    if (!clip?.src) {
       return () => {
         cancelled = true;
         removeUnlockListeners();
       };
     }
 
-    pendingClipSrcRef.current = clipSrc;
+    pendingClipRef.current = clip;
     playTimer = window.setTimeout(() => {
       if (!cancelled) {
-        playResultVoice(clipSrc);
+        playResultVoice(clip);
       }
     }, RESULT_VOICE_DELAY_MS);
 
@@ -242,9 +275,11 @@ export default function App() {
   const [startTheme, setThemeState] = useState(() => getStartTheme());
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
   const [resultSummary, setResultSummary] = useState(null);
+  const [gameRunId, setGameRunId] = useState(0);
+  const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const song = selectedSong || getDefaultSong();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode));
-  useResultVoice(screen, resultSummary?.completedAt || null);
+  useResultVoice(screen, resultVoicePlayId || null);
 
   const appState = useMemo(
     () => ({
@@ -260,15 +295,20 @@ export default function App() {
 
   function handleStart() {
     unlockAudioForUserGesture();
+    setResultSummary(null);
+    setGameRunId((id) => id + 1);
     setScreen("game");
   }
 
   function handleFinish(summary) {
     setResultSummary(summary);
+    setResultVoicePlayId((id) => id + 1);
     setScreen("result");
   }
 
   function handleReplay() {
+    setResultSummary(null);
+    setGameRunId((id) => id + 1);
     setScreen("game");
   }
 
@@ -296,7 +336,7 @@ export default function App() {
           )}
           {screen === "game" && (
             <GameScreen
-              key={`${song.id}-${startTheme}-${resultSummary?.completedAt || 0}`}
+              key={`${song.id}-${startTheme}-${gameRunId}`}
               song={song}
               startTheme={startTheme}
               onFinish={handleFinish}
