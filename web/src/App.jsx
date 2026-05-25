@@ -6,6 +6,7 @@ import StartScreen from "./screens/StartScreen.jsx";
 import GameScreen from "./screens/GameScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
 import { unlockAudioForUserGesture } from "./game/AudioControllerWeb.js";
+import { resultVoiceClips } from "./game/resultVoiceClips.js";
 
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
@@ -13,6 +14,8 @@ const LoadingShimmerDebugPreview = import.meta.env.DEV
 const AMBIENT_BGM_SRC = "/assets/audio/home-loop-bgm-quiet.m4a";
 const AMBIENT_BGM_VOLUME = 1;
 const AMBIENT_BGM_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
+const RESULT_VOICE_DELAY_MS = 1000;
+const RESULT_VOICE_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 
 function getLoadingShimmerDebugPreviewMode() {
   if (!import.meta.env.DEV || typeof window === "undefined") {
@@ -104,6 +107,113 @@ function useAmbientBgm(playbackArea) {
   }, [playbackArea]);
 }
 
+function getRandomResultVoiceClip() {
+  if (resultVoiceClips.length <= 0) return "";
+  const index = Math.floor(Math.random() * resultVoiceClips.length);
+  return resultVoiceClips[index] || "";
+}
+
+function useResultVoice(screen, resultKey) {
+  const audioRef = useRef(null);
+  const lastPlayedKeyRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const shouldPlay = screen === "result" && resultKey;
+    let cancelled = false;
+    let unlockBound = false;
+    let playTimer = 0;
+
+    function removeUnlockListeners() {
+      if (!unlockBound) return;
+      RESULT_VOICE_UNLOCK_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, handleUserUnlock);
+      });
+      unlockBound = false;
+    }
+
+    function stopResultVoice() {
+      window.clearTimeout(playTimer);
+      removeUnlockListeners();
+      if (!audioRef.current) return;
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    function bindUnlockListeners() {
+      if (unlockBound || cancelled || !shouldPlay) return;
+      RESULT_VOICE_UNLOCK_EVENTS.forEach((eventName) => {
+        window.addEventListener(eventName, handleUserUnlock, { once: true, passive: true });
+      });
+      unlockBound = true;
+    }
+
+    function playResultVoice() {
+      const audio = audioRef.current;
+      if (!audio) return;
+      const playPromise = audio.play();
+      if (!playPromise || typeof playPromise.then !== "function") {
+        return;
+      }
+
+      playPromise
+        .then(removeUnlockListeners)
+        .catch(() => {
+          if (!cancelled && shouldPlay) {
+            bindUnlockListeners();
+          }
+        });
+    }
+
+    function handleUserUnlock() {
+      removeUnlockListeners();
+      if (cancelled || !shouldPlay) return;
+      playResultVoice();
+    }
+
+    if (!shouldPlay) {
+      stopResultVoice();
+      return () => {
+        cancelled = true;
+        stopResultVoice();
+      };
+    }
+
+    if (lastPlayedKeyRef.current === resultKey) {
+      return () => {
+        cancelled = true;
+        removeUnlockListeners();
+      };
+    }
+
+    stopResultVoice();
+    const clipSrc = getRandomResultVoiceClip();
+    lastPlayedKeyRef.current = resultKey;
+    if (!clipSrc) {
+      return () => {
+        cancelled = true;
+        removeUnlockListeners();
+      };
+    }
+
+    const audio = new Audio(clipSrc);
+    audio.loop = false;
+    audio.preload = "auto";
+    audioRef.current = audio;
+    playTimer = window.setTimeout(() => {
+      if (!cancelled) {
+        playResultVoice();
+      }
+    }, RESULT_VOICE_DELAY_MS);
+
+    return () => {
+      cancelled = true;
+      stopResultVoice();
+    };
+  }, [screen, resultKey]);
+}
+
 export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
   const [screen, setScreen] = useState("start");
@@ -112,6 +222,7 @@ export default function App() {
   const [resultSummary, setResultSummary] = useState(null);
   const song = selectedSong || getDefaultSong();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode));
+  useResultVoice(screen, resultSummary?.completedAt || null);
 
   const appState = useMemo(
     () => ({
