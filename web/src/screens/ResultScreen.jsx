@@ -25,7 +25,10 @@ const SHARE_EXPORT_IMAGE_DECODE_TIMEOUT_MS = 1200;
 const SHARE_EXPORT_INVITE_COPY = "一起爆锤方猪，守护NJZ";
 const SHARE_EXPORT_URL_COPY = "bnzhitpig.pages.dev";
 const SHARE_EXPORT_MAX_PIXEL_RATIO = 2;
-const SHARE_EXPORT_BOTTOM_CROP_CSS_PX = 66;
+const SHARE_EXPORT_WIDTH_CSS_PX = 402;
+const SHARE_EXPORT_HEIGHT_CSS_PX = 782;
+const SHARE_EXPORT_BOTTOM_CROP_CSS_PX = 51;
+const SHARE_EXPORT_BOTTOM_GAP_CSS_PX = 14;
 const EMPTY_SHARE_PREVIEW = Object.freeze({
   status: "idle",
   url: "",
@@ -463,11 +466,10 @@ function getShareExportPixelRatio() {
   return Math.min(window.devicePixelRatio || 2, SHARE_EXPORT_MAX_PIXEL_RATIO);
 }
 
-function getElementCssSize(element) {
-  const bounds = element.getBoundingClientRect();
+function getShareExportCssSize() {
   return {
-    width: Math.max(1, Math.round(bounds.width)),
-    height: Math.max(1, Math.round(bounds.height)),
+    width: SHARE_EXPORT_WIDTH_CSS_PX,
+    height: SHARE_EXPORT_HEIGHT_CSS_PX,
   };
 }
 
@@ -576,6 +578,8 @@ async function createResultExportClone(sourceElement, width, height) {
   copyResultExportContext(sourceElement, host);
   host.style.width = `${width}px`;
   host.style.height = `${height}px`;
+  host.style.setProperty("--share-export-bottom-crop", `${SHARE_EXPORT_BOTTOM_CROP_CSS_PX}px`);
+  host.style.setProperty("--share-export-bottom-gap", `${SHARE_EXPORT_BOTTOM_GAP_CSS_PX}px`);
   clone.classList.add("result-certificate-exporting");
   clone.style.width = `${width}px`;
   clone.style.height = `${height}px`;
@@ -1086,7 +1090,7 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
       await waitForImagesReady(certificatePageRef.current);
 
       const pixelRatio = getShareExportPixelRatio();
-      const { width, height } = getElementCssSize(certificatePageRef.current);
+      const { width, height } = getShareExportCssSize();
       exportClone = await createResultExportClone(certificatePageRef.current, width, height);
       const foregroundCanvas = await toCanvas(exportClone.clone, {
         cacheBust: true,

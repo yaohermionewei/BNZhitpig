@@ -2521,7 +2521,7 @@ button {
 
 .result-certificate-export-copy {
   position: absolute;
-  top: calc(86.2% - 30px);
+  bottom: calc(var(--share-export-bottom-crop, 51px) + var(--share-export-bottom-gap, 14px));
   left: 50%;
   z-index: 20;
   display: none;
@@ -2586,6 +2586,7 @@ button {
   display: grid;
   place-items: center;
   padding: 4.8vh 5vw;
+  padding: max(18px, 4.8svh) 5vw max(24px, calc(4.8svh + env(safe-area-inset-bottom)));
   background: rgba(8, 11, 18, 0.78);
   backdrop-filter: blur(4px);
 }
@@ -2598,6 +2599,7 @@ button {
   gap: 1.65vh;
   width: min(86vw, 402px);
   max-height: 92vh;
+  max-height: min(92vh, 92svh);
 }
 
 .result-share-preview-close {
@@ -2624,6 +2626,7 @@ button {
   display: block;
   width: 100%;
   max-height: 78vh;
+  max-height: min(78vh, calc(100svh - 168px - env(safe-area-inset-bottom)));
   object-fit: contain;
   image-rendering: pixelated;
   box-shadow: 0 14px 0 rgba(0, 0, 0, 0.24);
