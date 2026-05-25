@@ -39,7 +39,7 @@ export function unlockAudioForUserGesture() {
   }
 }
 
-async function loadAudioBuffer(src) {
+export async function loadAudioBuffer(src) {
   if (audioBufferCache.has(src)) {
     return audioBufferCache.get(src);
   }

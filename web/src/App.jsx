@@ -5,7 +5,11 @@ import StageShell from "./screens/StageShell.jsx";
 import StartScreen from "./screens/StartScreen.jsx";
 import GameScreen from "./screens/GameScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
-import { unlockAudioForUserGesture } from "./game/AudioControllerWeb.js";
+import {
+  getAudioContext,
+  loadAudioBuffer,
+  unlockAudioForUserGesture,
+} from "./game/AudioControllerWeb.js";
 import { resultVoiceClips } from "./game/resultVoiceClips.js";
 
 const LoadingShimmerDebugPreview = import.meta.env.DEV
@@ -114,7 +118,8 @@ function getRandomResultVoiceClip() {
 }
 
 function useResultVoice(screen, resultKey) {
-  const audioRef = useRef(null);
+  const sourceRef = useRef(null);
+  const pendingClipSrcRef = useRef("");
   const lastPlayedKeyRef = useRef(null);
 
   useEffect(() => {
@@ -136,9 +141,15 @@ function useResultVoice(screen, resultKey) {
     function stopResultVoice() {
       window.clearTimeout(playTimer);
       removeUnlockListeners();
-      if (!audioRef.current) return;
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      if (!sourceRef.current) return;
+      try {
+        sourceRef.current.onended = null;
+        sourceRef.current.stop();
+      } catch (error) {
+        // The clip may have already ended.
+      }
+      sourceRef.current = null;
+      pendingClipSrcRef.current = "";
     }
 
     function bindUnlockListeners() {
@@ -149,27 +160,41 @@ function useResultVoice(screen, resultKey) {
       unlockBound = true;
     }
 
-    function playResultVoice() {
-      const audio = audioRef.current;
-      if (!audio) return;
-      const playPromise = audio.play();
-      if (!playPromise || typeof playPromise.then !== "function") {
-        return;
-      }
-
-      playPromise
-        .then(removeUnlockListeners)
-        .catch(() => {
+    async function playResultVoice(clipSrc) {
+      try {
+        const audioContext = await getAudioContext();
+        if (cancelled || !shouldPlay || audioContext.state !== "running") {
+          bindUnlockListeners();
+          return;
+        }
+        const buffer = await loadAudioBuffer(clipSrc);
+        if (cancelled || !shouldPlay) return;
+        stopResultVoice();
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.onended = () => {
+          if (sourceRef.current === source) {
+            sourceRef.current = null;
+          }
+        };
+        sourceRef.current = source;
+        source.start(0);
+        removeUnlockListeners();
+      } catch (error) {
           if (!cancelled && shouldPlay) {
             bindUnlockListeners();
           }
-        });
+      }
     }
 
     function handleUserUnlock() {
       removeUnlockListeners();
       if (cancelled || !shouldPlay) return;
-      playResultVoice();
+      const clipSrc = pendingClipSrcRef.current;
+      if (clipSrc) {
+        playResultVoice(clipSrc);
+      }
     }
 
     if (!shouldPlay) {
@@ -197,13 +222,10 @@ function useResultVoice(screen, resultKey) {
       };
     }
 
-    const audio = new Audio(clipSrc);
-    audio.loop = false;
-    audio.preload = "auto";
-    audioRef.current = audio;
+    pendingClipSrcRef.current = clipSrc;
     playTimer = window.setTimeout(() => {
       if (!cancelled) {
-        playResultVoice();
+        playResultVoice(clipSrc);
       }
     }, RESULT_VOICE_DELAY_MS);
 
