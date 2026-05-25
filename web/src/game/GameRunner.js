@@ -36,6 +36,8 @@ const CROWD_EVENT_DELAY_RANGE = Object.freeze([2.8, 5.2]);
 const CROWD_FRONT_HOLD_RANGE = Object.freeze([0.72, 1.28]);
 const CROWD_TURN_DURATION_RANGE = Object.freeze([0.1, 0.16]);
 const GAME_OVER_EFFECT_SOURCE = "/assets/audio/miss.wav";
+const NOTE_HIT_EFFECT_VOLUME = 1.8;
+const NOTE_MISS_EFFECT_VOLUME = 1.8;
 const CRITICAL_FONT_LOAD_TIMEOUT_MS = 1200;
 const PREPARE_RESOURCE_TIMEOUT_MS = 12000;
 
@@ -657,7 +659,10 @@ export class GameRunner {
     if (kind === "failed") {
       this.audioStartToken += 1;
       this.audio.pause();
-      this.audio.playEffect(GAME_OVER_EFFECT_SOURCE, { playbackRate: 0.76, volume: 1 });
+      this.audio.playEffect(GAME_OVER_EFFECT_SOURCE, {
+        playbackRate: 0.76,
+        volume: NOTE_MISS_EFFECT_VOLUME,
+      });
     }
   }
 
@@ -675,8 +680,12 @@ export class GameRunner {
     const cues = this.state.audioCues.slice();
     this.state.audioCues.length = 0;
     cues.forEach((cue) => {
-      if (cue === "hit") this.audio.playEffect("/assets/audio/hit.wav");
-      if (cue === "miss") this.audio.playEffect("/assets/audio/miss.wav");
+      if (cue === "hit") {
+        this.audio.playEffect("/assets/audio/hit.wav", { volume: NOTE_HIT_EFFECT_VOLUME });
+      }
+      if (cue === "miss") {
+        this.audio.playEffect("/assets/audio/miss.wav", { volume: NOTE_MISS_EFFECT_VOLUME });
+      }
     });
   }
 
