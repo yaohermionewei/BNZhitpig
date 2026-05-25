@@ -18,6 +18,8 @@
   font-family: "PixelZhFusion", "PingFang SC", "Helvetica Neue", sans-serif;
   font-synthesis: none;
   text-rendering: geometricPrecision;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: none;
 }
 
@@ -32,6 +34,8 @@ body,
   height: 100%;
   margin: 0;
   overflow: hidden;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 button {
@@ -49,6 +53,8 @@ button {
   display: grid;
   place-items: center;
   overflow: hidden;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
   background:
     radial-gradient(circle at 20% 16%, rgba(255, 214, 128, 0.14), transparent 24rem),
     radial-gradient(circle at 80% 80%, rgba(97, 177, 255, 0.16), transparent 24rem),
@@ -71,6 +77,8 @@ button {
   box-shadow: 0 22px 80px rgba(0, 0, 0, 0.3);
   isolation: isolate;
   container-type: size;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 @media (max-width: 560px) and (orientation: portrait) {
@@ -87,6 +95,8 @@ button {
   inset: 0;
   overflow: hidden;
   background: #6f86aa;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 .screen-light {
