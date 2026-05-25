@@ -6,6 +6,7 @@ import {
   getResultCertificateBackgroundSource,
   preloadResultAssets,
 } from "../game/assets.js";
+import { playUiSound } from "../game/uiSounds.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
@@ -719,9 +720,15 @@ function ResultSparkles() {
 function ResultButton({ kind, children, onClick }) {
   const isPrimary = kind === "primary";
   const prefix = isPrimary ? "result-primary" : "result-secondary";
+  const soundKind = isPrimary ? "confirm" : "back";
+
+  function handleClick(event) {
+    playUiSound(soundKind);
+    onClick?.(event);
+  }
 
   return (
-    <button className={`${prefix}-wrap`} type="button" onClick={onClick}>
+    <button className={`${prefix}-wrap`} type="button" onClick={handleClick}>
       <span className={`${prefix}-shadow`} />
       <span className={`${prefix}-frame`}>
         <span className={`${prefix}-face`}>
@@ -740,12 +747,23 @@ function ResultButton({ kind, children, onClick }) {
   );
 }
 
-function ResultCertificateButton({ children, onClick, className = "", disabled = false }) {
+function ResultCertificateButton({
+  children,
+  onClick,
+  className = "",
+  disabled = false,
+  sound = null,
+}) {
+  function handleClick(event) {
+    if (sound) playUiSound(sound);
+    onClick?.(event);
+  }
+
   return (
     <button
       className={`result-certificate-button ${className}`.trim()}
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
     >
       <span className="result-certificate-button-shadow" />
@@ -884,8 +902,12 @@ function ResultCertificateScreen({
         </button>
 
         <div className="result-certificate-actions">
-          <ResultCertificateButton onClick={onHome}>回首页</ResultCertificateButton>
-          <ResultCertificateButton onClick={onReplay}>再来一局</ResultCertificateButton>
+          <ResultCertificateButton onClick={onHome} sound="back">
+            回首页
+          </ResultCertificateButton>
+          <ResultCertificateButton onClick={onReplay} sound="confirm">
+            再来一局
+          </ResultCertificateButton>
         </div>
 
         <div className="result-certificate-export-copy" aria-hidden="true">

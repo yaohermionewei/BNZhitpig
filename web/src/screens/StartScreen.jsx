@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { songs } from "../game/songs.js";
+import { playUiSound } from "../game/uiSounds.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 import {
@@ -226,6 +227,11 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
     }
   }
 
+  function handleStartTap() {
+    playUiSound("confirm");
+    onStart?.();
+  }
+
   return (
     <div className={`screen start-screen page-${startTheme}`}>
       <div className="start-stage" ref={stageRef} style={stageStyle}>
@@ -359,7 +365,7 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
               </div>
             </section>
 
-            <button className="start-action-wrap" type="button" onClick={onStart}>
+            <button className="start-action-wrap" type="button" onClick={handleStartTap}>
               <span className="start-action-frame">
                 <span className="start-action-inner">
                   <span className="start-action-label">

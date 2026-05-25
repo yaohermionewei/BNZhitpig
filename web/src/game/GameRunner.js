@@ -8,6 +8,7 @@ import {
 } from "./engine.js";
 import { renderFrame, getControlRects } from "./renderer.js";
 import { AudioControllerWeb } from "./AudioControllerWeb.js";
+import { playUiSound } from "./uiSounds.js";
 import {
   EFFECT_AUDIO_POOL_SIZES,
   loadImage,
@@ -705,6 +706,7 @@ export class GameRunner {
         point.y >= rects.pause.top &&
         point.y <= rects.pause.bottom
       ) {
+        playUiSound("tap");
         this.pause();
         return;
       }
@@ -712,14 +714,17 @@ export class GameRunner {
 
     if (this.isPaused) {
       if (this.pointHitsRect(point, rects.pauseHome)) {
+        playUiSound("back");
         this.goHome();
         return;
       }
       if (this.pointHitsRect(point, rects.pauseRestart)) {
+        playUiSound("confirm");
         this.start();
         return;
       }
       if (this.pointHitsRect(point, rects.resume)) {
+        playUiSound("resume");
         this.resume();
         return;
       }
