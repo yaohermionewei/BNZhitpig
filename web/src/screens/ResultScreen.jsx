@@ -572,6 +572,30 @@ function copyResultExportContext(sourceElement, targetElement) {
   });
 }
 
+function addExportMetricShadowLayers(clone) {
+  clone.querySelectorAll(".result-certificate-large-value").forEach((node) => {
+    const value = (node.textContent || "").trim();
+    if (!value) return;
+
+    node.textContent = "";
+
+    const stack = document.createElement("span");
+    stack.className = "result-certificate-large-value-export-stack";
+
+    const shadow = document.createElement("span");
+    shadow.className = "result-certificate-large-value-export-shadow";
+    shadow.setAttribute("aria-hidden", "true");
+    shadow.textContent = value;
+
+    const text = document.createElement("span");
+    text.className = "result-certificate-large-value-export-text";
+    text.textContent = value;
+
+    stack.append(shadow, text);
+    node.appendChild(stack);
+  });
+}
+
 async function createResultExportClone(sourceElement, width, height) {
   const host = document.createElement("div");
   const clone = sourceElement.cloneNode(true);
@@ -587,6 +611,7 @@ async function createResultExportClone(sourceElement, width, height) {
   clone.style.background = "transparent";
   clone.style.backgroundColor = "transparent";
   clone.style.backgroundImage = "none";
+  addExportMetricShadowLayers(clone);
   host.appendChild(clone);
   document.body.appendChild(host);
 
