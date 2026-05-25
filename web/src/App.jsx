@@ -15,6 +15,9 @@ import { resultVoiceClips } from "./game/resultVoiceClips.js";
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
   : null;
+const EndingOverlayDebugPreview = import.meta.env.DEV
+  ? lazy(() => import("./screens/EndingOverlayDebugPreview.jsx"))
+  : null;
 const AMBIENT_BGM_SRC = "/assets/audio/home-loop-bgm-quiet.m4a";
 const AMBIENT_BGM_VOLUME = 1;
 const AMBIENT_BGM_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
@@ -29,8 +32,17 @@ function getLoadingShimmerDebugPreviewMode() {
   return new URLSearchParams(window.location.search).get("debugLoading") === "1";
 }
 
-function getAmbientBgmArea(screen, debugLoadingMode) {
-  if (debugLoadingMode) return "off";
+function getEndingOverlayDebugPreviewMode() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return null;
+  }
+
+  const mode = new URLSearchParams(window.location.search).get("debugEnding");
+  return mode === "completed" || mode === "failed" ? mode : null;
+}
+
+function getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode) {
+  if (debugLoadingMode || debugEndingMode) return "off";
   return screen === "start" || screen === "result" ? screen : "off";
 }
 
@@ -271,6 +283,7 @@ function useResultVoice(screen, resultKey) {
 
 export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
+  const debugEndingMode = getEndingOverlayDebugPreviewMode();
   const [screen, setScreen] = useState("start");
   const [startTheme, setThemeState] = useState(() => getStartTheme());
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
@@ -278,7 +291,7 @@ export default function App() {
   const [gameRunId, setGameRunId] = useState(0);
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const song = selectedSong || getDefaultSong();
-  useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode));
+  useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode));
   useResultVoice(screen, resultVoicePlayId || null);
 
   const appState = useMemo(
@@ -318,7 +331,11 @@ export default function App() {
 
   return (
     <StageShell theme={startTheme}>
-      {debugLoadingMode && LoadingShimmerDebugPreview ? (
+      {debugEndingMode && EndingOverlayDebugPreview ? (
+        <Suspense fallback={<div className="screen" />}>
+          <EndingOverlayDebugPreview startTheme={startTheme} />
+        </Suspense>
+      ) : debugLoadingMode && LoadingShimmerDebugPreview ? (
         <Suspense fallback={<div className="screen" />}>
           <LoadingShimmerDebugPreview />
         </Suspense>

@@ -8,7 +8,7 @@ import {
 } from "./engine.js";
 import { renderFrame, getControlRects } from "./renderer.js";
 import { AudioControllerWeb } from "./AudioControllerWeb.js";
-import { playUiSound } from "./uiSounds.js";
+import { playUiSound, playVictoryFanfare } from "./uiSounds.js";
 import {
   EFFECT_AUDIO_POOL_SIZES,
   loadImage,
@@ -663,6 +663,8 @@ export class GameRunner {
         playbackRate: 0.76,
         volume: NOTE_MISS_EFFECT_VOLUME,
       });
+    } else if (kind === "completed") {
+      playVictoryFanfare();
     }
   }
 
