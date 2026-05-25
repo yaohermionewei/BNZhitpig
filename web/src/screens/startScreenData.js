@@ -1,8 +1,8 @@
 import { DEFAULT_START_THEME, START_THEMES } from "../utils/start-theme.js";
 
 export const START_THEME_BACKDROPS = Object.freeze({
-  dark: "/assets/images/首页夜晚版.runtime.jpg",
-  light: "/assets/images/首页夕阳版.runtime.jpg",
+  dark: "/assets/images/首页夜晚版.runtime.webp",
+  light: "/assets/images/首页夕阳版.runtime.webp",
 });
 
 const START_BACKDROP_LAYOUTS = Object.freeze({
@@ -29,31 +29,31 @@ const START_BACKDROP_LAYOUTS = Object.freeze({
 const START_CHARACTER_X_ANCHOR_THEME = START_THEMES.dark;
 
 const RABBIT_FRAME_SOURCES = Object.freeze([
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.png",
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-3.png",
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-4.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.webp",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.webp",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-3.webp",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-4.webp",
 ]);
 
 const RABBIT_DARK_FRAME_SOURCES = Object.freeze([
-  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-1.png",
-  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-2.png",
-  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-3.png",
-  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-4.png",
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-1.webp",
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-2.webp",
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-3.webp",
+  "/assets/images/title-rabbit-frames-dark-v2/rabbit-frame-4.webp",
 ]);
 
 const PIG_FRAME_SOURCES = Object.freeze([
-  "/assets/images/title-pig-frames-v2/pig-frame-1.png",
-  "/assets/images/title-pig-frames-v2/pig-frame-2.png",
-  "/assets/images/title-pig-frames-v2/pig-frame-3.png",
-  "/assets/images/title-pig-frames-v2/pig-frame-4.png",
+  "/assets/images/title-pig-frames-v2/pig-frame-1.webp",
+  "/assets/images/title-pig-frames-v2/pig-frame-2.webp",
+  "/assets/images/title-pig-frames-v2/pig-frame-3.webp",
+  "/assets/images/title-pig-frames-v2/pig-frame-4.webp",
 ]);
 
 const PIG_DARK_FRAME_SOURCES = Object.freeze([
-  "/assets/images/title-pig-frames-dark-v2/pig-frame-1.png",
-  "/assets/images/title-pig-frames-dark-v2/pig-frame-2.png",
-  "/assets/images/title-pig-frames-dark-v2/pig-frame-3.png",
-  "/assets/images/title-pig-frames-dark-v2/pig-frame-4.png",
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-1.webp",
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-2.webp",
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-3.webp",
+  "/assets/images/title-pig-frames-dark-v2/pig-frame-4.webp",
 ]);
 
 const START_THEME_TOGGLE_ICON_SOURCES = Object.freeze({

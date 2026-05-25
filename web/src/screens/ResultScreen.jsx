@@ -1,3 +1,4 @@
+import { toCanvas } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DEFAULT_RESULT_SONG_COVER_SOURCE,
@@ -9,10 +10,10 @@ import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
 const RABBIT_FRAME_SOURCES = Object.freeze([
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.png",
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-3.png",
-  "/assets/images/title-rabbit-frames-v2/rabbit-frame-4.png",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.webp",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-2.webp",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-3.webp",
+  "/assets/images/title-rabbit-frames-v2/rabbit-frame-4.webp",
 ]);
 
 const PARCHMENT_BACKGROUND_SRC = "/assets/images/透明羊皮纸完整版.runtime.png";
@@ -20,6 +21,17 @@ const HOME_TRANSITION_ROUTE_DELAY_MS = 120;
 const RESULT_ENTRY_READY_TIMEOUT_MS = 2500;
 const RESULT_ENTRY_MIN_LOADING_MS = 280;
 const DEFAULT_RESULT_TONE = "sky";
+const SHARE_EXPORT_IMAGE_DECODE_TIMEOUT_MS = 1200;
+const SHARE_EXPORT_INVITE_COPY = "一起爆锤方猪，守护NJZ";
+const SHARE_EXPORT_URL_COPY = "bnzhitpig.pages.dev";
+const SHARE_EXPORT_MAX_PIXEL_RATIO = 2;
+const SHARE_EXPORT_BOTTOM_CROP_CSS_PX = 66;
+const EMPTY_SHARE_PREVIEW = Object.freeze({
+  status: "idle",
+  url: "",
+  blob: null,
+  fileName: "",
+});
 
 const RANK_TONE_BY_RANK = Object.freeze({
   SSS: "prism",
@@ -377,6 +389,211 @@ function waitForMinimumDuration(durationMs) {
   });
 }
 
+function waitForAnimationFrame() {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(resolve);
+  });
+}
+
+async function waitForImageReady(image) {
+  if (!image) return;
+
+  if (!image.complete || image.naturalWidth <= 0) {
+    await new Promise((resolve, reject) => {
+      image.addEventListener("load", resolve, { once: true });
+      image.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  if (typeof image.decode === "function") {
+    let decodeTimeout = 0;
+    const decodeTimeoutPromise = new Promise((resolve) => {
+      decodeTimeout = window.setTimeout(resolve, SHARE_EXPORT_IMAGE_DECODE_TIMEOUT_MS);
+    });
+    await Promise.race([image.decode(), decodeTimeoutPromise]).catch(() => undefined);
+    window.clearTimeout(decodeTimeout);
+  }
+}
+
+async function waitForImagesReady(root) {
+  const images = Array.from(root?.querySelectorAll("img") || []);
+  await Promise.all(images.map((image) => waitForImageReady(image)));
+}
+
+async function loadExportImage(src) {
+  const image = new Image();
+  image.decoding = "async";
+  image.src = src;
+  await waitForImageReady(image);
+  return image;
+}
+
+function drawImageCover(context, image, targetWidth, targetHeight) {
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const targetRatio = targetWidth / targetHeight;
+  const sourceRatio = sourceWidth / sourceHeight;
+  let cropWidth = sourceWidth;
+  let cropHeight = sourceHeight;
+  let cropX = 0;
+  let cropY = 0;
+
+  if (sourceRatio > targetRatio) {
+    cropWidth = sourceHeight * targetRatio;
+    cropX = (sourceWidth - cropWidth) / 2;
+  } else {
+    cropHeight = sourceWidth / targetRatio;
+    cropY = (sourceHeight - cropHeight) / 2;
+  }
+
+  context.drawImage(
+    image,
+    cropX,
+    cropY,
+    cropWidth,
+    cropHeight,
+    0,
+    0,
+    targetWidth,
+    targetHeight
+  );
+}
+
+function getShareExportPixelRatio() {
+  return Math.min(window.devicePixelRatio || 2, SHARE_EXPORT_MAX_PIXEL_RATIO);
+}
+
+function getElementCssSize(element) {
+  const bounds = element.getBoundingClientRect();
+  return {
+    width: Math.max(1, Math.round(bounds.width)),
+    height: Math.max(1, Math.round(bounds.height)),
+  };
+}
+
+function canvasToPngBlob(canvas) {
+  return new Promise((resolve) => {
+    if (typeof canvas.toBlob === "function") {
+      canvas.toBlob(resolve, "image/png");
+      return;
+    }
+
+    fetch(canvas.toDataURL("image/png"))
+      .then((response) => response.blob())
+      .then(resolve, () => resolve(null));
+  });
+}
+
+async function createResultExportBackgroundCanvas(backgroundSrc, cssWidth, cssHeight, pixelRatio) {
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(cssWidth * pixelRatio));
+  canvas.height = Math.max(1, Math.round(cssHeight * pixelRatio));
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Canvas 2D context is unavailable");
+  const image = await loadExportImage(backgroundSrc);
+  drawImageCover(context, image, canvas.width, canvas.height);
+  return canvas;
+}
+
+async function composeResultShareBlob({
+  backgroundSrc,
+  foregroundCanvas,
+  cssWidth,
+  cssHeight,
+  pixelRatio,
+}) {
+  const backgroundCanvas = await createResultExportBackgroundCanvas(
+    backgroundSrc,
+    cssWidth,
+    cssHeight,
+    pixelRatio
+  );
+  const cropHeight = Math.min(
+    Math.round(SHARE_EXPORT_BOTTOM_CROP_CSS_PX * pixelRatio),
+    Math.max(0, foregroundCanvas.height - 1)
+  );
+  const outputWidth = foregroundCanvas.width;
+  const outputHeight = Math.max(1, foregroundCanvas.height - cropHeight);
+  const outputCanvas = document.createElement("canvas");
+  outputCanvas.width = outputWidth;
+  outputCanvas.height = outputHeight;
+  const context = outputCanvas.getContext("2d");
+  if (!context) throw new Error("Canvas 2D context is unavailable");
+
+  context.drawImage(
+    backgroundCanvas,
+    0,
+    0,
+    outputWidth,
+    outputHeight,
+    0,
+    0,
+    outputWidth,
+    outputHeight
+  );
+  context.drawImage(
+    foregroundCanvas,
+    0,
+    0,
+    outputWidth,
+    outputHeight,
+    0,
+    0,
+    outputWidth,
+    outputHeight
+  );
+
+  return canvasToPngBlob(outputCanvas);
+}
+
+function copyResultExportContext(sourceElement, targetElement) {
+  const contextElement = sourceElement.closest(".result-certificate-page") || sourceElement;
+  targetElement.className = contextElement.className;
+  targetElement.classList.add("result-certificate-export-host");
+
+  const computedStyle = window.getComputedStyle(contextElement);
+  [
+    "--result-certificate-brown",
+    "--result-certificate-title",
+    "--result-certificate-ink",
+    "--result-certificate-gold",
+    "--result-certificate-gold-shadow",
+    "--result-certificate-metric-color",
+    "--result-certificate-metric-shadow",
+    "--result-certificate-button-border-color",
+    "--result-certificate-button-fill",
+    "--result-certificate-button-text-color",
+  ].forEach((propertyName) => {
+    const propertyValue = computedStyle.getPropertyValue(propertyName);
+    if (propertyValue) targetElement.style.setProperty(propertyName, propertyValue);
+  });
+}
+
+async function createResultExportClone(sourceElement, width, height) {
+  const host = document.createElement("div");
+  const clone = sourceElement.cloneNode(true);
+
+  copyResultExportContext(sourceElement, host);
+  host.style.width = `${width}px`;
+  host.style.height = `${height}px`;
+  clone.classList.add("result-certificate-exporting");
+  clone.style.width = `${width}px`;
+  clone.style.height = `${height}px`;
+  clone.style.background = "transparent";
+  clone.style.backgroundColor = "transparent";
+  clone.style.backgroundImage = "none";
+  host.appendChild(clone);
+  document.body.appendChild(host);
+
+  await waitForAnimationFrame();
+  await waitForImagesReady(clone);
+
+  return {
+    clone,
+    remove: () => host.remove(),
+  };
+}
+
 function waitWithTimeout(promise, timeoutMs, warningMessage) {
   let timeoutId = 0;
   const timeout = new Promise((resolve) => {
@@ -413,7 +630,7 @@ function decorateSummary(summary) {
     rank,
     rankTitle: summary?.rankTitle || rankCopy.title,
     rankSubtitle: summary?.rankSubtitle || rankCopy.subtitle,
-    rankImageSrc: getRankImageSrc(rank),
+    rankImageSrc: summary?.rankImageSrc || getRankImageSrc(rank),
     rankTone: resultTone,
     pageToneClass: `result-page-tone-${resultTone}`,
     rankToneClass: `result-rank-tone-${resultTone}`,
@@ -519,9 +736,14 @@ function ResultButton({ kind, children, onClick }) {
   );
 }
 
-function ResultCertificateButton({ children, onClick }) {
+function ResultCertificateButton({ children, onClick, className = "", disabled = false }) {
   return (
-    <button className="result-certificate-button" type="button" onClick={onClick}>
+    <button
+      className={`result-certificate-button ${className}`.trim()}
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+    >
       <span className="result-certificate-button-shadow" />
       <span className="result-certificate-button-frame">
         <span className="result-certificate-button-border result-certificate-button-border-top" />
@@ -542,8 +764,16 @@ function ResultCertificateButton({ children, onClick }) {
   );
 }
 
-function ResultCertificateScreen({ summary, startTheme, onReplay, onHome }) {
+function ResultCertificateScreen({
+  summary,
+  startTheme,
+  onReplay,
+  onHome,
+  onShare,
+  isSharing,
+}) {
   const backgroundSrc = getResultCertificateBackgroundSource(startTheme);
+  const rankClassName = `result-certificate-rank-${String(summary.rank || "c").toLowerCase()}`;
 
   return (
     <>
@@ -554,7 +784,7 @@ function ResultCertificateScreen({ summary, startTheme, onReplay, onHome }) {
         draggable="false"
       />
 
-      <div className="result-certificate-artboard">
+      <div className={`result-certificate-artboard ${rankClassName}`}>
         <section className="result-certificate-paper" aria-label="结算成绩">
           <h1 className="result-text-block result-certificate-rank-title result-fixed-text-zh pixel-font-zh">
             {summary.rankTitle}
@@ -633,11 +863,12 @@ function ResultCertificateScreen({ summary, startTheme, onReplay, onHome }) {
         <button
           className="result-certificate-share"
           type="button"
-          disabled
-          aria-label="分享战报暂不可用"
+          onClick={onShare}
+          disabled={isSharing}
+          aria-label={isSharing ? "正在生成分享战报" : "分享战报"}
         >
           <span className="result-text-block result-certificate-share-text result-fixed-text-zh pixel-font-zh">
-            分享战报
+            {isSharing ? "生成中" : "分享战报"}
           </span>
           <img
             className="result-certificate-share-plane"
@@ -651,6 +882,15 @@ function ResultCertificateScreen({ summary, startTheme, onReplay, onHome }) {
         <div className="result-certificate-actions">
           <ResultCertificateButton onClick={onHome}>回首页</ResultCertificateButton>
           <ResultCertificateButton onClick={onReplay}>再来一局</ResultCertificateButton>
+        </div>
+
+        <div className="result-certificate-export-copy" aria-hidden="true">
+          <div className="result-text-block result-certificate-share-text result-fixed-text-zh pixel-font-zh">
+            {SHARE_EXPORT_INVITE_COPY}
+          </div>
+          <div className="result-text-block result-certificate-share-text result-fixed-text-en pixel-font-en">
+            {SHARE_EXPORT_URL_COPY}
+          </div>
         </div>
       </div>
     </>
@@ -686,6 +926,61 @@ function ResultLoadingOverlay({ startTheme, text }) {
   );
 }
 
+function ResultSharePreviewOverlay({
+  preview,
+  theme,
+  onClose,
+  onDownload,
+}) {
+  const isReady = preview.status === "ready" && preview.url;
+
+  if (!isReady) {
+    return (
+      <MagicLoadingOverlay
+        theme={theme}
+        text="生成战报中"
+        className="result-share-preview-loading-overlay"
+      />
+    );
+  }
+
+  return (
+    <div
+      className="result-share-preview-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="分享战报预览"
+      onClick={onClose}
+    >
+      <div className="result-share-preview-panel" onClick={(event) => event.stopPropagation()}>
+        <img
+          className="result-share-preview-image"
+          src={preview.url}
+          alt="分享战报预览"
+          draggable="false"
+        />
+
+        <ResultCertificateButton
+          className="result-share-preview-download-button"
+          onClick={onDownload}
+          disabled={!isReady}
+        >
+          <span>下载</span>
+        </ResultCertificateButton>
+
+        <button
+          className="result-share-preview-close"
+          type="button"
+          onClick={onClose}
+          aria-label="关闭分享预览"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ResultScreen({ summary, startTheme, onReplay, onHome }) {
   const normalizedStartTheme = getSafeStartTheme(startTheme);
   const decoratedSummary = useMemo(
@@ -697,7 +992,12 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   const [currentRabbitFrame, setCurrentRabbitFrame] = useState(0);
   const [isLeavingHome, setIsLeavingHome] = useState(false);
   const [isPreparingResult, setIsPreparingResult] = useState(usesCertificateResult);
+  const [sharePreview, setSharePreview] = useState(EMPTY_SHARE_PREVIEW);
   const homeTimerRef = useRef(0);
+  const certificatePageRef = useRef(null);
+  const shareGenerationIdRef = useRef(0);
+  const isSharePreviewOpen = sharePreview.status !== "idle";
+  const isGeneratingShare = sharePreview.status === "generating";
 
   useEffect(() => {
     if (isLeavingHome) return undefined;
@@ -712,6 +1012,13 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
       window.clearTimeout(homeTimerRef.current);
     },
     []
+  );
+
+  useEffect(
+    () => () => {
+      if (sharePreview.url) window.URL.revokeObjectURL(sharePreview.url);
+    },
+    [sharePreview.url]
   );
 
   useEffect(() => {
@@ -754,6 +1061,110 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     homeTimerRef.current = window.setTimeout(() => {
       onHome?.();
     }, HOME_TRANSITION_ROUTE_DELAY_MS);
+  }
+
+  function closeSharePreview() {
+    shareGenerationIdRef.current += 1;
+    setSharePreview((current) => {
+      if (current.url) window.URL.revokeObjectURL(current.url);
+      return EMPTY_SHARE_PREVIEW;
+    });
+  }
+
+  async function handleShareCertificate() {
+    if (isGeneratingShare || !certificatePageRef.current || !decoratedSummary) return;
+    const generationId = shareGenerationIdRef.current + 1;
+    shareGenerationIdRef.current = generationId;
+    if (sharePreview.url) window.URL.revokeObjectURL(sharePreview.url);
+    setSharePreview({ ...EMPTY_SHARE_PREVIEW, status: "generating" });
+    let exportClone = null;
+    try {
+      await document.fonts?.ready;
+      await waitForImagesReady(certificatePageRef.current);
+      await waitForAnimationFrame();
+      await waitForAnimationFrame();
+      await waitForImagesReady(certificatePageRef.current);
+
+      const pixelRatio = getShareExportPixelRatio();
+      const { width, height } = getElementCssSize(certificatePageRef.current);
+      exportClone = await createResultExportClone(certificatePageRef.current, width, height);
+      const foregroundCanvas = await toCanvas(exportClone.clone, {
+        cacheBust: true,
+        pixelRatio,
+        width,
+        height,
+        canvasWidth: width,
+        canvasHeight: height,
+        backgroundColor: "rgba(0, 0, 0, 0)",
+        style: {
+          background: "transparent",
+          backgroundColor: "transparent",
+          backgroundImage: "none",
+        },
+      });
+      const blob = await composeResultShareBlob({
+        backgroundSrc: certificateBackgroundSrc,
+        foregroundCanvas,
+        cssWidth: width,
+        cssHeight: height,
+        pixelRatio,
+      });
+      if (!blob) throw new Error("Result certificate export returned an empty blob");
+      if (shareGenerationIdRef.current !== generationId) return;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const fileName = `njz-result-${String(decoratedSummary.rank || "rank").toLowerCase()}-${timestamp}.png`;
+      setSharePreview((current) => {
+        if (current.url) window.URL.revokeObjectURL(current.url);
+        return {
+          status: "ready",
+          url: window.URL.createObjectURL(blob),
+          blob,
+          fileName,
+        };
+      });
+    } catch (error) {
+      console.warn("Failed to export result certificate share image", error);
+      closeSharePreview();
+    } finally {
+      exportClone?.remove();
+    }
+  }
+
+  async function handleDownloadSharePreview() {
+    if (sharePreview.status !== "ready" || !sharePreview.blob || !sharePreview.fileName) return;
+    const file = new File([sharePreview.blob], sharePreview.fileName, { type: "image/png" });
+
+    function downloadShareBlob() {
+      const link = document.createElement("a");
+      link.href = sharePreview.url;
+      link.download = sharePreview.fileName;
+      link.rel = "noopener";
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    try {
+      const shouldUseNativeShare =
+        typeof navigator.share === "function" &&
+        navigator.canShare?.({ files: [file] }) &&
+        (navigator.maxTouchPoints || 0) > 0;
+
+      if (shouldUseNativeShare) {
+        await navigator.share({
+          files: [file],
+          title: "NJZ 爆锤方猪战报",
+          text: SHARE_EXPORT_INVITE_COPY,
+        });
+        return;
+      }
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+      console.warn("Native share failed, falling back to file download", error);
+    }
+
+    downloadShareBlob();
   }
 
   const pageClasses = [
@@ -799,14 +1210,21 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   if (usesCertificateResult) {
     return (
       <div className={`${pageClasses} result-certificate-page`}>
-        {!isPreparingResult && (
-          <ResultCertificateScreen
-            summary={decoratedSummary}
-            startTheme={normalizedStartTheme}
-            onReplay={onReplay}
-            onHome={handleHomeTap}
-          />
-        )}
+        <div
+          ref={certificatePageRef}
+          className="result-certificate-capture-root"
+        >
+          {!isPreparingResult && (
+            <ResultCertificateScreen
+              summary={decoratedSummary}
+              startTheme={normalizedStartTheme}
+              onReplay={onReplay}
+              onHome={handleHomeTap}
+              onShare={handleShareCertificate}
+              isSharing={isGeneratingShare}
+            />
+          )}
+        </div>
         {isPreparingResult && !isLeavingHome && (
           <ResultLoadingOverlay
             startTheme={normalizedStartTheme}
@@ -817,6 +1235,14 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
           <ResultLoadingOverlay
             startTheme={normalizedStartTheme}
             text={LOADING_COPY.returnWorld}
+          />
+        )}
+        {isSharePreviewOpen && (
+          <ResultSharePreviewOverlay
+            preview={sharePreview}
+            theme={normalizedStartTheme}
+            onClose={closeSharePreview}
+            onDownload={handleDownloadSharePreview}
           />
         )}
       </div>

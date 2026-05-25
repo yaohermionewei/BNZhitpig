@@ -1,8 +1,8 @@
 import { normalizeStartTheme } from "../utils/start-theme.js";
 
 const BASE_CHARACTER_ASSET_SOURCES = {
-  titleRabbit: "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.png",
-  titlePig: "/assets/images/title-pig-frames-v2/pig-frame-1.png",
+  titleRabbit: "/assets/images/title-rabbit-frames-v2/rabbit-frame-1.webp",
+  titlePig: "/assets/images/title-pig-frames-v2/pig-frame-1.webp",
   char1Front: "/assets/images/characters/五小妹正面新/1.png",
   char1Side: "/assets/images/characters/五小妹侧面新/1.png",
   char2Front: "/assets/images/characters/五小妹正面新/2.png",
@@ -20,8 +20,8 @@ const BASE_CHARACTER_ASSET_SOURCES = {
   pigRight: "/assets/images/characters/pig-right-new-cropped.png",
   rabbitFront: "/assets/images/characters/rabbit-front.png",
   rabbitBack: "/assets/images/characters/rabbit-back.png",
-  rabbitBackHitSheet: "/assets/images/characters/rabbit-back-hit-sheet.png",
-  rabbitBackWandSwing2Sheet: "/assets/images/characters/rabbit-back-wand-swing-2-sheet.png",
+  rabbitBackHitSheet: "/assets/images/characters/rabbit-back-hit-sheet.webp",
+  rabbitBackWandSwing2Sheet: "/assets/images/characters/rabbit-back-wand-swing-2-sheet.webp",
 };
 
 const GAME_SCENE_BACKGROUND_SOURCES = {
@@ -40,16 +40,17 @@ export const DEFAULT_RESULT_SONG_COVER_SOURCE =
 export const RESULT_SHARE_ICON_SOURCE = "/assets/images/share.png";
 
 export const RESULT_RANK_IMAGE_SOURCES = Object.freeze({
-  SSS: "/assets/images/rank/sss.png",
-  SS: "/assets/images/rank/s's.png",
-  S: "/assets/images/rank/s.png",
-  A: "/assets/images/rank/a.png",
-  B: "/assets/images/rank/b.png",
-  C: "/assets/images/rank/c.png",
+  SSS: "/assets/images/rank/sss.webp",
+  SS: "/assets/images/rank/s's.webp",
+  S: "/assets/images/rank/s.webp",
+  A: "/assets/images/rank-warm/a.webp",
+  B: "/assets/images/rank-warm/b.webp",
+  C: "/assets/images/rank/c.webp",
 });
 
 const imageCache = new Map();
 const spriteSetCache = new Map();
+const IMAGE_DECODE_TIMEOUT_MS = 1200;
 
 export const EFFECT_AUDIO_POOL_SIZES = {
   "/assets/audio/hit.wav": 6,
@@ -103,10 +104,16 @@ export function loadImage(src) {
         resolve(image);
         return;
       }
-      image.decode().then(
+      let decodeTimeout = 0;
+      const decodeTimeoutPromise = new Promise((timeoutResolve) => {
+        decodeTimeout = globalThis.setTimeout(timeoutResolve, IMAGE_DECODE_TIMEOUT_MS);
+      });
+      Promise.race([image.decode(), decodeTimeoutPromise]).then(
         () => resolve(image),
         () => resolve(image)
-      );
+      ).finally(() => {
+        globalThis.clearTimeout(decodeTimeout);
+      });
     };
     image.onerror = () => {
       imageCache.delete(src);

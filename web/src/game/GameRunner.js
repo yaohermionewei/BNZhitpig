@@ -36,6 +36,7 @@ const CROWD_FRONT_HOLD_RANGE = Object.freeze([0.72, 1.28]);
 const CROWD_TURN_DURATION_RANGE = Object.freeze([0.1, 0.16]);
 const GAME_OVER_EFFECT_SOURCE = "/assets/audio/miss.wav";
 const CRITICAL_FONT_LOAD_TIMEOUT_MS = 1200;
+const PREPARE_RESOURCE_TIMEOUT_MS = 12000;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -151,6 +152,16 @@ function waitForCriticalPixelFonts() {
   ]);
 }
 
+function withTimeout(promise, timeoutMs, message) {
+  let timeoutId = 0;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    window.clearTimeout(timeoutId);
+  });
+}
+
 export class GameRunner {
   constructor({ canvas, song, startTheme, onFinish, onHome, onLoadingChange }) {
     this.canvas = canvas;
@@ -205,17 +216,21 @@ export class GameRunner {
     this.installResizeObserver();
     this.resizeCanvas();
     this.drawWarmupFrame();
-    await Promise.all([
-      waitForCriticalPixelFonts(),
-      this.audio.preloadChart(this.song.chart),
-      this.audio.preloadEffects(Object.keys(EFFECT_AUDIO_POOL_SIZES)),
-      loadImage(this.song.coverImageSrc).then((image) => {
-        this.songCoverImage = image;
-      }),
-      loadCharacterSprites(this.startTheme).then((sprites) => {
-        this.characterSprites = sprites;
-      }),
-    ]);
+    await withTimeout(
+      Promise.all([
+        waitForCriticalPixelFonts(),
+        this.audio.preloadChart(this.song.chart),
+        this.audio.preloadEffects(Object.keys(EFFECT_AUDIO_POOL_SIZES)),
+        loadImage(this.song.coverImageSrc).then((image) => {
+          this.songCoverImage = image;
+        }),
+        loadCharacterSprites(this.startTheme).then((sprites) => {
+          this.characterSprites = sprites;
+        }),
+      ]),
+      PREPARE_RESOURCE_TIMEOUT_MS,
+      "Game resources timed out while preparing."
+    );
     this.onLoadingChange?.(false);
     this.preloadResultAssets();
     this.renderCurrentFrame();
