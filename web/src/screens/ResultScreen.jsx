@@ -30,11 +30,8 @@ const SHARE_EXPORT_WIDTH_CSS_PX = 402;
 const SHARE_EXPORT_HEIGHT_CSS_PX = 782;
 const SHARE_EXPORT_BOTTOM_CROP_CSS_PX = 51;
 const SHARE_EXPORT_BOTTOM_GAP_CSS_PX = 34;
-const SHARE_SAVE_NATIVE_HINT_COPY = "在系统面板选择“存储图像”";
-const SHARE_SAVE_LOCAL_PREVIEW_COPY = "本地预览只能生成图片，请用线上地址保存到相册";
-const SHARE_SAVE_LONG_PRESS_COPY = "长按图片可尝试保存";
-const SHARE_SAVE_FAILED_COPY = "系统保存没打开，请长按图片保存";
-const SHARE_SAVE_DOWNLOAD_FILE_COPY = "会下载到文件，不会直接进相册";
+const SHARE_SAVE_SUCCESS_COPY = "已保存";
+const SHARE_SAVE_TOAST_DURATION_MS = 1600;
 const EMPTY_SHARE_PREVIEW = Object.freeze({
   status: "idle",
   url: "",
@@ -529,14 +526,13 @@ function canNativeShareFile(file) {
   }
 }
 
-function getShareSaveState(preview, notice = "", forceFileDownload = false) {
+function getShareSaveState(preview, forceFileDownload = false) {
   const isMobile = isLikelyMobileDevice();
   if (!isMobile) {
     return {
       isMobile: false,
       useNativeShare: false,
       label: "下载",
-      hint: notice,
       buttonClassName: "result-share-preview-download-button",
     };
   }
@@ -548,18 +544,15 @@ function getShareSaveState(preview, notice = "", forceFileDownload = false) {
       isMobile: true,
       useNativeShare: true,
       label: "保存到相册",
-      hint: notice || SHARE_SAVE_NATIVE_HINT_COPY,
       buttonClassName:
         "result-share-preview-download-button result-share-preview-save-to-album-button",
     };
   }
 
-  const isBlockedLocalPreview = isLocalPreviewHttp() && !window.isSecureContext;
   return {
     isMobile: true,
     useNativeShare: false,
     label: "下载到文件",
-    hint: notice || (isBlockedLocalPreview ? SHARE_SAVE_LOCAL_PREVIEW_COPY : SHARE_SAVE_LONG_PRESS_COPY),
     buttonClassName:
       "result-share-preview-download-button result-share-preview-save-to-album-button",
   };
@@ -1094,11 +1087,11 @@ function ResultSharePreviewOverlay({
   theme,
   onClose,
   onDownload,
-  saveNotice,
+  saveToast,
   forceFileDownload = false,
 }) {
   const isReady = preview.status === "ready" && preview.url;
-  const saveState = getShareSaveState(preview, saveNotice, forceFileDownload);
+  const saveState = getShareSaveState(preview, forceFileDownload);
 
   if (!isReady) {
     return (
@@ -1133,9 +1126,13 @@ function ResultSharePreviewOverlay({
         >
           <span>{saveState.label}</span>
         </ResultCertificateButton>
-        {saveState.hint && (
-          <div className="result-share-preview-save-hint result-fixed-text-zh pixel-font-zh">
-            {saveState.hint}
+        {saveToast && (
+          <div
+            className="result-share-preview-toast result-fixed-text-zh pixel-font-zh"
+            role="status"
+            aria-live="polite"
+          >
+            {saveToast}
           </div>
         )}
 
@@ -1164,11 +1161,12 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   const [isLeavingHome, setIsLeavingHome] = useState(false);
   const [isPreparingResult, setIsPreparingResult] = useState(usesCertificateResult);
   const [sharePreview, setSharePreview] = useState(EMPTY_SHARE_PREVIEW);
-  const [shareSaveNotice, setShareSaveNotice] = useState("");
+  const [shareSaveToast, setShareSaveToast] = useState("");
   const [forceFileDownload, setForceFileDownload] = useState(false);
   const homeTimerRef = useRef(0);
   const certificatePageRef = useRef(null);
   const shareGenerationIdRef = useRef(0);
+  const shareSaveToastTimerRef = useRef(0);
   const isSharePreviewOpen = sharePreview.status !== "idle";
   const isGeneratingShare = sharePreview.status === "generating";
 
@@ -1183,6 +1181,7 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   useEffect(
     () => () => {
       window.clearTimeout(homeTimerRef.current);
+      window.clearTimeout(shareSaveToastTimerRef.current);
     },
     []
   );
@@ -1238,7 +1237,8 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
 
   function closeSharePreview() {
     shareGenerationIdRef.current += 1;
-    setShareSaveNotice("");
+    window.clearTimeout(shareSaveToastTimerRef.current);
+    setShareSaveToast("");
     setForceFileDownload(false);
     setSharePreview((current) => {
       if (current.url) window.URL.revokeObjectURL(current.url);
@@ -1246,12 +1246,21 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     });
   }
 
+  function showShareSaveToast(message) {
+    window.clearTimeout(shareSaveToastTimerRef.current);
+    setShareSaveToast(message);
+    shareSaveToastTimerRef.current = window.setTimeout(() => {
+      setShareSaveToast("");
+    }, SHARE_SAVE_TOAST_DURATION_MS);
+  }
+
   async function handleShareCertificate() {
     if (isGeneratingShare || !certificatePageRef.current || !decoratedSummary) return;
     const generationId = shareGenerationIdRef.current + 1;
     shareGenerationIdRef.current = generationId;
     if (sharePreview.url) window.URL.revokeObjectURL(sharePreview.url);
-    setShareSaveNotice("");
+    window.clearTimeout(shareSaveToastTimerRef.current);
+    setShareSaveToast("");
     setForceFileDownload(false);
     setSharePreview({ ...EMPTY_SHARE_PREVIEW, status: "generating" });
     let exportClone = null;
@@ -1329,25 +1338,24 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
         await navigator.share({
           files: [file],
         });
+        showShareSaveToast(SHARE_SAVE_SUCCESS_COPY);
         return;
       } catch (error) {
         if (error?.name === "AbortError") return;
         console.warn("Native share failed", error);
         setForceFileDownload(true);
-        setShareSaveNotice(SHARE_SAVE_FAILED_COPY);
         return;
       }
     }
 
     if (isMobile) {
       setForceFileDownload(true);
-      setShareSaveNotice(
-        forceFileDownload
-          ? SHARE_SAVE_DOWNLOAD_FILE_COPY
-          : isLocalPreviewHttp() && !window.isSecureContext
-            ? SHARE_SAVE_LOCAL_PREVIEW_COPY
-            : SHARE_SAVE_LONG_PRESS_COPY
-      );
+      if (!forceFileDownload) {
+        console.info("Native file share is unavailable; falling back to file download", {
+          isLocalPreviewHttp: isLocalPreviewHttp(),
+          isSecureContext: window.isSecureContext,
+        });
+      }
     }
     downloadShareBlob();
   }
@@ -1428,7 +1436,7 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
             theme={normalizedStartTheme}
             onClose={closeSharePreview}
             onDownload={handleDownloadSharePreview}
-            saveNotice={shareSaveNotice}
+            saveToast={shareSaveToast}
             forceFileDownload={forceFileDownload}
           />
         )}
