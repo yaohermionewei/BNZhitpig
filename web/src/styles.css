@@ -2850,6 +2850,10 @@ button {
   height: clamp(40px, 10.8cqw, 46px);
 }
 
+.result-share-preview-save-to-album-button {
+  width: min(48vw, 172px);
+}
+
 .result-share-preview-download-button .result-certificate-button-face {
   padding: 0 max(10px, 2cqw);
 }
@@ -2859,6 +2863,16 @@ button {
   align-items: center;
   justify-content: center;
   font-size: clamp(14px, 3.45cqw, 23px);
+}
+
+.result-share-preview-save-hint {
+  max-width: min(76vw, 320px);
+  margin-top: -0.55vh;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(10px, 2.7cqw, 14px);
+  line-height: 1.35;
+  text-align: center;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.36);
 }
 
 .result-dark-blue-overlay {

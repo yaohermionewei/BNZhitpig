@@ -30,6 +30,11 @@ const SHARE_EXPORT_WIDTH_CSS_PX = 402;
 const SHARE_EXPORT_HEIGHT_CSS_PX = 782;
 const SHARE_EXPORT_BOTTOM_CROP_CSS_PX = 51;
 const SHARE_EXPORT_BOTTOM_GAP_CSS_PX = 34;
+const SHARE_SAVE_NATIVE_HINT_COPY = "在系统面板选择“存储图像”";
+const SHARE_SAVE_LOCAL_PREVIEW_COPY = "本地预览只能生成图片，请用线上地址保存到相册";
+const SHARE_SAVE_LONG_PRESS_COPY = "长按图片可尝试保存";
+const SHARE_SAVE_FAILED_COPY = "系统保存没打开，请长按图片保存";
+const SHARE_SAVE_DOWNLOAD_FILE_COPY = "会下载到文件，不会直接进相册";
 const EMPTY_SHARE_PREVIEW = Object.freeze({
   status: "idle",
   url: "",
@@ -472,6 +477,113 @@ function getShareExportCssSize() {
     width: SHARE_EXPORT_WIDTH_CSS_PX,
     height: SHARE_EXPORT_HEIGHT_CSS_PX,
   };
+}
+
+function isLikelyMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  const userAgent = navigator.userAgent || "";
+  const touchPoints = navigator.maxTouchPoints || 0;
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(userAgent) ||
+    (touchPoints > 1 && /Macintosh/i.test(userAgent))
+  );
+}
+
+function isLocalPreviewHttp() {
+  if (typeof window === "undefined") return false;
+  const { protocol, hostname } = window.location;
+  if (protocol !== "http:") return false;
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname.startsWith("192.168.") ||
+    hostname.startsWith("10.") ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname)
+  );
+}
+
+function createShareImageFile(blob, fileName) {
+  if (!blob || typeof File !== "function") return null;
+  return new File([blob], fileName || "njz-result.png", {
+    type: blob.type || "image/png",
+  });
+}
+
+function canNativeShareFile(file) {
+  if (
+    !file ||
+    typeof window === "undefined" ||
+    !window.isSecureContext ||
+    typeof navigator === "undefined" ||
+    typeof navigator.share !== "function" ||
+    typeof navigator.canShare !== "function"
+  ) {
+    return false;
+  }
+
+  try {
+    return Boolean(navigator.canShare({ files: [file] }));
+  } catch {
+    return false;
+  }
+}
+
+function getShareSaveState(preview, notice = "", forceFileDownload = false) {
+  const isMobile = isLikelyMobileDevice();
+  if (!isMobile) {
+    return {
+      isMobile: false,
+      useNativeShare: false,
+      label: "下载",
+      hint: notice,
+      buttonClassName: "result-share-preview-download-button",
+    };
+  }
+
+  const file = createShareImageFile(preview?.blob, preview?.fileName);
+  const useNativeShare = !forceFileDownload && canNativeShareFile(file);
+  if (useNativeShare) {
+    return {
+      isMobile: true,
+      useNativeShare: true,
+      label: "保存到相册",
+      hint: notice || SHARE_SAVE_NATIVE_HINT_COPY,
+      buttonClassName:
+        "result-share-preview-download-button result-share-preview-save-to-album-button",
+    };
+  }
+
+  const isBlockedLocalPreview = isLocalPreviewHttp() && !window.isSecureContext;
+  return {
+    isMobile: true,
+    useNativeShare: false,
+    label: "下载到文件",
+    hint: notice || (isBlockedLocalPreview ? SHARE_SAVE_LOCAL_PREVIEW_COPY : SHARE_SAVE_LONG_PRESS_COPY),
+    buttonClassName:
+      "result-share-preview-download-button result-share-preview-save-to-album-button",
+  };
+}
+
+function getShareSaveDiagnostics(file) {
+  return {
+    isSecureContext: typeof window !== "undefined" ? window.isSecureContext : false,
+    hasNavigatorShare: typeof navigator !== "undefined" && typeof navigator.share === "function",
+    hasNavigatorCanShare:
+      typeof navigator !== "undefined" && typeof navigator.canShare === "function",
+    canShareFiles: canNativeShareFile(file),
+    blobType: file?.type || "",
+    blobSize: file?.size || 0,
+    isLikelyMobile: isLikelyMobileDevice(),
+    maxTouchPoints: typeof navigator !== "undefined" ? navigator.maxTouchPoints || 0 : 0,
+    userAgent: typeof navigator !== "undefined" ? navigator.userAgent || "" : "",
+  };
+}
+
+function logShareSaveDiagnostics(file) {
+  if (import.meta.env?.DEV) {
+    console.info("share save diagnostics", getShareSaveDiagnostics(file));
+  }
 }
 
 function canvasToPngBlob(canvas) {
@@ -982,8 +1094,11 @@ function ResultSharePreviewOverlay({
   theme,
   onClose,
   onDownload,
+  saveNotice,
+  forceFileDownload = false,
 }) {
   const isReady = preview.status === "ready" && preview.url;
+  const saveState = getShareSaveState(preview, saveNotice, forceFileDownload);
 
   if (!isReady) {
     return (
@@ -1012,12 +1127,17 @@ function ResultSharePreviewOverlay({
         />
 
         <ResultCertificateButton
-          className="result-share-preview-download-button"
+          className={saveState.buttonClassName}
           onClick={onDownload}
           disabled={!isReady}
         >
-          <span>下载</span>
+          <span>{saveState.label}</span>
         </ResultCertificateButton>
+        {saveState.hint && (
+          <div className="result-share-preview-save-hint result-fixed-text-zh pixel-font-zh">
+            {saveState.hint}
+          </div>
+        )}
 
         <button
           className="result-share-preview-close"
@@ -1044,6 +1164,8 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
   const [isLeavingHome, setIsLeavingHome] = useState(false);
   const [isPreparingResult, setIsPreparingResult] = useState(usesCertificateResult);
   const [sharePreview, setSharePreview] = useState(EMPTY_SHARE_PREVIEW);
+  const [shareSaveNotice, setShareSaveNotice] = useState("");
+  const [forceFileDownload, setForceFileDownload] = useState(false);
   const homeTimerRef = useRef(0);
   const certificatePageRef = useRef(null);
   const shareGenerationIdRef = useRef(0);
@@ -1116,6 +1238,8 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
 
   function closeSharePreview() {
     shareGenerationIdRef.current += 1;
+    setShareSaveNotice("");
+    setForceFileDownload(false);
     setSharePreview((current) => {
       if (current.url) window.URL.revokeObjectURL(current.url);
       return EMPTY_SHARE_PREVIEW;
@@ -1127,6 +1251,8 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     const generationId = shareGenerationIdRef.current + 1;
     shareGenerationIdRef.current = generationId;
     if (sharePreview.url) window.URL.revokeObjectURL(sharePreview.url);
+    setShareSaveNotice("");
+    setForceFileDownload(false);
     setSharePreview({ ...EMPTY_SHARE_PREVIEW, status: "generating" });
     let exportClone = null;
     try {
@@ -1183,7 +1309,9 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
 
   async function handleDownloadSharePreview() {
     if (sharePreview.status !== "ready" || !sharePreview.blob || !sharePreview.fileName) return;
-    const file = new File([sharePreview.blob], sharePreview.fileName, { type: "image/png" });
+    const file = createShareImageFile(sharePreview.blob, sharePreview.fileName);
+    const isMobile = isLikelyMobileDevice();
+    logShareSaveDiagnostics(file);
 
     function downloadShareBlob() {
       const link = document.createElement("a");
@@ -1196,25 +1324,31 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
       link.remove();
     }
 
-    try {
-      const shouldUseNativeShare =
-        typeof navigator.share === "function" &&
-        navigator.canShare?.({ files: [file] }) &&
-        (navigator.maxTouchPoints || 0) > 0;
-
-      if (shouldUseNativeShare) {
+    if (isMobile && canNativeShareFile(file)) {
+      try {
         await navigator.share({
           files: [file],
-          title: "NJZ 爆锤方猪战报",
-          text: SHARE_EXPORT_INVITE_COPY,
         });
         return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        console.warn("Native share failed", error);
+        setForceFileDownload(true);
+        setShareSaveNotice(SHARE_SAVE_FAILED_COPY);
+        return;
       }
-    } catch (error) {
-      if (error?.name === "AbortError") return;
-      console.warn("Native share failed, falling back to file download", error);
     }
 
+    if (isMobile) {
+      setForceFileDownload(true);
+      setShareSaveNotice(
+        forceFileDownload
+          ? SHARE_SAVE_DOWNLOAD_FILE_COPY
+          : isLocalPreviewHttp() && !window.isSecureContext
+            ? SHARE_SAVE_LOCAL_PREVIEW_COPY
+            : SHARE_SAVE_LONG_PRESS_COPY
+      );
+    }
     downloadShareBlob();
   }
 
@@ -1294,6 +1428,8 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
             theme={normalizedStartTheme}
             onClose={closeSharePreview}
             onDownload={handleDownloadSharePreview}
+            saveNotice={shareSaveNotice}
+            forceFileDownload={forceFileDownload}
           />
         )}
       </div>
