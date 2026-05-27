@@ -231,6 +231,7 @@ const HUD_SONG_COVER_SIZE = 44;
 const HUD_SONG_COVER_GAP = 8;
 const HUD_SONG_TITLE_FONT_SIZE = 19;
 const HUD_SONG_TITLE_TRACKING = 0.2;
+const HUD_TOP_Y = 25;
 const HUD_SCORE_PAUSE_GAP = 14;
 const HUD_SCORE_RIGHT_SAFE_GAP = 12;
 const HUD_LIFE_COLUMN_LEFT = 26;
@@ -248,7 +249,6 @@ const HUD_LIFE_BAR_INNER_BORDER_COLOR = "rgba(34, 16, 24, 0.86)";
 const HUD_LIFE_BAR_FILL_COLOR = "#EF6A7D";
 const HUD_LIFE_BAR_FILL_HIGHLIGHT = "#FFB0BA";
 const HUD_LIFE_BAR_TICK_COLOR = "rgba(255, 208, 220, 0.22)";
-const HUD_TOP_MARGIN_FROM_PAUSE = 3;
 const HUD_COVER_BORDER_COLOR = "rgba(247, 244, 232, 0.72)";
 const HUD_COVER_INNER_BORDER_COLOR = "rgba(65, 49, 18, 0.34)";
 const HUD_COVER_SHADOW_COLOR = "rgba(4, 8, 16, 0.08)";
@@ -5346,7 +5346,7 @@ function drawSongProgressTimeline(ctx, viewport, state) {
 function getTopHudLayout(viewport, state) {
   const maxLives = state.maxLives || 3;
   const pauseRect = getControlRects(viewport).pause;
-  const topY = pauseRect.top + HUD_TOP_MARGIN_FROM_PAUSE;
+  const topY = HUD_TOP_Y;
   const lifeBarHeight = clamp(
     viewport.height * HUD_LIFE_BAR_HEIGHT_RATIO,
     HUD_LIFE_BAR_HEIGHT_MIN,
@@ -5690,13 +5690,16 @@ function getControlRects(viewport) {
   const buttonTop = snapToGrid(centerY - buttonSize / 2, 1);
   const secondLeft = rowLeft + buttonSize + buttonGap;
   const thirdLeft = secondLeft + buttonSize + buttonGap;
+  const pauseSize = 26;
+  const songCoverSize = Math.min(HUD_SONG_COVER_SIZE, Math.max(38, viewport.width * 0.11));
+  const pauseTop = snapToGrid(HUD_TOP_Y + songCoverSize / 2 - pauseSize / 2, 1);
 
   return {
     pause: {
       left: viewport.width - 44,
-      top: 22,
+      top: pauseTop,
       right: viewport.width - 18,
-      bottom: 48,
+      bottom: pauseTop + pauseSize,
     },
     pauseHome: {
       left: rowLeft,

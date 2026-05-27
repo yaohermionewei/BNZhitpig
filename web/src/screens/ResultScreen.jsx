@@ -24,7 +24,7 @@ const RESULT_ENTRY_MIN_LOADING_MS = 280;
 const DEFAULT_RESULT_TONE = "sky";
 const SHARE_EXPORT_IMAGE_DECODE_TIMEOUT_MS = 1200;
 const SHARE_EXPORT_INVITE_COPY = "一起爆锤方猪，守护NJZ";
-const SHARE_EXPORT_URL_COPY = "bnzhitpig.pages.dev";
+const SHARE_EXPORT_URL_COPY = "bnzhitpig.wystudio.zone";
 const SHARE_EXPORT_MAX_PIXEL_RATIO = 2;
 const SHARE_EXPORT_WIDTH_CSS_PX = 402;
 const SHARE_EXPORT_HEIGHT_CSS_PX = 782;
@@ -977,7 +977,7 @@ function ResultCertificateScreen({
 
           <div className="result-certificate-hit-count">
             <div className="result-text-block result-certificate-metric-label result-fixed-text-zh pixel-font-zh">
-              暴击方猪
+              爆锤方猪
             </div>
             <div className="result-certificate-metric-value-line">
               <span className="result-text-block result-certificate-large-value result-fixed-text-en pixel-font-en">
