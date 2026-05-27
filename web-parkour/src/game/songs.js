@@ -1,4 +1,4 @@
-import dittoChart from "../../../web/src/game/ditto.editable.chart.js";
+import dittoChart from "../../../shared/charts/ditto.editable.chart.js";
 
 export const songs = [
   {
