@@ -1,28 +1,136 @@
 # Rhythm Game Prototype
 
-这是一个面向微信小程序的竖屏单轨节奏原型。当前重点不是做最终美术，而是把这三件事先跑顺：
+这是一个 Web 优先的节奏游戏原型仓库。项目最早从微信小程序方向开始，所以还保留了 `miniprogram` 目录；当前主线已经转向 Web 发布路线，之后新增功能、视觉调整、玩法迭代、资源接入和发布验证都默认围绕 `web` 目录进行。
 
-- 音乐、谱面、判定是否真正对齐
-- 单轨点击加少量长按的玩法是否成立
-- 玩法验证后，能不能快速手改谱面继续迭代
+当前重点：
 
-## 当前结构
+- 把 React/Vite Web 版作为主要可玩版本持续迭代。
+- 保持音乐、谱面、判定、渲染和音频播放对齐。
+- 用本地谱面编辑器快速手改中立谱面；`shared/charts/ditto.editable.chart.json` 是唯一 source-of-truth，多端 JS adapter 由它同步生成。
+- 保留小程序版本作为历史参考，不再把它当作默认维护目标。
+- 将 `web-parkour` 作为旁线跑酷玩法原型，只有明确提到跑酷方向时再进入。
 
-- 小程序运行时音频：`miniprogram/assets/audio/ditto.m4a`
-- 小程序实际读取的共享谱面：`miniprogram/assets/charts/ditto.editable.chart.js`
-- 本地可视化谱面编辑器：`tools/chart-editor`
-- Web 版运行目录：`web`
+## 目录定位
 
-小游戏和编辑器现在共用同一份 chart 文件。也就是说，你在编辑器里点“保存谱面”之后，微信开发者工具重新编译，小程序里读到的就是刚改完的谱。
+- `web`：当前主项目，React/Vite Web 版节奏小游戏，也是默认发布和迭代目标。
+- `miniprogram`：早期微信小程序版本，已经不是当前发布主线；一般只作为历史参考。
+- `tools/chart-editor`：本地可视化谱面编辑器，用来调整 Ditto 谱面。
+- `web-parkour`：React/Vite 跑酷玩法原型，是旁线项目。
+- `scripts`：资源生成脚本和预览辅助脚本。
+- `docs`：设计说明、审阅页面和项目文档。
+- `previews`：生成出来的视觉预览、实验稿和审阅材料。
 
-注意这里有一个边界：
+如果只说“游戏”“音游”“网页版本”“当前版本”或“小游戏”，默认指 `web`。
 
-- 你在编辑器里还没保存之前，改动只存在当前编辑器页面内，不会立刻写进小游戏。
-- 只有点了“保存谱面”，共享 chart 文件才会真的被覆盖。
+## 启动 Web 主项目
 
-## 启动本地谱面编辑器
+进入 Web 项目目录：
 
-在项目根目录运行：
+```bash
+cd web
+```
+
+安装依赖：
+
+```bash
+npm install
+```
+
+启动本地开发服务：
+
+```bash
+npm run dev
+```
+
+Vite 配置的默认端口是：
+
+```text
+http://localhost:5173/
+```
+
+`web/package.json` 里的开发脚本使用 `vite --host 0.0.0.0`，所以需要手机或同局域网设备访问时，可以使用终端输出的 Network 地址。
+
+## 构建和本地预览
+
+生产构建：
+
+```bash
+cd web
+npm run build
+```
+
+构建产物输出到：
+
+```text
+web/dist
+```
+
+本地预览生产构建：
+
+```bash
+cd web
+npm run preview
+```
+
+## 部署
+
+当前仓库根目录包含 `netlify.toml`，Netlify 部署配置已经指向 Web 主项目：
+
+```toml
+[build]
+  base = "web"
+  command = "npm run build"
+  publish = "dist"
+```
+
+如果手动在 Netlify、Vercel 或类似平台配置项目，使用：
+
+- Project root / Base directory: `web`
+- Build command: `npm run build`
+- Output / Publish directory: `dist`
+- SPA fallback: 所有路径回退到 `index.html`
+
+如果平台从仓库根目录读取配置，参考根目录的 `netlify.toml`。
+
+## Web 关键文件
+
+Web 应用入口：
+
+- [web/src/main.jsx](/Users/yaohermione/Desktop/rhythm game/web/src/main.jsx)
+- [web/src/App.jsx](/Users/yaohermione/Desktop/rhythm game/web/src/App.jsx)
+- [web/src/styles.css](/Users/yaohermione/Desktop/rhythm game/web/src/styles.css)
+
+主要页面：
+
+- [web/src/screens/StartScreen.jsx](/Users/yaohermione/Desktop/rhythm game/web/src/screens/StartScreen.jsx)
+- [web/src/screens/GameScreen.jsx](/Users/yaohermione/Desktop/rhythm game/web/src/screens/GameScreen.jsx)
+- [web/src/screens/ResultScreen.jsx](/Users/yaohermione/Desktop/rhythm game/web/src/screens/ResultScreen.jsx)
+- [web/src/screens/StageShell.jsx](/Users/yaohermione/Desktop/rhythm game/web/src/screens/StageShell.jsx)
+
+游戏核心：
+
+- [web/src/game/GameRunner.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/GameRunner.js)
+- [web/src/game/engine.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/engine.js)
+- [web/src/game/renderer.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/renderer.js)
+- [web/src/game/AudioControllerWeb.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/AudioControllerWeb.js)
+
+歌曲入口和资源：
+
+- [web/src/game/songs.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/songs.js)
+- [web/src/game/assets.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/assets.js)
+- [web/public/assets](/Users/yaohermione/Desktop/rhythm game/web/public/assets)
+
+谱面 source 和消费 adapter：
+
+- [shared/charts/ditto.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.json)：唯一 source-of-truth，保存中立时间数据。
+- [shared/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.js)：由 JSON 生成的 ESM adapter，供 Web、web-parkour 等 JS 运行时消费。
+- [web/src/game/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/ditto.editable.chart.js)：Web 端兼容消费文件 / 同步产物。
+- [web/public/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/public/assets/charts/ditto.editable.chart.js)：静态资源消费文件 / 同步产物。
+- [miniprogram/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/assets/charts/ditto.editable.chart.js)：历史小程序端 CommonJS adapter / 同步产物。
+
+## 谱面编辑器
+
+在仓库根目录启动本地谱面编辑器：
 
 ```bash
 npm run chart:editor
@@ -34,18 +142,28 @@ npm run chart:editor
 http://127.0.0.1:4317
 ```
 
-编辑器功能：
+谱面是中立时间数据，不归属于 Web、web-parkour 或小程序中的任何一个端。
 
-- 播放歌曲并显示实时播放时间
-- 单轨时间线可视化
-- 圆点代表点按 note
-- 长条代表长按 note
-- 支持新增、删除、复制、拖动、修改开始时间、修改长按结束时间
-- 支持撤销 / 重做
-- 保存后直接写回共享谱面文件
-- 每次保存会自动留一份本地备份到 `tools/chart-editor/backups`
+编辑器会读取并保存唯一 source-of-truth：
 
-编辑器里几个常用操作：
+- [shared/charts/ditto.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.json)
+
+保存时会从 JSON 同步生成各端消费 adapter / 同步产物：
+
+- [shared/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.js)
+- [web/src/game/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/ditto.editable.chart.js)
+- [web/public/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/public/assets/charts/ditto.editable.chart.js)
+- [miniprogram/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/assets/charts/ditto.editable.chart.js)
+
+这些 JS 文件都是消费 adapter，不是主数据；如果它们和 JSON 不一致，以 [shared/charts/ditto.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.json) 为准重新生成。
+
+每次保存会自动留备份到：
+
+```text
+tools/chart-editor/backups
+```
+
+编辑器常用操作：
 
 - 双击轨道：新增点按
 - `Shift + 双击`：新增长按
@@ -57,66 +175,64 @@ http://127.0.0.1:4317
 - `Delete`：删除选中 note
 - `Cmd/Ctrl + S`：保存
 
-## 在微信开发者工具里跑小游戏
+## 资源脚本
 
-1. 安装微信开发者工具。
-2. 选择“导入项目”。
-3. 项目目录选择当前仓库根目录：
-
-```text
-/Users/yaohermione/Desktop/rhythm game
-```
-
-4. 如果只是先看本地模拟器，可以先用 `touristappid`。
-5. 如果你要真机预览，把 [project.config.json](/Users/yaohermione/Desktop/rhythm game/project.config.json) 里的 `appid` 改成你注册好的小程序 AppID。
-6. 导入后编译即可。
-
-推荐联调方式：
-
-1. 开着本地谱面编辑器，一边听歌一边调时间点。
-2. 编辑器里保存。
-3. 回到微信开发者工具重新编译。
-4. 直接在小游戏里体验这一版谱子的手感。
-
-## 启动 Web 版
-
-Web 版在仓库根目录下的 `web` 文件夹内，和微信小程序目录平级。
+在仓库根目录运行：
 
 ```bash
-cd web
+npm run assets:rabbit-hit
+npm run assets:song-covers
+npm run assets:parchment
+npm run assets:stage
+```
+
+这些脚本用于重新生成角色、封面、羊皮纸、舞台等运行时资源。生成资源时要确认输出路径是否面向 `web/public/assets`，不要默认写回小程序目录。
+
+## 小程序历史版本
+
+`miniprogram` 是早期微信小程序版本，当前不再作为默认发布目标。除非任务明确要求维护小程序，否则不要优先修改这里。
+
+历史参考入口：
+
+- [miniprogram/game/data/songs.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/data/songs.js)
+- [miniprogram/pages/game/game.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/pages/game/game.js)
+- [miniprogram/game/core/engine.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/core/engine.js)
+- [miniprogram/game/core/audio.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/core/audio.js)
+- [miniprogram/game/render/renderer.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/render/renderer.js)
+
+如果确实需要在微信开发者工具里查看历史版本，可以导入仓库根目录；本地模拟器可临时使用 `touristappid`，真机预览需要替换 `project.config.json` 里的小程序 AppID。
+
+## 跑酷旁线项目
+
+`web-parkour` 是旁线跑酷玩法原型，不属于当前音游主线。只有明确提到跑酷、城市奔跑、场景运动、parkour 或 `web-parkour` 时，才把它作为当前任务目标。
+
+运行方式：
+
+```bash
+cd web-parkour
 npm install
 npm run dev
 ```
 
-本地默认打开：
-
-```text
-http://localhost:5173/
-```
-
-构建生产版本：
+构建方式：
 
 ```bash
+cd web-parkour
 npm run build
 ```
 
-部署到 Vercel 或 Netlify 时，项目根目录选择 `web`：
+关键参考文件：
 
-- Build command: `npm run build`
-- Output directory: `dist`
+- [web-parkour/src/game/ParkourRunner.js](/Users/yaohermione/Desktop/rhythm game/web-parkour/src/game/ParkourRunner.js)
+- [web-parkour/src/game/engine.js](/Users/yaohermione/Desktop/rhythm game/web-parkour/src/game/engine.js)
+- [web-parkour/src/game/renderer.js](/Users/yaohermione/Desktop/rhythm game/web-parkour/src/game/renderer.js)
+- [web-parkour/src/screens/GameScreen.jsx](/Users/yaohermione/Desktop/rhythm game/web-parkour/src/screens/GameScreen.jsx)
 
-## 当前主编辑入口
+## 协作约定
 
-当前主流程已经切到“可视化编辑共享谱面文件”。如果只是继续打磨 Ditto 这首歌，优先直接改：
-
-- 共享谱面：[miniprogram/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/assets/charts/ditto.editable.chart.js)
-
-## 关键文件
-
-- 歌曲入口：[miniprogram/game/data/songs.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/data/songs.js)
-- 游戏页脚本：[miniprogram/pages/game/game.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/pages/game/game.js)
-- 判定逻辑：[miniprogram/game/core/engine.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/core/engine.js)
-- 音频控制：[miniprogram/game/core/audio.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/core/audio.js)
-- 渲染逻辑：[miniprogram/game/render/renderer.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/game/render/renderer.js)
-- 编辑器服务：[tools/chart-editor/server.js](/Users/yaohermione/Desktop/rhythm game/tools/chart-editor/server.js)
-- 编辑器前端：[tools/chart-editor/public/app.js](/Users/yaohermione/Desktop/rhythm game/tools/chart-editor/public/app.js)
+- 开始改动前先看 [AGENTS.md](/Users/yaohermione/Desktop/rhythm game/AGENTS.md)。
+- 改代码前先检查工作区状态，避免覆盖用户已有的未提交改动。
+- 默认优先修改 `web`，除非任务明确指定 `miniprogram` 或 `web-parkour`。
+- 做玩法改动时同时关注 `engine`、`AudioControllerWeb`、`renderer`、`GameRunner` 和 chart data。
+- 做 UI 或视觉改动后，尽量启动 Web dev server 并在浏览器实际确认效果。
+- 给体验地址前，重新确认当前 dev server 正在运行，使用本次真实可访问的地址。
