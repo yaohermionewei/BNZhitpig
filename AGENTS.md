@@ -40,6 +40,7 @@
 主要目录：
 
 - `web`：当前主项目，React/Vite Web 版节奏小游戏，也是之后优先发布和迭代的版本。
+- `shared`：三端共用数据和跨端共享资源；当前 Ditto 谱面 source-of-truth 在 `shared/charts`。
 - `miniprogram`：早期微信小程序版本，已经不是当前发布目标；一般只作为历史参考，不主动维护。
 - `tools/chart-editor`：本地可视化谱面编辑器。
 - `web-parkour`：React/Vite 跑酷玩法原型，是之后可能穿插迭代的下一个项目方向。
@@ -54,15 +55,18 @@
 - 如果用户只说“游戏”“音游”“网页版本”“当前版本”“小游戏”，默认指 `web`。
 - 如果需要新增资源、调整 UI、改玩法、修 bug、做发布准备，优先检查和修改 `web` 下的实现。
 
+共享谱面源：
+
+- `shared/charts/ditto.editable.chart.json`
+- `shared/charts/ditto.editable.chart.js`
+
 当前 Web 版重要文件：
 
 - `web/src/App.jsx`
 - `web/src/main.jsx`
 - `web/src/styles.css`
-- `shared/charts/ditto.editable.chart.json`
-- `shared/charts/ditto.editable.chart.js`
-- `web/src/game/ditto.editable.chart.js`
 - `web/src/game/songs.js`
+- `web/src/game/ditto.editable.chart.js`
 - `web/src/game/GameRunner.js`
 - `web/src/game/AudioControllerWeb.js`
 - `web/src/game/engine.js`
@@ -151,6 +155,7 @@ npm run assets:stage
 - 谱面的唯一 source-of-truth 是 `shared/charts/ditto.editable.chart.json`。谱面本身是中立数据，不属于 Web、小程序或 web-parkour 任一端。
 - `shared/charts/ditto.editable.chart.js`、`web/src/game/ditto.editable.chart.js`、`web/public/assets/charts/ditto.editable.chart.js` 和 `miniprogram/assets/charts/ditto.editable.chart.js` 都是从 shared JSON 同步出来的消费文件/adapter；一般不要手改。
 - 如果端侧谱面文件和 shared source 不一致，以 `shared/charts/ditto.editable.chart.json` 为准重新生成。
+- `web` 和 `web-parkour` 当前通过 `shared/charts/ditto.editable.chart.js` 消费谱面；不要把某个端侧副本误认为主源。
 - 在编辑器里还没保存的改动，只存在当前编辑器页面内，不会写入游戏文件。
 - 谱面编辑器会把备份保存到 `tools/chart-editor/backups`。
 - 修改 timing 时，要保护用户手调过的谱面数据；除非用户明确要求大范围重排，否则不要随意批量重写。
