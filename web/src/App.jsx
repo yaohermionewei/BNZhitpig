@@ -123,10 +123,37 @@ function useAmbientBgm(playbackArea) {
   }, [playbackArea]);
 }
 
-function getRandomResultVoiceClip() {
+let resultVoiceClipBag = [];
+let lastResultVoiceClipSrc = "";
+
+function shuffleResultVoiceClips() {
+  const bag = [...resultVoiceClips];
+
+  for (let index = bag.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [bag[index], bag[swapIndex]] = [bag[swapIndex], bag[index]];
+  }
+
+  if (bag.length > 1 && bag[0]?.src === lastResultVoiceClipSrc) {
+    const swapIndex = bag.findIndex((clip) => clip?.src !== lastResultVoiceClipSrc);
+    if (swapIndex > 0) {
+      [bag[0], bag[swapIndex]] = [bag[swapIndex], bag[0]];
+    }
+  }
+
+  return bag;
+}
+
+function getNextResultVoiceClip() {
   if (resultVoiceClips.length <= 0) return null;
-  const index = Math.floor(Math.random() * resultVoiceClips.length);
-  return resultVoiceClips[index] || null;
+
+  if (resultVoiceClipBag.length <= 0) {
+    resultVoiceClipBag = shuffleResultVoiceClips();
+  }
+
+  const clip = resultVoiceClipBag.shift() || null;
+  lastResultVoiceClipSrc = clip?.src || "";
+  return clip;
 }
 
 function useResultVoice(screen, resultKey) {
@@ -258,7 +285,7 @@ function useResultVoice(screen, resultKey) {
     }
 
     stopResultVoice();
-    const clip = getRandomResultVoiceClip();
+    const clip = getNextResultVoiceClip();
     lastPlayedKeyRef.current = resultKey;
     if (!clip?.src) {
       return () => {

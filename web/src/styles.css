@@ -2262,8 +2262,8 @@ button {
 }
 
 .result-certificate-divider-star {
-  --result-certificate-spark-size: max(7px, 0.63cqw);
-  --result-certificate-spark-band: max(2px, 0.18cqw);
+  --result-certificate-divider-diamond-pixel: max(1px, 0.12cqw);
+  --result-certificate-divider-diamond-color: #9c682f;
   position: relative;
   flex: 0 0 0.95%;
   width: 0.95%;
@@ -2279,11 +2279,34 @@ button {
   pointer-events: none;
   top: 50%;
   left: 50%;
-  width: var(--result-certificate-spark-size);
-  height: var(--result-certificate-spark-size);
-  background:
-    linear-gradient(#9c682f, #9c682f) center / 100% var(--result-certificate-spark-band) no-repeat,
-    linear-gradient(#9c682f, #9c682f) center / var(--result-certificate-spark-band) 100% no-repeat;
+  width: var(--result-certificate-divider-diamond-pixel);
+  height: var(--result-certificate-divider-diamond-pixel);
+  background: var(--result-certificate-divider-diamond-color);
+  box-shadow:
+    calc(var(--result-certificate-divider-diamond-pixel) * -1) calc(var(--result-certificate-divider-diamond-pixel) * -2) 0 var(--result-certificate-divider-diamond-color),
+    0 calc(var(--result-certificate-divider-diamond-pixel) * -2) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 1) calc(var(--result-certificate-divider-diamond-pixel) * -2) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -2) calc(var(--result-certificate-divider-diamond-pixel) * -1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -1) calc(var(--result-certificate-divider-diamond-pixel) * -1) 0 var(--result-certificate-divider-diamond-color),
+    0 calc(var(--result-certificate-divider-diamond-pixel) * -1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 1) calc(var(--result-certificate-divider-diamond-pixel) * -1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 2) calc(var(--result-certificate-divider-diamond-pixel) * -1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -3) 0 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -2) 0 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -1) 0 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 1) 0 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 2) 0 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 3) 0 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -2) calc(var(--result-certificate-divider-diamond-pixel) * 1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -1) calc(var(--result-certificate-divider-diamond-pixel) * 1) 0 var(--result-certificate-divider-diamond-color),
+    0 calc(var(--result-certificate-divider-diamond-pixel) * 1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 1) calc(var(--result-certificate-divider-diamond-pixel) * 1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 2) calc(var(--result-certificate-divider-diamond-pixel) * 1) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * -1) calc(var(--result-certificate-divider-diamond-pixel) * 2) 0 var(--result-certificate-divider-diamond-color),
+    0 calc(var(--result-certificate-divider-diamond-pixel) * 2) 0 var(--result-certificate-divider-diamond-color),
+    calc(var(--result-certificate-divider-diamond-pixel) * 1) calc(var(--result-certificate-divider-diamond-pixel) * 2) 0 var(--result-certificate-divider-diamond-color),
+    0 calc(var(--result-certificate-divider-diamond-pixel) * -3) 0 var(--result-certificate-divider-diamond-color),
+    0 calc(var(--result-certificate-divider-diamond-pixel) * 3) 0 var(--result-certificate-divider-diamond-color);
   transform: translate(-50%, -50%);
 }
 

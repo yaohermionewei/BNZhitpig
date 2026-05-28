@@ -15,4 +15,10 @@ export const resultVoiceClips = Object.freeze([
     src: "/assets/audio/结束时的感谢语音/minji-mma谢谢你们bnz.mp3",
     volume: 1.5,
   }),
+  Object.freeze({
+    src: "/assets/audio/结束时的感谢语音/bnzweloveu.mp3",
+  }),
+  Object.freeze({
+    src: "/assets/audio/结束时的感谢语音/出道吃蛋糕.mp3",
+  }),
 ]);
