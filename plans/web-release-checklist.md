@@ -27,14 +27,14 @@ https://bnzhitpig.wystudio.zone
 ## 建议执行顺序
 
 1. 准备正式 metadata 和图标。
-2. 把血量从 10 改成 20，并确认 HUD 血条显示仍然清楚。
+2. 迭代期优先通过 Cloudflare 体验最新 GitHub 版本。
 3. 做最终谱面调校。
-4. 迭代期优先通过 Cloudflare 体验最新 GitHub 版本。
-5. 本地跑一次构建。
-6. 发布前重新启用 Netlify 构建。
-7. 通过 GitHub -> Netlify 自动部署。
-8. 用正式域名做 smoke test。
-9. 测低端安卓机和关键移动浏览器。
+4. 测低端安卓机和关键移动浏览器。
+5. 发布前最后把血量从 10 改成 20，并确认 HUD 血条显示仍然清楚。
+6. 本地跑一次构建。
+7. 发布前重新启用 Netlify 构建。
+8. 通过 GitHub -> Netlify 自动部署。
+9. 用正式域名做 smoke test。
 10. 做最终发布判断。
 
 ## Netlify 构建策略
@@ -71,8 +71,9 @@ https://bnzhitpig.wystudio.zone
   - Web App manifest。
   - 相关文件：`web/index.html`。
   - 相关文件：`web/public/manifest.webmanifest`。
-- [x] 把血量从 10 改成 20。
-  - 修改 `web/src/game/engine.js` 里的 `DEFAULT_MAX_LIVES`。
+- [ ] 发布前最后再把血量从 10 改成 20。
+  - 平时迭代期先保持 10 点生命值，方便更快进入结算页测试。
+  - 发布前修改 `web/src/game/engine.js` 里的 `DEFAULT_MAX_LIVES`。
   - HUD 血条按 `lives / maxLives` 显示比例，会随 20 点生命值自动适配。
   - 血量归零时仍然会失败。
 - [ ] 做最终谱面调校。
