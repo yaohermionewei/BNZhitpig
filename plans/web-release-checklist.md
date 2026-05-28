@@ -71,10 +71,10 @@ https://bnzhitpig.wystudio.zone
   - Web App manifest。
   - 相关文件：`web/index.html`。
   - 相关文件：`web/public/manifest.webmanifest`。
-- [ ] 把血量从 10 改成 20。
+- [x] 把血量从 10 改成 20。
   - 修改 `web/src/game/engine.js` 里的 `DEFAULT_MAX_LIVES`。
-  - 确认血条仍然能清楚表达受伤状态。
-  - 确认血量归零时仍然会失败。
+  - HUD 血条按 `lives / maxLives` 显示比例，会随 20 点生命值自动适配。
+  - 血量归零时仍然会失败。
 - [ ] 做最终谱面调校。
   - 按听感检查 timing。
   - 调整 note 密度和手感。

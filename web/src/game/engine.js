@@ -7,7 +7,7 @@ const NOTE_SCORE_WEIGHTS = Object.freeze({
   direction: 1.5,
   hold: 1.5,
 });
-const DEFAULT_MAX_LIVES = 10;
+const DEFAULT_MAX_LIVES = 20;
 const END_RUN_ON_ZERO_LIVES = true;
 const COMBO_PULSE_DURATION = 0.36;
 
