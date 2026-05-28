@@ -49,6 +49,7 @@ function getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode) {
 function useAmbientBgm(playbackArea) {
   const audioRef = useRef(null);
   const previousPlaybackAreaRef = useRef("off");
+  const userInteractedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -56,14 +57,22 @@ function useAmbientBgm(playbackArea) {
     const shouldPlay = playbackArea !== "off";
     let cancelled = false;
     let unlockBound = false;
-    const audio =
-      audioRef.current ||
-      Object.assign(new Audio(AMBIENT_BGM_SRC), {
-        loop: true,
-        preload: "auto",
-        volume: AMBIENT_BGM_VOLUME,
-      });
-    audioRef.current = audio;
+
+    function getAmbientAudio() {
+      if (!audioRef.current) {
+        const audio = new Audio();
+        audio.loop = true;
+        audio.preload = "none";
+        audio.volume = AMBIENT_BGM_VOLUME;
+        audioRef.current = audio;
+      }
+
+      const audio = audioRef.current;
+      if (!audio.src) {
+        audio.src = AMBIENT_BGM_SRC;
+      }
+      return audio;
+    }
 
     function removeUnlockListeners() {
       if (!unlockBound) return;
@@ -81,7 +90,14 @@ function useAmbientBgm(playbackArea) {
       unlockBound = true;
     }
 
+    function pauseAmbientBgm() {
+      if (!audioRef.current) return;
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
     function playAmbientBgm() {
+      const audio = getAmbientAudio();
       audio.volume = AMBIENT_BGM_VOLUME;
       const playPromise = audio.play();
       if (!playPromise || typeof playPromise.then !== "function") {
@@ -98,6 +114,7 @@ function useAmbientBgm(playbackArea) {
     }
 
     function handleUserUnlock() {
+      userInteractedRef.current = true;
       removeUnlockListeners();
       if (cancelled || !shouldPlay) return;
       playAmbientBgm();
@@ -105,14 +122,16 @@ function useAmbientBgm(playbackArea) {
 
     if (shouldPlay) {
       if (previousPlaybackAreaRef.current !== playbackArea) {
-        audio.pause();
-        audio.currentTime = 0;
+        pauseAmbientBgm();
       }
-      playAmbientBgm();
+      if (userInteractedRef.current) {
+        playAmbientBgm();
+      } else {
+        bindUnlockListeners();
+      }
     } else {
       removeUnlockListeners();
-      audio.pause();
-      audio.currentTime = 0;
+      pauseAmbientBgm();
     }
     previousPlaybackAreaRef.current = playbackArea;
 

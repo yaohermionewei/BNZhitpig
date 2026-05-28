@@ -17,6 +17,10 @@ import {
   getThemeToggleIconSrc,
 } from "./startScreenData.js";
 
+const START_IMAGE_PRELOAD_PROMISES = new Map();
+const START_IDLE_PRELOAD_TIMEOUT_MS = 2500;
+const START_IDLE_PRELOAD_FALLBACK_MS = 320;
+
 function wait(durationMs) {
   return new Promise((resolve) => {
     window.setTimeout(resolve, durationMs);
@@ -24,29 +28,57 @@ function wait(durationMs) {
 }
 
 function preloadImage(src) {
-  return new Promise((resolve) => {
-    if (!src) {
-      resolve(false);
-      return;
-    }
+  if (!src) {
+    return Promise.resolve(false);
+  }
 
+  if (START_IMAGE_PRELOAD_PROMISES.has(src)) {
+    return START_IMAGE_PRELOAD_PROMISES.get(src);
+  }
+
+  const loadPromise = new Promise((resolve) => {
     const image = new Image();
     image.decoding = "async";
     image.onload = () => resolve(true);
-    image.onerror = () => resolve(false);
+    image.onerror = () => {
+      START_IMAGE_PRELOAD_PROMISES.delete(src);
+      resolve(false);
+    };
     image.src = src;
   });
+
+  START_IMAGE_PRELOAD_PROMISES.set(src, loadPromise);
+  return loadPromise;
 }
 
-function preloadStartImages() {
-  const sources = Array.from(
-    new Set([
-      ...getStartCriticalImageSources("dark"),
-      ...getStartCriticalImageSources("light"),
-    ])
-  );
+function preloadStartImages(theme) {
+  const sources = Array.from(new Set(getStartCriticalImageSources(theme)));
 
   return Promise.allSettled(sources.map((src) => preloadImage(src)));
+}
+
+function getAlternateStartTheme(theme) {
+  return theme === "light" ? "dark" : "light";
+}
+
+function scheduleIdleStartImagePreload(theme) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const runPreload = () => {
+    preloadStartImages(getAlternateStartTheme(theme));
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    const idleId = window.requestIdleCallback(runPreload, {
+      timeout: START_IDLE_PRELOAD_TIMEOUT_MS,
+    });
+    return () => window.cancelIdleCallback?.(idleId);
+  }
+
+  const fallbackId = window.setTimeout(runPreload, START_IDLE_PRELOAD_FALLBACK_MS);
+  return () => window.clearTimeout(fallbackId);
 }
 
 function waitForStartFonts() {
@@ -98,6 +130,7 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
   const { startTheme, song } = state;
   const stageRef = useRef(null);
   const heroRef = useRef(null);
+  const initialReadyRef = useRef(false);
   const [pageReady, setPageReady] = useState(false);
   const [rabbitFrame, setRabbitFrame] = useState(0);
   const [pigFrame, setPigFrame] = useState(0);
@@ -172,21 +205,29 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
 
   useEffect(() => {
     let cancelled = false;
+    let cancelIdlePreload = () => {};
+    const firstLoadTasks = initialReadyRef.current
+      ? []
+      : [waitForStartFonts(), wait(START_LOADING_MIN_DURATION_MS)];
 
     Promise.allSettled([
-      preloadStartImages(),
-      waitForStartFonts(),
-      wait(START_LOADING_MIN_DURATION_MS),
+      preloadStartImages(startTheme),
+      ...firstLoadTasks,
     ]).then(() => {
       if (!cancelled) {
-        setPageReady(true);
+        if (!initialReadyRef.current) {
+          initialReadyRef.current = true;
+          setPageReady(true);
+        }
+        cancelIdlePreload = scheduleIdleStartImagePreload(startTheme);
       }
     });
 
     return () => {
       cancelled = true;
+      cancelIdlePreload();
     };
-  }, []);
+  }, [startTheme]);
 
   useEffect(() => {
     const frameTimer = window.setInterval(() => {
