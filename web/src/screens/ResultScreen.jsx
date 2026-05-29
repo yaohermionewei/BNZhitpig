@@ -1097,9 +1097,19 @@ function ResultSharePreviewOverlay({
     return (
       <MagicLoadingOverlay
         theme={theme}
-        text="生成战报中"
+        text="生成战报中..."
         className="result-share-preview-loading-overlay"
-      />
+      >
+        <span
+          className="result-share-preview-loading-text result-fixed-text-zh pixel-font-zh"
+          aria-hidden="true"
+        >
+          <span>生成战报中</span>
+          <span className="result-share-preview-loading-dot">.</span>
+          <span className="result-share-preview-loading-dot">.</span>
+          <span className="result-share-preview-loading-dot">.</span>
+        </span>
+      </MagicLoadingOverlay>
     );
   }
 
@@ -1126,15 +1136,6 @@ function ResultSharePreviewOverlay({
         >
           <span>{saveState.label}</span>
         </ResultCertificateButton>
-        {saveToast && (
-          <div
-            className="result-share-preview-toast result-fixed-text-zh pixel-font-zh"
-            role="status"
-            aria-live="polite"
-          >
-            {saveToast}
-          </div>
-        )}
 
         <button
           className="result-share-preview-close"
@@ -1145,6 +1146,16 @@ function ResultSharePreviewOverlay({
           ×
         </button>
       </div>
+      {saveToast && (
+        <div
+          className="result-share-preview-toast result-fixed-text-zh pixel-font-zh"
+          role="status"
+          aria-live="polite"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <span className="result-share-preview-toast-text">{saveToast}</span>
+        </div>
+      )}
     </div>
   );
 }
