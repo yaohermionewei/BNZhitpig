@@ -280,6 +280,36 @@ const ENDING_OVERLAY_SUBTITLE_TRACKING = 1.1;
 const ENDING_OVERLAY_COMPLETED_GOLD = "#FAE18A";
 const ENDING_OVERLAY_COMPLETED_SHADOW = "rgba(105, 63, 24, 0.92)";
 const ENDING_OVERLAY_FAILED_SHADOW = "rgba(34, 16, 24, 0.68)";
+const TUTORIAL_HINT_NOTE_COUNT = 11;
+const TUTORIAL_HINT_LEAD_TIME = 1;
+const TUTORIAL_HINT_TEXT_COLOR = "#FAEEC2";
+const TUTORIAL_HINT_SHADOW_COLOR = "rgba(0, 0, 0, 0.72)";
+const TUTORIAL_HINT_GOLD = "#D69A3B";
+const TUTORIAL_HINT_GOLD_BRIGHT = "#FFF0B8";
+const TUTORIAL_HINT_GOLD_DARK = "rgba(90, 54, 16, 0.62)";
+const TUTORIAL_HINT_FONT_FAMILY = ENDING_OVERLAY_ZH_FONT_FAMILY;
+const TUTORIAL_HINT_TEXT_TRACKING = 0;
+const TUTORIAL_HINT_LINE_HEIGHT = 1.26;
+const TUTORIAL_TYPE_HINT_HOLD_COPY = Object.freeze(["长条猪", "长按屏幕攻击"]);
+const TUTORIAL_TYPE_HINT_NORMAL_COPY = Object.freeze(["普通猪", "点屏幕攻击"]);
+const TUTORIAL_TYPE_HINT_LEFT_COPY = Object.freeze(["左转猪", "左滑攻击"]);
+const TUTORIAL_TYPE_HINT_RIGHT_COPY = Object.freeze(["右转猪", "右滑攻击"]);
+const TUTORIAL_TYPE_HINT_COPY_LINES = Object.freeze([
+  ...TUTORIAL_TYPE_HINT_HOLD_COPY,
+  ...TUTORIAL_TYPE_HINT_NORMAL_COPY,
+  ...TUTORIAL_TYPE_HINT_LEFT_COPY,
+  ...TUTORIAL_TYPE_HINT_RIGHT_COPY,
+]);
+const TUTORIAL_ARROW_MASK = Object.freeze([
+  ".......XX",
+  "......XXX",
+  ".....XXXX",
+  "XXXXXXXXX",
+  "XXXXXXXXX",
+  ".....XXXX",
+  "......XXX",
+  ".......XX",
+]);
 const PERFECT_FEEDBACK_MAIN = "#6EDE7D";
 const GOOD_FEEDBACK_MAIN = "#8BDDFF";
 const MISS_FEEDBACK_MAIN = "#FF7F90";
@@ -3543,6 +3573,30 @@ function getBackdropCarpetEdgeX(backdropLayout, screenY, side) {
   return backdropLayout.x + backdropLayout.width * ratio;
 }
 
+function getBackdropCrowdCarpetEdgeX(backdropLayout, screenY, side) {
+  if (!backdropLayout) {
+    return null;
+  }
+
+  const topAnchor =
+    side === "left" ? LANE_HIT_FLASH_SOURCE_ANCHORS.topLeft : LANE_HIT_FLASH_SOURCE_ANCHORS.topRight;
+  const bottomAnchor =
+    side === "left"
+      ? LANE_HIT_FLASH_SOURCE_ANCHORS.bottomLeft
+      : LANE_HIT_FLASH_SOURCE_ANCHORS.bottomRight;
+  const sourceY =
+    ((screenY - backdropLayout.y) / Math.max(1, backdropLayout.height)) *
+    LANE_HIT_FLASH_SOURCE_BASE_HEIGHT;
+  const edgeProgress = clamp(
+    (sourceY - topAnchor.y) / Math.max(1, bottomAnchor.y - topAnchor.y),
+    0,
+    1
+  );
+  const sourceX = lerp(topAnchor.x, bottomAnchor.x, edgeProgress);
+
+  return backdropLayout.x + (sourceX / LANE_HIT_FLASH_SOURCE_BASE_WIDTH) * backdropLayout.width;
+}
+
 function getImpactZoneVisualMetrics(viewport, lane, sceneBackgroundImage) {
   const fallbackZoneRadiusX = lane.targetWidth * 0.6;
   const fallbackLineWidth = fallbackZoneRadiusX * 1.74;
@@ -4387,10 +4441,29 @@ const CROWD_TARGET_HEIGHT_BY_ID = Object.freeze({
   4: 58,
   5: 62,
 });
+const CROWD_GAP_REFERENCE_ID = 2;
 const CROWD_IDLE_PIXEL_BOB_PATTERN = Object.freeze([0, -1, -2, -1, 0, 1, 0, 0]);
 const CROWD_IDLE_PIXEL_BOB_SPEED = 5.4;
 const CROWD_TURN_MIN_WIDTH_SCALE = 0.94;
 const RABBIT_TURN_MIN_WIDTH_SCALE = 0.94;
+
+function getCrowdStageEdgeX(lane, carpetLayout, backdropLayout, progress, screenY, side) {
+  const backdropEdgeX = getBackdropCrowdCarpetEdgeX(backdropLayout, screenY, side);
+  if (backdropEdgeX !== null) {
+    return backdropEdgeX;
+  }
+
+  const carpetEdgeX = getStageCarpetEdgeX(carpetLayout, screenY, side);
+  if (carpetEdgeX !== null) {
+    return carpetEdgeX;
+  }
+
+  return getLaneSideXAtProgress(lane, progress, side);
+}
+
+function getCrowdReferencePlacement() {
+  return CROWD_PLACEMENTS.find((placement) => placement.id === CROWD_GAP_REFERENCE_ID) || null;
+}
 
 function getCrowdStageWidthAtY(lane, carpetLayout, screenY) {
   if (carpetLayout) {
@@ -4419,6 +4492,22 @@ function getCrowdEdgeGap(lane, carpetLayout, screenY, placement, targetHeight, d
   return clamp(edgeGap, targetHeight * 0.22, targetHeight * 0.4);
 }
 
+function getLegacyCrowdCenterX(lane, carpetLayout, placement, targetFeetY, targetHeight, depthProgress) {
+  const laneEdgeX = getLaneSideXAtProgress(lane, placement.lineProgress, placement.side);
+  const carpetEdgeX = getStageCarpetEdgeX(carpetLayout, targetFeetY, placement.side);
+  const stageEdgeX = carpetEdgeX === null ? laneEdgeX : carpetEdgeX;
+  const edgeGap = getCrowdEdgeGap(
+    lane,
+    carpetLayout,
+    targetFeetY,
+    placement,
+    targetHeight,
+    depthProgress
+  );
+
+  return stageEdgeX + (placement.side === "right" ? edgeGap : -edgeGap);
+}
+
 function getCrowdTargetHeight(viewport, placement, depthProgress) {
   const fixedHeight = CROWD_TARGET_HEIGHT_BY_ID[placement.id];
   if (Number.isFinite(fixedHeight)) {
@@ -4428,6 +4517,46 @@ function getCrowdTargetHeight(viewport, placement, depthProgress) {
   const farHeight = clamp(viewport.height * 0.072, 52, 58);
   const nearHeight = clamp(viewport.height * 0.09, 62, 68);
   return lerp(farHeight, nearHeight, depthProgress);
+}
+
+function getCrowdReferenceLayout(viewport, lane, carpetLayout, backdropLayout) {
+  const referencePlacement = getCrowdReferencePlacement();
+  if (!referencePlacement) {
+    return null;
+  }
+
+  const depthProgress = clamp(
+    referencePlacement.depth === undefined
+      ? referencePlacement.lineProgress
+      : referencePlacement.depth,
+    0,
+    1
+  );
+  const targetHeight = getCrowdTargetHeight(viewport, referencePlacement, depthProgress);
+  const targetFeetY = getLaneYAtProgress(lane, referencePlacement.lineProgress);
+  const legacyCenterX = getLegacyCrowdCenterX(
+    lane,
+    carpetLayout,
+    referencePlacement,
+    targetFeetY,
+    targetHeight,
+    depthProgress
+  );
+  const referenceEdgeX = getCrowdStageEdgeX(
+    lane,
+    carpetLayout,
+    backdropLayout,
+    referencePlacement.lineProgress,
+    targetFeetY,
+    referencePlacement.side
+  );
+
+  return {
+    centerX: legacyCenterX,
+    edgeX: referenceEdgeX,
+    lineProgress: referencePlacement.lineProgress,
+    side: referencePlacement.side,
+  };
 }
 
 function getStaticCrowdPose(facingFront) {
@@ -4507,6 +4636,13 @@ function drawCharacterScene(
   const crowdMembers =
     crowdMotion && Array.isArray(crowdMotion.members) ? crowdMotion.members : [];
   const carpetLayout = getStageCarpetLayout(viewport, lane, characterSprites.stageCarpet);
+  const backdropLayout = getCoverBackdropLayout(viewport, characterSprites.sceneBackground);
+  const crowdReferenceLayout = getCrowdReferenceLayout(
+    viewport,
+    lane,
+    carpetLayout,
+    backdropLayout
+  );
 
   CROWD_PLACEMENTS.forEach((placement, index) => {
     const frontSprite = characterSprites[`char${placement.id}Front`];
@@ -4518,19 +4654,28 @@ function drawCharacterScene(
     );
     const targetHeight = getCrowdTargetHeight(viewport, placement, depthProgress);
     const targetFeetY = getLaneYAtProgress(lane, placement.lineProgress);
-    const laneEdgeX = getLaneSideXAtProgress(lane, placement.lineProgress, placement.side);
-    const carpetEdgeX = getStageCarpetEdgeX(carpetLayout, targetFeetY, placement.side);
-    const stageEdgeX = carpetEdgeX === null ? laneEdgeX : carpetEdgeX;
-    const edgeGap = getCrowdEdgeGap(
+    const stageEdgeX = getCrowdStageEdgeX(
       lane,
       carpetLayout,
+      backdropLayout,
+      placement.lineProgress,
       targetFeetY,
+      placement.side
+    );
+    const legacyCenterX = getLegacyCrowdCenterX(
+      lane,
+      carpetLayout,
       placement,
+      targetFeetY,
       targetHeight,
       depthProgress
     );
-    const targetCenterX =
-      stageEdgeX + (placement.side === "right" ? edgeGap : -edgeGap);
+    const referenceGap = crowdReferenceLayout
+      ? Math.abs(crowdReferenceLayout.centerX - crowdReferenceLayout.edgeX)
+      : null;
+    const targetCenterX = referenceGap === null
+      ? legacyCenterX
+      : stageEdgeX + (placement.side === "right" ? referenceGap : -referenceGap);
     const animatedCenterX = lerp(
       lane.centerX + (targetCenterX - lane.centerX) * 0.42,
       targetCenterX,
@@ -5550,6 +5695,255 @@ function drawLifePauseHud(ctx, viewport, state, hudLayout = null) {
   drawPauseButtonHud(ctx, viewport, state, hudLayout);
 }
 
+function getTutorialHintEndTime(state) {
+  const notes = state?.notes || [];
+  const endNote = notes[TUTORIAL_HINT_NOTE_COUNT - 1];
+  if (!endNote) {
+    return -Infinity;
+  }
+  const missWindow = Number(state?.chart?.windows?.miss) || 0;
+  return Number(endNote.endTime || endNote.time) + missWindow;
+}
+
+function getActiveTutorialNote(state, currentTime) {
+  const notes = (state?.notes || []).slice(0, TUTORIAL_HINT_NOTE_COUNT);
+  const missWindow = Number(state?.chart?.windows?.miss) || 0;
+  const activeNotes = notes.filter((note) => {
+    const noteTime = Number(note?.time);
+    const endTime = note?.kind === "hold" ? Number(note?.endTime || noteTime) : noteTime;
+    return (
+      Number.isFinite(noteTime) &&
+      currentTime >= noteTime - TUTORIAL_HINT_LEAD_TIME &&
+      currentTime <= endTime + missWindow
+    );
+  });
+  return (
+    activeNotes.find((note) => note.direction === "left" || note.direction === "right") ||
+    activeNotes.find((note) => note.kind === "hold") ||
+    activeNotes[0] ||
+    null
+  );
+}
+
+function getTutorialNoteCopy(note) {
+  if (!note) {
+    return null;
+  }
+
+  if (note.kind === "hold") {
+    return TUTORIAL_TYPE_HINT_HOLD_COPY;
+  }
+
+  if (note.direction === "left") {
+    return TUTORIAL_TYPE_HINT_LEFT_COPY;
+  }
+
+  if (note.direction === "right") {
+    return TUTORIAL_TYPE_HINT_RIGHT_COPY;
+  }
+
+  return TUTORIAL_TYPE_HINT_NORMAL_COPY;
+}
+
+function drawTutorialHintLines(ctx, lines, x, y, options = {}) {
+  const fontSize = options.fontSize || 18;
+  const lineHeight = options.lineHeight || fontSize * TUTORIAL_HINT_LINE_HEIGHT;
+  const align = options.align || "left";
+  const alpha = options.alpha === undefined ? 1 : options.alpha;
+
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  lines.forEach((line, index) => {
+    drawCleanTrackedText(ctx, line, x, y + lineHeight * index, {
+      align,
+      valign: "top",
+      fontSize,
+      fontFamily: TUTORIAL_HINT_FONT_FAMILY,
+      fontWeight: "400",
+      color: TUTORIAL_HINT_TEXT_COLOR,
+      shadowColor: TUTORIAL_HINT_SHADOW_COLOR,
+      shadowOffsetX: 1,
+      shadowOffsetY: 1,
+      tracking: TUTORIAL_HINT_TEXT_TRACKING,
+    });
+  });
+  ctx.restore();
+}
+
+function getTutorialHintLinesWidth(ctx, lines, fontSize) {
+  return lines.reduce(
+    (maxWidth, line) =>
+      Math.max(
+        maxWidth,
+        getTrackedTextWidth(ctx, line, {
+          fontSize,
+          fontFamily: TUTORIAL_HINT_FONT_FAMILY,
+          fontWeight: "400",
+          tracking: TUTORIAL_HINT_TEXT_TRACKING,
+        })
+      ),
+    0
+  );
+}
+
+function fitTutorialHintFontSize(ctx, lines, maxWidth, preferredFontSize) {
+  if (maxWidth <= 0) {
+    return 15;
+  }
+
+  let fontSize = preferredFontSize;
+  while (
+    fontSize > 15 &&
+    getTutorialHintLinesWidth(ctx, lines, fontSize) > maxWidth
+  ) {
+    fontSize -= 1;
+  }
+  return fontSize;
+}
+
+function drawPixelTutorialArrowSprite(ctx, x, y, scale, alpha = 1) {
+  const cell = Math.max(2, Math.round(scale));
+  const rows = TUTORIAL_ARROW_MASK.length;
+  const columns = TUTORIAL_ARROW_MASK[0].length;
+  const width = columns * cell;
+  const height = rows * cell;
+  const left = snapToGrid(x - width / 2, 1);
+  const top = snapToGrid(y - height / 2, 1);
+
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      if (TUTORIAL_ARROW_MASK[row][column] !== "X") {
+        continue;
+      }
+      const px = left + column * cell;
+      const py = top + row * cell;
+      ctx.fillStyle = TUTORIAL_HINT_GOLD_DARK;
+      ctx.fillRect(px + cell, py + cell, cell, cell);
+      ctx.fillStyle =
+        row <= 1 || column >= columns - 2 ? TUTORIAL_HINT_GOLD_BRIGHT : TUTORIAL_HINT_GOLD;
+      ctx.fillRect(px, py, cell, cell);
+    }
+  }
+  ctx.restore();
+}
+
+function drawTutorialArrow(ctx, startX, startY, endX, endY, sceneTime, alpha = 1) {
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const length = Math.hypot(dx, dy);
+  if (length < 1) {
+    return;
+  }
+
+  const unitX = dx / length;
+  const unitY = dy / length;
+  const normalX = -unitY;
+  const normalY = unitX;
+  const pulse = Math.sin(sceneTime * 5.4);
+  const travel = pulse * 5;
+  const shimmer = 0.78 + (pulse + 1) * 0.11;
+  const headX = endX - unitX * (18 - travel);
+  const headY = endY - unitY * (18 - travel);
+  const tailX = startX + unitX * travel;
+  const tailY = startY + unitY * travel;
+  const angle = Math.atan2(dy, dx);
+  const segmentCount = 8;
+
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.lineCap = "butt";
+  for (let index = 0; index < segmentCount; index += 1) {
+    const t = (index + 0.5) / segmentCount;
+    const blockX = lerp(tailX, headX, t);
+    const blockY = lerp(tailY, headY, t);
+    const blockSize = index % 2 === 0 ? 4 : 3;
+    const blockAlpha = shimmer * (0.46 + t * 0.42);
+    ctx.fillStyle = TUTORIAL_HINT_GOLD_DARK;
+    ctx.fillRect(
+      snapToGrid(blockX + normalX * 2 + 1, 1),
+      snapToGrid(blockY + normalY * 2 + 1, 1),
+      blockSize,
+      blockSize
+    );
+    ctx.globalAlpha *= blockAlpha;
+    ctx.fillStyle = index > segmentCount - 3 ? TUTORIAL_HINT_GOLD_BRIGHT : TUTORIAL_HINT_GOLD;
+    ctx.fillRect(
+      snapToGrid(blockX + normalX * 2, 1),
+      snapToGrid(blockY + normalY * 2, 1),
+      blockSize,
+      blockSize
+    );
+    ctx.globalAlpha /= blockAlpha;
+  }
+  ctx.translate(headX, headY);
+  ctx.rotate(angle);
+  drawPixelTutorialArrowSprite(ctx, 0, 0, 3, shimmer);
+  ctx.restore();
+}
+
+function drawTutorialHints(ctx, viewport, lane, state, uiState = {}, topHudLayout = null) {
+  if (!lane || !uiState.gameplayActive || uiState.paused || uiState.gameOverOverlayActive) {
+    return;
+  }
+
+  const currentTime = Number(state?.currentTime) || 0;
+  const tutorialEndTime = getTutorialHintEndTime(state);
+  if (!Number.isFinite(tutorialEndTime) || currentTime > tutorialEndTime) {
+    return;
+  }
+
+  const hudLayout = topHudLayout || getTopHudLayout(viewport, state);
+  const fontSize = clamp(viewport.width * 0.045, 17, 24);
+  const lineHeight = fontSize * TUTORIAL_HINT_LINE_HEIGHT;
+  const commonX = snapToGrid(hudLayout.lifeBarLeft, 1);
+  const commonY = snapToGrid(
+    Math.min(
+      lane.targetY - lineHeight * 2.5,
+      hudLayout.lifeBarTop + hudLayout.lifeBarHeight + Math.max(16, viewport.height * 0.028)
+    ),
+    1
+  );
+  const activeNote = getActiveTutorialNote(state, currentTime);
+  const noteCopy = getTutorialNoteCopy(activeNote);
+  const impactMetrics = getImpactZoneVisualMetrics(
+    viewport,
+    lane,
+    uiState.characterSprites?.sceneBackground
+  );
+  const typeMinX = snapToGrid(lane.centerX + impactMetrics.zoneRadiusX + 14, 1);
+  const typeMaxWidth = Math.max(0, viewport.width - typeMinX - 14);
+  const typeFontSize = noteCopy
+    ? fitTutorialHintFontSize(ctx, TUTORIAL_TYPE_HINT_COPY_LINES, typeMaxWidth, fontSize)
+    : fontSize;
+  const typeLineHeight = typeFontSize * TUTORIAL_HINT_LINE_HEIGHT;
+  const typeX = typeMinX;
+  const typeY = snapToGrid(
+    Math.min(viewport.height - typeLineHeight * 2 - 18, lane.targetY - typeLineHeight),
+    1
+  );
+  const arrowStartX = commonX + Math.max(74, viewport.width * 0.2);
+  const arrowStartY = commonY + lineHeight * 1.6;
+  const arrowEndX = lane.centerX - Math.max(18, lane.targetWidth * 0.42);
+  const arrowEndY = lane.targetY + 1;
+
+  ctx.save();
+  drawTutorialHintLines(ctx, ["猪落圈内时", "可发动攻击"], commonX, commonY, {
+    fontSize,
+    lineHeight,
+  });
+  drawTutorialArrow(ctx, arrowStartX, arrowStartY, arrowEndX, arrowEndY, currentTime, 0.96);
+  if (noteCopy) {
+    drawTutorialHintLines(ctx, noteCopy, typeX, typeY, {
+      fontSize: typeFontSize,
+      lineHeight: typeLineHeight,
+      align: "left",
+    });
+  }
+  ctx.restore();
+}
+
 function getLatestComboPulse(effects = []) {
   for (let index = effects.length - 1; index >= 0; index -= 1) {
     const effect = effects[index];
@@ -5675,6 +6069,7 @@ function drawHud(ctx, viewport, state, uiState = {}, lane = null) {
   drawLifePauseHud(ctx, viewport, state, topHudLayout);
   if (lane) {
     drawCenterComboHud(ctx, viewport, lane, state);
+    drawTutorialHints(ctx, viewport, lane, state, uiState, topHudLayout);
   }
   ctx.restore();
   ctx.textAlign = "left";
