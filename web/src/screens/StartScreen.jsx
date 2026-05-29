@@ -126,7 +126,13 @@ function formatStageStyle(backdropOffsetY) {
   };
 }
 
-export default function StartScreen({ state, onThemeToggle, onSelectSong, onStart }) {
+export default function StartScreen({
+  state,
+  onThemeToggle,
+  onSelectSong,
+  onStart,
+  loadingText = LOADING_COPY.enterWorld,
+}) {
   const { startTheme, song } = state;
   const stageRef = useRef(null);
   const heroRef = useRef(null);
@@ -424,7 +430,7 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
       {!pageReady && (
         <MagicLoadingOverlay
           theme={startTheme}
-          text={LOADING_COPY.enterWorld}
+          text={loadingText}
           className="start-loading-overlay"
         />
       )}

@@ -13,6 +13,7 @@ import {
   playResultVoiceClip,
   stopResultVoicePlayback,
 } from "./game/resultVoicePlayback.js";
+import { LOADING_COPY } from "./utils/loading-copy.js";
 
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
@@ -301,6 +302,7 @@ export default function App() {
   const [resultSummary, setResultSummary] = useState(null);
   const [gameRunId, setGameRunId] = useState(0);
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
+  const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
   const song = selectedSong || getDefaultSong();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
   useResultVoice(screen, resultVoicePlayId || null);
@@ -319,6 +321,7 @@ export default function App() {
 
   function handleStart() {
     unlockAudioForUserGesture();
+    setStartLoadingText(LOADING_COPY.enterWorld);
     setResultSummary(null);
     setGameRunId((id) => id + 1);
     setScreen("game");
@@ -337,6 +340,7 @@ export default function App() {
   }
 
   function handleHome() {
+    setStartLoadingText(LOADING_COPY.returnWorld);
     setScreen("start");
   }
 
@@ -364,6 +368,7 @@ export default function App() {
               }
               onSelectSong={setSelectedSong}
               onStart={handleStart}
+              loadingText={startLoadingText}
             />
           )}
           {screen === "game" && (
