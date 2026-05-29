@@ -8,7 +8,7 @@
 
 @font-face {
   font-family: "PixelZhFusion";
-  src: url("/assets/fonts/bunnies-pixel-zh-ui.woff2?v=loading-shimmer-20260519") format("woff2");
+  src: url("/assets/fonts/bunnies-pixel-zh-ui.woff2?v=share-toast-glyphs-20260529") format("woff2");
   font-display: swap;
 }
 
@@ -2624,9 +2624,48 @@ button {
   backdrop-filter: blur(4px);
 }
 
-.result-share-preview-loading-overlay .magic-loading-text {
-  color: #f4eed8;
-  text-shadow: max(1px, 0.12cqw) max(1px, 0.12cqw) 0 rgba(0, 0, 0, 0.56);
+.result-share-preview-loading-text {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  color: rgba(244, 238, 216, 0.94);
+  font-size: clamp(18px, 5.1cqw, 32px);
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: none;
+  -webkit-font-smoothing: none;
+}
+
+.result-share-preview-loading-dot {
+  display: inline-block;
+  width: 0.62em;
+  text-align: center;
+  transform-origin: 50% 90%;
+  animation: result-share-preview-dot-lift 1.05s ease-in-out infinite;
+}
+
+.result-share-preview-loading-dot:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.result-share-preview-loading-dot:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+@keyframes result-share-preview-dot-lift {
+  0%,
+  80%,
+  100% {
+    opacity: 0.38;
+    transform: translateY(0);
+  }
+
+  38% {
+    opacity: 1;
+    transform: translateY(-0.18em);
+  }
 }
 
 .result-share-preview-overlay {
@@ -2889,22 +2928,28 @@ button {
 }
 
 .result-share-preview-toast {
-  position: absolute;
+  position: fixed;
+  top: 50%;
   left: 50%;
-  bottom: clamp(74px, 18svh, 132px);
   z-index: 1;
-  padding: 8px 14px 9px;
+  display: grid;
+  place-items: center;
+  min-width: 96px;
+  min-height: 38px;
+  padding: 10px 16px 11px;
   color: rgba(255, 248, 224, 0.96);
-  font-size: clamp(13px, 3.3cqw, 18px);
+  font-size: clamp(14px, 3.55cqw, 19px);
   line-height: 1;
   text-align: center;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.46);
-  background: rgba(18, 15, 22, 0.82);
-  box-shadow:
-    0 0 0 2px rgba(255, 239, 189, 0.24),
-    0 6px 0 rgba(0, 0, 0, 0.24);
-  transform: translateX(-50%);
+  text-shadow: none;
+  background: rgba(8, 8, 10, 0.82);
+  transform: translate(-50%, -50%);
   pointer-events: none;
+}
+
+.result-share-preview-toast-text {
+  display: block;
+  transform: translateY(1px);
 }
 
 .result-dark-blue-overlay {

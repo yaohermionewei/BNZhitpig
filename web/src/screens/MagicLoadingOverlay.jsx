@@ -1,4 +1,4 @@
-export default function MagicLoadingOverlay({ theme, text, className = "" }) {
+export default function MagicLoadingOverlay({ theme, text, className = "", children = null }) {
   const normalizedTheme = theme === "light" ? "light" : "dark";
   const classes = [
     "magic-loading-overlay",
@@ -10,9 +10,11 @@ export default function MagicLoadingOverlay({ theme, text, className = "" }) {
 
   return (
     <div className={classes} role="status" aria-live="polite" aria-label={text}>
-      <span className="magic-loading-text pixel-font-zh" data-text={text} aria-hidden="true">
-        {text}
-      </span>
+      {children || (
+        <span className="magic-loading-text pixel-font-zh" data-text={text} aria-hidden="true">
+          {text}
+        </span>
+      )}
     </div>
   );
 }

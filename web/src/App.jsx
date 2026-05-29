@@ -21,7 +21,6 @@ const EndingOverlayDebugPreview = import.meta.env.DEV
 const AMBIENT_BGM_SRC = "/assets/audio/home-loop-bgm-quiet.m4a";
 const AMBIENT_BGM_VOLUME = 1;
 const AMBIENT_BGM_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
-const GAME_AUDIO_PRIORITY_SELECTOR = '[data-bnz-audio-priority="game"]';
 const RESULT_VOICE_DELAY_MS = 1000;
 const RESULT_VOICE_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 
@@ -47,15 +46,9 @@ function getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode) {
   return screen === "start" || screen === "result" ? screen : "off";
 }
 
-function isGameAudioPriorityEvent(event) {
-  const target = event?.target;
-  return !!target && typeof target.closest === "function" && !!target.closest(GAME_AUDIO_PRIORITY_SELECTOR);
-}
-
 function useAmbientBgm(playbackArea) {
   const audioRef = useRef(null);
   const previousPlaybackAreaRef = useRef("off");
-  const userInteractedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -63,22 +56,14 @@ function useAmbientBgm(playbackArea) {
     const shouldPlay = playbackArea !== "off";
     let cancelled = false;
     let unlockBound = false;
-
-    function getAmbientAudio() {
-      if (!audioRef.current) {
-        const audio = new Audio();
-        audio.loop = true;
-        audio.preload = "none";
-        audio.volume = AMBIENT_BGM_VOLUME;
-        audioRef.current = audio;
-      }
-
-      const audio = audioRef.current;
-      if (!audio.src) {
-        audio.src = AMBIENT_BGM_SRC;
-      }
-      return audio;
-    }
+    const audio =
+      audioRef.current ||
+      Object.assign(new Audio(AMBIENT_BGM_SRC), {
+        loop: true,
+        preload: "auto",
+        volume: AMBIENT_BGM_VOLUME,
+      });
+    audioRef.current = audio;
 
     function removeUnlockListeners() {
       if (!unlockBound) return;
@@ -96,14 +81,7 @@ function useAmbientBgm(playbackArea) {
       unlockBound = true;
     }
 
-    function pauseAmbientBgm() {
-      if (!audioRef.current) return;
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
     function playAmbientBgm() {
-      const audio = getAmbientAudio();
       audio.volume = AMBIENT_BGM_VOLUME;
       const playPromise = audio.play();
       if (!playPromise || typeof playPromise.then !== "function") {
@@ -119,26 +97,22 @@ function useAmbientBgm(playbackArea) {
         });
     }
 
-    function handleUserUnlock(event) {
-      userInteractedRef.current = true;
+    function handleUserUnlock() {
       removeUnlockListeners();
-      if (isGameAudioPriorityEvent(event)) return;
       if (cancelled || !shouldPlay) return;
       playAmbientBgm();
     }
 
     if (shouldPlay) {
       if (previousPlaybackAreaRef.current !== playbackArea) {
-        pauseAmbientBgm();
+        audio.pause();
+        audio.currentTime = 0;
       }
-      if (userInteractedRef.current) {
-        playAmbientBgm();
-      } else {
-        bindUnlockListeners();
-      }
+      playAmbientBgm();
     } else {
       removeUnlockListeners();
-      pauseAmbientBgm();
+      audio.pause();
+      audio.currentTime = 0;
     }
     previousPlaybackAreaRef.current = playbackArea;
 
