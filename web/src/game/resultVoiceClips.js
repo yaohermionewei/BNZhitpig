@@ -3,7 +3,7 @@ export const resultVoiceClips = Object.freeze([
     src: "/assets/audio/结束时的感谢语音/d-mma-thuloveu.mp3",
   }),
   Object.freeze({
-    src: "/assets/audio/结束时的感谢语音/d-njzneverdie.mp3",
+    src: "/assets/audio/结束时的感谢语音/d-njzneverdie.mp3?v=20260526-223550",
   }),
   Object.freeze({
     src: "/assets/audio/结束时的感谢语音/d-综艺-bunnies我爱你们.mp3",

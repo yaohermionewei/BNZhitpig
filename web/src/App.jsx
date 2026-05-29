@@ -6,17 +6,22 @@ import StartScreen from "./screens/StartScreen.jsx";
 import GameScreen from "./screens/GameScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
 import {
-  getAudioContext,
-  loadAudioBuffer,
   unlockAudioForUserGesture,
 } from "./game/AudioControllerWeb.js";
 import { resultVoiceClips } from "./game/resultVoiceClips.js";
+import {
+  playResultVoiceClip,
+  stopResultVoicePlayback,
+} from "./game/resultVoicePlayback.js";
 
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
   : null;
 const EndingOverlayDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/EndingOverlayDebugPreview.jsx"))
+  : null;
+const ResultVoiceDebugPreview = import.meta.env.DEV
+  ? lazy(() => import("./screens/ResultVoiceDebugPreview.jsx"))
   : null;
 const AMBIENT_BGM_SRC = "/assets/audio/home-loop-bgm-quiet.m4a";
 const AMBIENT_BGM_VOLUME = 1;
@@ -41,7 +46,26 @@ function getEndingOverlayDebugPreviewMode() {
   return mode === "completed" || mode === "failed" ? mode : null;
 }
 
-function getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode) {
+function getResultVoiceDebugPreviewMode() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get("debugResultVoices") === "1";
+}
+
+function getDebugResultVoiceAmbientEnabled() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get("debugBgm") !== "0";
+}
+
+function getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode) {
+  if (debugResultVoicesMode) {
+    return getDebugResultVoiceAmbientEnabled() ? "result" : "off";
+  }
   if (debugLoadingMode || debugEndingMode) return "off";
   return screen === "start" || screen === "result" ? screen : "off";
 }
@@ -157,8 +181,7 @@ function getNextResultVoiceClip() {
 }
 
 function useResultVoice(screen, resultKey) {
-  const sourceRef = useRef(null);
-  const gainRef = useRef(null);
+  const playbackRef = useRef(null);
   const pendingClipRef = useRef(null);
   const lastPlayedKeyRef = useRef(null);
 
@@ -182,28 +205,8 @@ function useResultVoice(screen, resultKey) {
       window.clearTimeout(playTimer);
       removeUnlockListeners();
       pendingClipRef.current = null;
-      if (sourceRef.current) {
-        try {
-          sourceRef.current.onended = null;
-          sourceRef.current.stop();
-        } catch (error) {
-          // The clip may have already ended.
-        }
-        try {
-          sourceRef.current.disconnect();
-        } catch (error) {
-          // Source may already be disconnected.
-        }
-      }
-      if (gainRef.current) {
-        try {
-          gainRef.current.disconnect();
-        } catch (error) {
-          // Gain may already be disconnected.
-        }
-      }
-      sourceRef.current = null;
-      gainRef.current = null;
+      stopResultVoicePlayback(playbackRef.current);
+      playbackRef.current = null;
     }
 
     function bindUnlockListeners() {
@@ -217,41 +220,21 @@ function useResultVoice(screen, resultKey) {
     async function playResultVoice(clip) {
       try {
         if (!clip?.src) return;
-        const audioContext = await getAudioContext();
-        if (cancelled || !shouldPlay || audioContext.state !== "running") {
+        const playback = await playResultVoiceClip(clip, (endedPlayback) => {
+          if (playbackRef.current === endedPlayback) {
+            playbackRef.current = null;
+          }
+        });
+        if (cancelled || !shouldPlay) {
+          stopResultVoicePlayback(playback);
+          return;
+        }
+        if (!playback) {
           bindUnlockListeners();
           return;
         }
-        const buffer = await loadAudioBuffer(clip.src);
-        if (cancelled || !shouldPlay) return;
         stopResultVoice();
-        const source = audioContext.createBufferSource();
-        const gain = audioContext.createGain();
-        source.buffer = buffer;
-        gain.gain.value = typeof clip.volume === "number" && clip.volume > 0 ? clip.volume : 1;
-        source.connect(gain);
-        gain.connect(audioContext.destination);
-        source.onended = () => {
-          if (sourceRef.current === source) {
-            sourceRef.current = null;
-          }
-          if (gainRef.current === gain) {
-            gainRef.current = null;
-          }
-          try {
-            source.disconnect();
-          } catch (error) {
-            // Source may already be disconnected by cleanup.
-          }
-          try {
-            gain.disconnect();
-          } catch (error) {
-            // Gain may already be disconnected by cleanup.
-          }
-        };
-        sourceRef.current = source;
-        gainRef.current = gain;
-        source.start(0);
+        playbackRef.current = playback;
         removeUnlockListeners();
       } catch (error) {
           if (!cancelled && shouldPlay) {
@@ -311,6 +294,7 @@ function useResultVoice(screen, resultKey) {
 export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
   const debugEndingMode = getEndingOverlayDebugPreviewMode();
+  const debugResultVoicesMode = getResultVoiceDebugPreviewMode();
   const [screen, setScreen] = useState("start");
   const [startTheme, setThemeState] = useState(() => getStartTheme());
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
@@ -318,7 +302,7 @@ export default function App() {
   const [gameRunId, setGameRunId] = useState(0);
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const song = selectedSong || getDefaultSong();
-  useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode));
+  useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
   useResultVoice(screen, resultVoicePlayId || null);
 
   const appState = useMemo(
@@ -358,7 +342,11 @@ export default function App() {
 
   return (
     <StageShell theme={startTheme}>
-      {debugEndingMode && EndingOverlayDebugPreview ? (
+      {debugResultVoicesMode && ResultVoiceDebugPreview ? (
+        <Suspense fallback={<div className="screen" />}>
+          <ResultVoiceDebugPreview startTheme={startTheme} />
+        </Suspense>
+      ) : debugEndingMode && EndingOverlayDebugPreview ? (
         <Suspense fallback={<div className="screen" />}>
           <EndingOverlayDebugPreview startTheme={startTheme} />
         </Suspense>
