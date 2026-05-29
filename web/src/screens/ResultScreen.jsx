@@ -6,6 +6,7 @@ import {
   getResultCertificateBackgroundSource,
   preloadResultAssets,
 } from "../game/assets.js";
+import { unlockAudioForUserGesture } from "../game/AudioControllerWeb.js";
 import { playUiSound } from "../game/uiSounds.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
@@ -847,18 +848,33 @@ function ResultSparkles() {
   );
 }
 
-function ResultButton({ kind, children, onClick }) {
+function ResultButton({ kind, children, onClick, audioPriority = null }) {
   const isPrimary = kind === "primary";
   const prefix = isPrimary ? "result-primary" : "result-secondary";
   const soundKind = isPrimary ? "confirm" : "back";
+  const hasGameAudioPriority = audioPriority === "game";
+
+  function handleGameAudioPriorityGesture() {
+    if (hasGameAudioPriority) {
+      unlockAudioForUserGesture();
+    }
+  }
 
   function handleClick(event) {
+    handleGameAudioPriorityGesture();
     playUiSound(soundKind);
     onClick?.(event);
   }
 
   return (
-    <button className={`${prefix}-wrap`} type="button" onClick={handleClick}>
+    <button
+      className={`${prefix}-wrap`}
+      type="button"
+      data-bnz-audio-priority={hasGameAudioPriority ? "game" : undefined}
+      onPointerDown={handleGameAudioPriorityGesture}
+      onTouchStart={handleGameAudioPriorityGesture}
+      onClick={handleClick}
+    >
       <span className={`${prefix}-shadow`} />
       <span className={`${prefix}-frame`}>
         <span className={`${prefix}-face`}>
@@ -883,8 +899,18 @@ function ResultCertificateButton({
   className = "",
   disabled = false,
   sound = null,
+  audioPriority = null,
 }) {
+  const hasGameAudioPriority = audioPriority === "game";
+
+  function handleGameAudioPriorityGesture() {
+    if (hasGameAudioPriority) {
+      unlockAudioForUserGesture();
+    }
+  }
+
   function handleClick(event) {
+    handleGameAudioPriorityGesture();
     if (sound) playUiSound(sound);
     onClick?.(event);
   }
@@ -893,6 +919,9 @@ function ResultCertificateButton({
     <button
       className={`result-certificate-button ${className}`.trim()}
       type="button"
+      data-bnz-audio-priority={hasGameAudioPriority ? "game" : undefined}
+      onPointerDown={handleGameAudioPriorityGesture}
+      onTouchStart={handleGameAudioPriorityGesture}
       onClick={handleClick}
       disabled={disabled}
     >
@@ -1035,7 +1064,7 @@ function ResultCertificateScreen({
           <ResultCertificateButton onClick={onHome} sound="back">
             回首页
           </ResultCertificateButton>
-          <ResultCertificateButton onClick={onReplay} sound="confirm">
+          <ResultCertificateButton onClick={onReplay} sound="confirm" audioPriority="game">
             再来一局
           </ResultCertificateButton>
         </div>
@@ -1585,7 +1614,7 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
           <ResultButton kind="secondary" onClick={handleHomeTap}>
             回到首页
           </ResultButton>
-          <ResultButton kind="primary" onClick={onReplay}>
+          <ResultButton kind="primary" onClick={onReplay} audioPriority="game">
             再来一遍
           </ResultButton>
         </div>

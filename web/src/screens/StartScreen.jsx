@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { unlockAudioForUserGesture } from "../game/AudioControllerWeb.js";
 import { songs } from "../game/songs.js";
 import { playUiSound } from "../game/uiSounds.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
@@ -269,8 +270,13 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
   }
 
   function handleStartTap() {
+    unlockAudioForUserGesture();
     playUiSound("confirm");
     onStart?.();
+  }
+
+  function handleGameAudioPriorityGesture() {
+    unlockAudioForUserGesture();
   }
 
   return (
@@ -406,7 +412,14 @@ export default function StartScreen({ state, onThemeToggle, onSelectSong, onStar
               </div>
             </section>
 
-            <button className="start-action-wrap" type="button" onClick={handleStartTap}>
+            <button
+              className="start-action-wrap"
+              type="button"
+              data-bnz-audio-priority="game"
+              onPointerDown={handleGameAudioPriorityGesture}
+              onTouchStart={handleGameAudioPriorityGesture}
+              onClick={handleStartTap}
+            >
               <span className="start-action-frame">
                 <span className="start-action-inner">
                   <span className="start-action-label">

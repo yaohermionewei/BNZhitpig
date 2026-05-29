@@ -21,6 +21,7 @@ const EndingOverlayDebugPreview = import.meta.env.DEV
 const AMBIENT_BGM_SRC = "/assets/audio/home-loop-bgm-quiet.m4a";
 const AMBIENT_BGM_VOLUME = 1;
 const AMBIENT_BGM_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
+const GAME_AUDIO_PRIORITY_SELECTOR = '[data-bnz-audio-priority="game"]';
 const RESULT_VOICE_DELAY_MS = 1000;
 const RESULT_VOICE_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 
@@ -44,6 +45,11 @@ function getEndingOverlayDebugPreviewMode() {
 function getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode) {
   if (debugLoadingMode || debugEndingMode) return "off";
   return screen === "start" || screen === "result" ? screen : "off";
+}
+
+function isGameAudioPriorityEvent(event) {
+  const target = event?.target;
+  return !!target && typeof target.closest === "function" && !!target.closest(GAME_AUDIO_PRIORITY_SELECTOR);
 }
 
 function useAmbientBgm(playbackArea) {
@@ -113,9 +119,10 @@ function useAmbientBgm(playbackArea) {
         });
     }
 
-    function handleUserUnlock() {
+    function handleUserUnlock(event) {
       userInteractedRef.current = true;
       removeUnlockListeners();
+      if (isGameAudioPriorityEvent(event)) return;
       if (cancelled || !shouldPlay) return;
       playAmbientBgm();
     }
