@@ -235,9 +235,7 @@ const HUD_TOP_Y = 25;
 const HUD_SCORE_PAUSE_GAP = 14;
 const HUD_SCORE_RIGHT_SAFE_GAP = 12;
 const HUD_LIFE_COLUMN_LEFT = 26;
-const HUD_LIFE_COLUMN_TOP_RATIO = 0.46;
-const HUD_LIFE_COLUMN_MIN_TOP = 292;
-const HUD_LIFE_COLUMN_MAX_TOP = 382;
+const HUD_LIFE_COLUMN_SAFE_MARGIN = 24;
 const HUD_LIFE_BAR_WIDTH = 16;
 const HUD_LIFE_BAR_HEIGHT_MIN = 116;
 const HUD_LIFE_BAR_HEIGHT_MAX = 158;
@@ -5504,9 +5502,9 @@ function getTopHudLayout(viewport, state) {
     HUD_LIFE_BAR_HEIGHT_MAX
   );
   const lifeBarTop = clamp(
-    viewport.height * HUD_LIFE_COLUMN_TOP_RATIO,
-    HUD_LIFE_COLUMN_MIN_TOP,
-    HUD_LIFE_COLUMN_MAX_TOP
+    viewport.height / 2 - lifeBarHeight / 2,
+    HUD_LIFE_COLUMN_SAFE_MARGIN,
+    viewport.height - lifeBarHeight - HUD_LIFE_COLUMN_SAFE_MARGIN
   );
 
   return {
