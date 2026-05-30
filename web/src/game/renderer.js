@@ -282,9 +282,9 @@ const TUTORIAL_HINT_NOTE_COUNT = 11;
 const TUTORIAL_HINT_LEAD_TIME = 1;
 const TUTORIAL_HINT_TEXT_COLOR = "#FAEEC2";
 const TUTORIAL_HINT_SHADOW_COLOR = "rgba(0, 0, 0, 0.72)";
-const TUTORIAL_HINT_GOLD = "#D69A3B";
-const TUTORIAL_HINT_GOLD_BRIGHT = "#FFF0B8";
-const TUTORIAL_HINT_GOLD_DARK = "rgba(90, 54, 16, 0.62)";
+const TUTORIAL_HINT_GOLD = "#E69114";
+const TUTORIAL_HINT_GOLD_BRIGHT = "#FFC22B";
+const TUTORIAL_HINT_GOLD_DARK = "rgba(51, 23, 4, 0.78)";
 const TUTORIAL_HINT_FONT_FAMILY = ENDING_OVERLAY_ZH_FONT_FAMILY;
 const TUTORIAL_HINT_TEXT_TRACKING = 0;
 const TUTORIAL_HINT_LINE_HEIGHT = 1.26;
@@ -304,16 +304,39 @@ const TUTORIAL_TYPE_HINT_COPY_BY_INPUT_MODE = Object.freeze({
     right: Object.freeze(["右转猪", "按 → 攻击"]),
   }),
 });
-const TUTORIAL_ARROW_MASK = Object.freeze([
-  ".......XX",
-  "......XXX",
-  ".....XXXX",
-  "XXXXXXXXX",
-  "XXXXXXXXX",
-  ".....XXXX",
-  "......XXX",
-  ".......XX",
-]);
+const TUTORIAL_ARROW_SPRITE_SIZE = 112;
+const TUTORIAL_ARROW_CELL_SIZE = 3;
+const TUTORIAL_ARROW_SOURCE_ORIGIN = 24;
+const TUTORIAL_ARROW_TIP_GRID_X = 21;
+const TUTORIAL_ARROW_TIP_GRID_Y_BASE = 8;
+const TUTORIAL_ARROW_ROTATION = (20 * Math.PI) / 180;
+const TUTORIAL_ARROW_SHAFT_TOP = 4;
+const TUTORIAL_ARROW_SHAFT_HEIGHT = 4;
+const TUTORIAL_ARROW_SHAFT_LENGTH = 16;
+const TUTORIAL_ARROW_SHAFT_SOURCE_Y_OFFSET = 6;
+const TUTORIAL_ARROW_HEAD_BASE_X = 14;
+const TUTORIAL_ARROW_HEAD_CENTER_Y = 8;
+const TUTORIAL_ARROW_HEAD_COLUMN_HALF_HEIGHTS = Object.freeze([7, 6, 5, 4, 3, 2, 1, 0]);
+const TUTORIAL_COMMON_HINT_WIDE_WIDTH = 430;
+const TUTORIAL_COMMON_HINT_WIDE_GAP_RATIO = 0.86;
+const TUTORIAL_COMMON_HINT_WIDE_GAP_MIN = 16;
+const TUTORIAL_COMMON_HINT_WIDE_GAP_MAX = 22;
+const TUTORIAL_COMMON_HINT_NARROW_GAP_RATIO = 0.68;
+const TUTORIAL_COMMON_HINT_NARROW_GAP_MIN = 12;
+const TUTORIAL_COMMON_HINT_NARROW_GAP_MAX = 16;
+const TUTORIAL_ARROW_SCALE_BASE_WIDTH = 390;
+const TUTORIAL_ARROW_SCALE_MIN = 0.72;
+const TUTORIAL_ARROW_SCALE_MAX = 1;
+const TUTORIAL_ARROW_MAX_WIDTH_RATIO = 0.26;
+const TUTORIAL_ARROW_MAX_HEIGHT_RATIO = 0.72;
+const TUTORIAL_ARROW_TEXT_GAP_RATIO = 0.45;
+const TUTORIAL_ARROW_TEXT_GAP_MIN = 12;
+const TUTORIAL_ARROW_TEXT_GAP_MAX = 16;
+const TUTORIAL_ARROW_RING_TIP_Y_RATIO = 0.12;
+const TUTORIAL_ARROW_RING_TIP_Y_MIN = 18;
+const TUTORIAL_ARROW_RING_TIP_Y_MAX = 28;
+const TUTORIAL_ARROW_RING_TIP_Y_ABOVE = 20;
+const TUTORIAL_ARROW_RING_TIP_Y_BELOW = 6;
 const PERFECT_FEEDBACK_MAIN = "#6EDE7D";
 const GOOD_FEEDBACK_MAIN = "#8BDDFF";
 const MISS_FEEDBACK_MAIN = "#FF7F90";
@@ -5826,35 +5849,237 @@ function fitTutorialHintFontSize(ctx, lines, maxWidth, preferredFontSize) {
   return fontSize;
 }
 
-function drawPixelTutorialArrowSprite(ctx, x, y, scale, alpha = 1) {
-  const cell = Math.max(2, Math.round(scale));
-  const rows = TUTORIAL_ARROW_MASK.length;
-  const columns = TUTORIAL_ARROW_MASK[0].length;
-  const width = columns * cell;
-  const height = rows * cell;
-  const left = snapToGrid(x - width / 2, 1);
-  const top = snapToGrid(y - height / 2, 1);
-
-  ctx.save();
-  ctx.globalAlpha *= alpha;
-  for (let row = 0; row < rows; row += 1) {
-    for (let column = 0; column < columns; column += 1) {
-      if (TUTORIAL_ARROW_MASK[row][column] !== "X") {
-        continue;
-      }
-      const px = left + column * cell;
-      const py = top + row * cell;
-      ctx.fillStyle = TUTORIAL_HINT_GOLD_DARK;
-      ctx.fillRect(px + cell, py + cell, cell, cell);
-      ctx.fillStyle =
-        row <= 1 || column >= columns - 2 ? TUTORIAL_HINT_GOLD_BRIGHT : TUTORIAL_HINT_GOLD;
-      ctx.fillRect(px, py, cell, cell);
-    }
-  }
-  ctx.restore();
+function getTutorialArrowSkewForSourceX(x) {
+  return Math.floor(x / 3);
 }
 
-function drawTutorialArrow(ctx, startX, startY, endX, endY, sceneTime, alpha = 1) {
+function getTutorialArrowShaftCells() {
+  const cells = [];
+  for (let x = 0; x < TUTORIAL_ARROW_SHAFT_LENGTH; x += 1) {
+    for (
+      let y = TUTORIAL_ARROW_SHAFT_TOP;
+      y < TUTORIAL_ARROW_SHAFT_TOP + TUTORIAL_ARROW_SHAFT_HEIGHT;
+      y += 1
+    ) {
+      cells.push({ x, y });
+    }
+  }
+
+  return cells;
+}
+
+function getTutorialArrowHeadCells() {
+  const cells = [];
+  TUTORIAL_ARROW_HEAD_COLUMN_HALF_HEIGHTS.forEach((halfHeight, column) => {
+    const x = TUTORIAL_ARROW_HEAD_BASE_X + column;
+    for (
+      let y = TUTORIAL_ARROW_HEAD_CENTER_Y - halfHeight;
+      y <= TUTORIAL_ARROW_HEAD_CENTER_Y + halfHeight;
+      y += 1
+    ) {
+      cells.push({ x, y });
+    }
+  });
+
+  return cells;
+}
+
+function getTutorialArrowOutlinePixels(bodyPixels) {
+  const outlinePixels = new Set();
+  const radius = TUTORIAL_ARROW_CELL_SIZE;
+
+  bodyPixels.forEach((key) => {
+    const [x, y] = key.split(",").map(Number);
+    for (let offsetY = -radius; offsetY <= radius; offsetY += 1) {
+      for (let offsetX = -radius; offsetX <= radius; offsetX += 1) {
+        if (Math.abs(offsetX) + Math.abs(offsetY) > radius) {
+          continue;
+        }
+        const neighborX = x + offsetX;
+        const neighborY = y + offsetY;
+        if (
+          neighborX < 0 ||
+          neighborX >= TUTORIAL_ARROW_SPRITE_SIZE ||
+          neighborY < 0 ||
+          neighborY >= TUTORIAL_ARROW_SPRITE_SIZE
+        ) {
+          continue;
+        }
+        const neighborKey = `${neighborX},${neighborY}`;
+        if (!bodyPixels.has(neighborKey)) {
+          outlinePixels.add(neighborKey);
+        }
+      }
+    }
+  });
+
+  return outlinePixels;
+}
+
+function createTutorialArrowSourcePixels() {
+  const sourcePixels = new Map();
+  const bodyPixels = new Set();
+  const bodyPixelColors = new Map();
+  const bodyPixelPriorities = new Map();
+  const origin = TUTORIAL_ARROW_SOURCE_ORIGIN;
+  const cell = TUTORIAL_ARROW_CELL_SIZE;
+
+  function setBodyPixel(x, y, color, priority) {
+    if (
+      x < 0 ||
+      x >= TUTORIAL_ARROW_SPRITE_SIZE ||
+      y < 0 ||
+      y >= TUTORIAL_ARROW_SPRITE_SIZE
+    ) {
+      return;
+    }
+    const key = `${x},${y}`;
+    bodyPixels.add(key);
+    if ((bodyPixelPriorities.get(key) ?? -1) <= priority) {
+      bodyPixelColors.set(key, color);
+      bodyPixelPriorities.set(key, priority);
+    }
+  }
+
+  function paintRawBodyCell(rawCell, offsetY) {
+    const { x: gridX, y: rawY } = rawCell;
+    const gridY = rawY + getTutorialArrowSkewForSourceX(gridX);
+    const left = origin + gridX * cell;
+    const top = origin + gridY * cell + offsetY;
+    const highlighted =
+      rawY <= TUTORIAL_ARROW_HEAD_CENTER_Y &&
+      gridX >= 3 &&
+      gridX <= 16;
+    const color = highlighted ? TUTORIAL_HINT_GOLD_BRIGHT : TUTORIAL_HINT_GOLD;
+    const priority = highlighted ? 2 : 1;
+    for (let offsetY = 0; offsetY < cell; offsetY += 1) {
+      for (let offsetX = 0; offsetX < cell; offsetX += 1) {
+        setBodyPixel(left + offsetX, top + offsetY, color, priority);
+      }
+    }
+  }
+
+  getTutorialArrowHeadCells().forEach((rawCell) => {
+    paintRawBodyCell(rawCell, 0);
+  });
+  getTutorialArrowShaftCells().forEach((rawCell) => {
+    paintRawBodyCell(rawCell, TUTORIAL_ARROW_SHAFT_SOURCE_Y_OFFSET);
+  });
+
+  bodyPixels.forEach((key) => {
+    const [x, y] = key.split(",").map(Number);
+    sourcePixels.set(`${x + 2},${y + 2}`, TUTORIAL_HINT_GOLD_DARK);
+  });
+
+  getTutorialArrowOutlinePixels(bodyPixels).forEach((key) => {
+    const [x, y] = key.split(",").map(Number);
+    sourcePixels.set(`${x},${y}`, "#592905");
+  });
+
+  bodyPixelColors.forEach((color, key) => {
+    const [x, y] = key.split(",").map(Number);
+    sourcePixels.set(`${x},${y}`, color);
+  });
+
+  return sourcePixels;
+}
+
+const TUTORIAL_ARROW_SOURCE_PIXELS = createTutorialArrowSourcePixels();
+const TUTORIAL_ARROW_TIP_GRID_Y =
+  TUTORIAL_ARROW_TIP_GRID_Y_BASE + getTutorialArrowSkewForSourceX(TUTORIAL_ARROW_TIP_GRID_X);
+const TUTORIAL_ARROW_PIVOT_X =
+  TUTORIAL_ARROW_SOURCE_ORIGIN + (TUTORIAL_ARROW_TIP_GRID_X + 1) * TUTORIAL_ARROW_CELL_SIZE;
+const TUTORIAL_ARROW_PIVOT_Y =
+  TUTORIAL_ARROW_SOURCE_ORIGIN +
+  TUTORIAL_ARROW_TIP_GRID_Y * TUTORIAL_ARROW_CELL_SIZE +
+  TUTORIAL_ARROW_CELL_SIZE * 0.5;
+
+function getTutorialArrowRotatedBounds() {
+  const corners = [
+    { x: 0, y: 0 },
+    { x: TUTORIAL_ARROW_SPRITE_SIZE, y: 0 },
+    { x: 0, y: TUTORIAL_ARROW_SPRITE_SIZE },
+    { x: TUTORIAL_ARROW_SPRITE_SIZE, y: TUTORIAL_ARROW_SPRITE_SIZE },
+  ];
+  const cosA = Math.cos(TUTORIAL_ARROW_ROTATION);
+  const sinA = Math.sin(TUTORIAL_ARROW_ROTATION);
+  const xs = [];
+  const ys = [];
+
+  corners.forEach((point) => {
+    const dx = point.x - TUTORIAL_ARROW_PIVOT_X;
+    const dy = point.y - TUTORIAL_ARROW_PIVOT_Y;
+    xs.push(TUTORIAL_ARROW_PIVOT_X + dx * cosA - dy * sinA);
+    ys.push(TUTORIAL_ARROW_PIVOT_Y + dx * sinA + dy * cosA);
+  });
+
+  return {
+    minX: Math.floor(Math.min(...xs)) - 2,
+    minY: Math.floor(Math.min(...ys)) - 2,
+    maxX: Math.ceil(Math.max(...xs)) + 2,
+    maxY: Math.ceil(Math.max(...ys)) + 2,
+  };
+}
+
+const TUTORIAL_ARROW_ROTATED_BOUNDS = getTutorialArrowRotatedBounds();
+
+function getTutorialArrowPaintBounds() {
+  const cosA = Math.cos(TUTORIAL_ARROW_ROTATION);
+  const sinA = Math.sin(TUTORIAL_ARROW_ROTATION);
+  const xs = [];
+  const ys = [];
+
+  TUTORIAL_ARROW_SOURCE_PIXELS.forEach((_, key) => {
+    const [sourceX, sourceY] = key.split(",").map(Number);
+    [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+    ].forEach(([cornerX, cornerY]) => {
+      const dx = sourceX + cornerX - TUTORIAL_ARROW_PIVOT_X;
+      const dy = sourceY + cornerY - TUTORIAL_ARROW_PIVOT_Y;
+      xs.push(TUTORIAL_ARROW_PIVOT_X + dx * cosA - dy * sinA);
+      ys.push(TUTORIAL_ARROW_PIVOT_Y + dx * sinA + dy * cosA);
+    });
+  });
+
+  return {
+    minX: Math.floor(Math.min(...xs)),
+    minY: Math.floor(Math.min(...ys)),
+    maxX: Math.ceil(Math.max(...xs)),
+    maxY: Math.ceil(Math.max(...ys)),
+  };
+}
+
+const TUTORIAL_ARROW_PAINT_BOUNDS = getTutorialArrowPaintBounds();
+const TUTORIAL_ARROW_PAINT_WIDTH =
+  TUTORIAL_ARROW_PAINT_BOUNDS.maxX - TUTORIAL_ARROW_PAINT_BOUNDS.minX;
+const TUTORIAL_ARROW_PAINT_HEIGHT =
+  TUTORIAL_ARROW_PAINT_BOUNDS.maxY - TUTORIAL_ARROW_PAINT_BOUNDS.minY;
+
+function getTutorialArrowScale(viewport, commonY, lineHeight, targetY) {
+  const baseScale = clamp(
+    viewport.width / TUTORIAL_ARROW_SCALE_BASE_WIDTH,
+    TUTORIAL_ARROW_SCALE_MIN,
+    TUTORIAL_ARROW_SCALE_MAX
+  );
+  const availableHeight = Math.max(1, targetY - (commonY + lineHeight * 1.15));
+  const widthScale =
+    (viewport.width * TUTORIAL_ARROW_MAX_WIDTH_RATIO) /
+    Math.max(1, TUTORIAL_ARROW_PAINT_WIDTH);
+  const heightScale =
+    (availableHeight * TUTORIAL_ARROW_MAX_HEIGHT_RATIO) /
+    Math.max(1, TUTORIAL_ARROW_PAINT_HEIGHT);
+
+  return clamp(
+    Math.min(baseScale, widthScale, heightScale),
+    TUTORIAL_ARROW_SCALE_MIN,
+    TUTORIAL_ARROW_SCALE_MAX
+  );
+}
+
+function drawTutorialArrow(ctx, startX, startY, endX, endY, sceneTime, alpha = 1, scale = 1) {
   const dx = endX - startX;
   const dy = endY - startY;
   const length = Math.hypot(dx, dy);
@@ -5864,47 +6089,37 @@ function drawTutorialArrow(ctx, startX, startY, endX, endY, sceneTime, alpha = 1
 
   const unitX = dx / length;
   const unitY = dy / length;
-  const normalX = -unitY;
-  const normalY = unitX;
   const pulse = Math.sin(sceneTime * 5.4);
-  const travel = pulse * 5;
-  const shimmer = 0.78 + (pulse + 1) * 0.11;
-  const headX = endX - unitX * (18 - travel);
-  const headY = endY - unitY * (18 - travel);
-  const tailX = startX + unitX * travel;
-  const tailY = startY + unitY * travel;
-  const angle = Math.atan2(dy, dx);
-  const segmentCount = 8;
+  const travel = pulse * clamp(3 * scale, 2, 3);
+  const opacityPulse = 0.92 + (pulse + 1) * 0.04;
+  const targetTipX = snapToGrid(endX + unitX * travel, 1);
+  const targetTipY = snapToGrid(endY + unitY * travel, 1);
+  const cosA = Math.cos(TUTORIAL_ARROW_ROTATION);
+  const sinA = Math.sin(TUTORIAL_ARROW_ROTATION);
+  const drawScale = clamp(scale, TUTORIAL_ARROW_SCALE_MIN, TUTORIAL_ARROW_SCALE_MAX);
 
   ctx.save();
-  ctx.globalAlpha *= alpha;
-  ctx.lineCap = "butt";
-  for (let index = 0; index < segmentCount; index += 1) {
-    const t = (index + 0.5) / segmentCount;
-    const blockX = lerp(tailX, headX, t);
-    const blockY = lerp(tailY, headY, t);
-    const blockSize = index % 2 === 0 ? 4 : 3;
-    const blockAlpha = shimmer * (0.46 + t * 0.42);
-    ctx.fillStyle = TUTORIAL_HINT_GOLD_DARK;
-    ctx.fillRect(
-      snapToGrid(blockX + normalX * 2 + 1, 1),
-      snapToGrid(blockY + normalY * 2 + 1, 1),
-      blockSize,
-      blockSize
-    );
-    ctx.globalAlpha *= blockAlpha;
-    ctx.fillStyle = index > segmentCount - 3 ? TUTORIAL_HINT_GOLD_BRIGHT : TUTORIAL_HINT_GOLD;
-    ctx.fillRect(
-      snapToGrid(blockX + normalX * 2, 1),
-      snapToGrid(blockY + normalY * 2, 1),
-      blockSize,
-      blockSize
-    );
-    ctx.globalAlpha /= blockAlpha;
+  ctx.globalAlpha *= alpha * opacityPulse;
+  for (let y = TUTORIAL_ARROW_ROTATED_BOUNDS.minY; y <= TUTORIAL_ARROW_ROTATED_BOUNDS.maxY; y += 1) {
+    for (let x = TUTORIAL_ARROW_ROTATED_BOUNDS.minX; x <= TUTORIAL_ARROW_ROTATED_BOUNDS.maxX; x += 1) {
+      const dxFromPivot = x + 0.5 - TUTORIAL_ARROW_PIVOT_X;
+      const dyFromPivot = y + 0.5 - TUTORIAL_ARROW_PIVOT_Y;
+      const sampleX = Math.round(
+        TUTORIAL_ARROW_PIVOT_X + dxFromPivot * cosA + dyFromPivot * sinA - 0.5
+      );
+      const sampleY = Math.round(
+        TUTORIAL_ARROW_PIVOT_Y - dxFromPivot * sinA + dyFromPivot * cosA - 0.5
+      );
+      const color = TUTORIAL_ARROW_SOURCE_PIXELS.get(`${sampleX},${sampleY}`);
+      if (!color) {
+        continue;
+      }
+      const drawX = snapToGrid(targetTipX + (x - TUTORIAL_ARROW_PIVOT_X) * drawScale, 1);
+      const drawY = snapToGrid(targetTipY + (y - TUTORIAL_ARROW_PIVOT_Y) * drawScale, 1);
+      ctx.fillStyle = color;
+      ctx.fillRect(drawX, drawY, Math.max(1, drawScale), Math.max(1, drawScale));
+    }
   }
-  ctx.translate(headX, headY);
-  ctx.rotate(angle);
-  drawPixelTutorialArrowSprite(ctx, 0, 0, 3, shimmer);
   ctx.restore();
 }
 
@@ -5922,11 +6137,24 @@ function drawTutorialHints(ctx, viewport, lane, state, uiState = {}, topHudLayou
   const hudLayout = topHudLayout || getTopHudLayout(viewport, state);
   const fontSize = clamp(viewport.width * 0.045, 17, 24);
   const lineHeight = fontSize * TUTORIAL_HINT_LINE_HEIGHT;
+  const commonCopy = ["猪落圈内时", "可发动攻击"];
   const commonX = snapToGrid(hudLayout.lifeBarLeft, 1);
+  const commonGap =
+    viewport.width >= TUTORIAL_COMMON_HINT_WIDE_WIDTH
+      ? clamp(
+          fontSize * TUTORIAL_COMMON_HINT_WIDE_GAP_RATIO,
+          TUTORIAL_COMMON_HINT_WIDE_GAP_MIN,
+          TUTORIAL_COMMON_HINT_WIDE_GAP_MAX
+        )
+      : clamp(
+          fontSize * TUTORIAL_COMMON_HINT_NARROW_GAP_RATIO,
+          TUTORIAL_COMMON_HINT_NARROW_GAP_MIN,
+          TUTORIAL_COMMON_HINT_NARROW_GAP_MAX
+        );
   const commonY = snapToGrid(
     Math.min(
-      lane.targetY - lineHeight * 2.5,
-      hudLayout.lifeBarTop + hudLayout.lifeBarHeight + Math.max(16, viewport.height * 0.028)
+      lane.targetY - lineHeight * 2.4,
+      hudLayout.lifeBarTop + hudLayout.lifeBarHeight + commonGap
     ),
     1
   );
@@ -5948,17 +6176,58 @@ function drawTutorialHints(ctx, viewport, lane, state, uiState = {}, topHudLayou
     Math.min(viewport.height - typeLineHeight * 2 - 18, lane.targetY - typeLineHeight),
     1
   );
-  const arrowStartX = commonX + Math.max(74, viewport.width * 0.2);
-  const arrowStartY = commonY + lineHeight * 1.6;
-  const arrowEndX = lane.centerX - Math.max(18, lane.targetWidth * 0.42);
-  const arrowEndY = lane.targetY + 1;
+  const commonTextWidth = getTutorialHintLinesWidth(ctx, commonCopy, fontSize);
+  const arrowStartX = snapToGrid(
+    Math.min(
+      lane.centerX - Math.max(20, lane.targetWidth * 0.22),
+      commonX + commonTextWidth + Math.max(8, viewport.width * 0.018)
+    ),
+    1
+  );
+  const arrowStartY = snapToGrid(commonY + lineHeight * 1.45, 1);
+  const arrowEndX =
+    lane.centerX -
+    clamp(impactMetrics.zoneRadiusX * 0.92, 18, lane.targetWidth * 0.45);
+  const ringTipY =
+    lane.targetY -
+    clamp(
+      lane.targetWidth * TUTORIAL_ARROW_RING_TIP_Y_RATIO,
+      TUTORIAL_ARROW_RING_TIP_Y_MIN,
+      TUTORIAL_ARROW_RING_TIP_Y_MAX
+    );
+  const arrowScale = getTutorialArrowScale(viewport, commonY, lineHeight, ringTipY);
+  const textBottom = commonY + lineHeight * 2;
+  const desiredArrowTop =
+    textBottom +
+    clamp(
+      lineHeight * TUTORIAL_ARROW_TEXT_GAP_RATIO,
+      TUTORIAL_ARROW_TEXT_GAP_MIN,
+      TUTORIAL_ARROW_TEXT_GAP_MAX
+    );
+  const tipYFromText =
+    desiredArrowTop -
+    (TUTORIAL_ARROW_PAINT_BOUNDS.minY - TUTORIAL_ARROW_PIVOT_Y) * arrowScale;
+  const arrowEndY = clamp(
+    tipYFromText,
+    ringTipY - TUTORIAL_ARROW_RING_TIP_Y_ABOVE,
+    ringTipY + TUTORIAL_ARROW_RING_TIP_Y_BELOW
+  );
 
   ctx.save();
-  drawTutorialHintLines(ctx, ["猪落圈内时", "可发动攻击"], commonX, commonY, {
+  drawTutorialHintLines(ctx, commonCopy, commonX, commonY, {
     fontSize,
     lineHeight,
   });
-  drawTutorialArrow(ctx, arrowStartX, arrowStartY, arrowEndX, arrowEndY, currentTime, 0.96);
+  drawTutorialArrow(
+    ctx,
+    arrowStartX,
+    arrowStartY,
+    arrowEndX,
+    arrowEndY,
+    currentTime,
+    0.96,
+    arrowScale
+  );
   if (noteCopy) {
     drawTutorialHintLines(ctx, noteCopy, typeX, typeY, {
       fontSize: typeFontSize,
