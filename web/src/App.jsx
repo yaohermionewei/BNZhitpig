@@ -14,6 +14,7 @@ import {
   stopResultVoicePlayback,
 } from "./game/resultVoicePlayback.js";
 import { LOADING_COPY } from "./utils/loading-copy.js";
+import { trackEvent, trackPageView } from "./utils/analytics.js";
 
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
@@ -292,6 +293,36 @@ function useResultVoice(screen, resultKey) {
   }, [screen, resultKey]);
 }
 
+function toAnalyticsNumber(value) {
+  const number =
+    typeof value === "string" ? Number.parseFloat(value.replace(/,/g, "")) : Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function getSongAnalyticsParams(song, startTheme) {
+  return {
+    song_id: song?.id || "",
+    song_title: song?.title || "",
+    theme: startTheme || "",
+  };
+}
+
+function getResultAnalyticsParams(summary) {
+  if (!summary) return {};
+
+  return {
+    rank: summary.rank || "",
+    failed: Boolean(summary.failed),
+    score: toAnalyticsNumber(summary.scoreDisplay),
+    accuracy: toAnalyticsNumber(summary.accuracyDisplay),
+    perfect: toAnalyticsNumber(summary.perfect),
+    good: toAnalyticsNumber(summary.good),
+    miss: toAnalyticsNumber(summary.miss),
+    max_combo: toAnalyticsNumber(summary.maxCombo),
+    total_notes: toAnalyticsNumber(summary.totalNotes),
+  };
+}
+
 function normalizeGameInputMode(inputMode) {
   return inputMode === "keyboard" ? "keyboard" : "touch";
 }
@@ -308,6 +339,7 @@ export default function App() {
   const [gameInputMode, setGameInputMode] = useState("touch");
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
+  const pageViewKeyRef = useRef("");
   const song = selectedSong || getDefaultSong();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
   useResultVoice(screen, resultVoicePlayId || null);
@@ -324,8 +356,32 @@ export default function App() {
     setThemeState(setStartTheme(nextTheme));
   }
 
+  useEffect(() => {
+    if (debugLoadingMode || debugEndingMode || debugResultVoicesMode) return;
+
+    const pageViewKey =
+      screen === "game"
+        ? `${screen}:${gameRunId}`
+        : screen === "result"
+          ? `${screen}:${resultVoicePlayId}`
+          : screen;
+    if (pageViewKeyRef.current === pageViewKey) return;
+    pageViewKeyRef.current = pageViewKey;
+    trackPageView(screen, getSongAnalyticsParams(song, startTheme));
+  }, [
+    debugEndingMode,
+    debugLoadingMode,
+    debugResultVoicesMode,
+    gameRunId,
+    resultVoicePlayId,
+    screen,
+    song,
+    startTheme,
+  ]);
+
   function handleStart(options = {}) {
     setGameInputMode(normalizeGameInputMode(options?.inputMode));
+    trackEvent("game_start", getSongAnalyticsParams(song, startTheme));
     unlockAudioForUserGesture();
     setStartLoadingText(LOADING_COPY.enterWorld);
     setResultSummary(null);
@@ -334,20 +390,45 @@ export default function App() {
   }
 
   function handleFinish(summary) {
+    trackEvent("game_finish", {
+      ...getSongAnalyticsParams(song, startTheme),
+      ...getResultAnalyticsParams(summary),
+    });
     setResultSummary(summary);
     setResultVoicePlayId((id) => id + 1);
     setScreen("result");
   }
 
   function handleReplay() {
+    trackEvent("game_replay", getSongAnalyticsParams(song, startTheme));
     setResultSummary(null);
     setGameRunId((id) => id + 1);
     setScreen("game");
   }
 
   function handleHome() {
+    trackEvent("game_home", {
+      ...getSongAnalyticsParams(song, startTheme),
+      source_screen: screen,
+    });
     setStartLoadingText(LOADING_COPY.returnWorld);
     setScreen("start");
+  }
+
+  function handleShareGenerate(details = {}) {
+    trackEvent("result_share_generate", {
+      ...getSongAnalyticsParams(song, startTheme),
+      ...getResultAnalyticsParams(resultSummary),
+      ...details,
+    });
+  }
+
+  function handleShareSave(details = {}) {
+    trackEvent("result_share_save", {
+      ...getSongAnalyticsParams(song, startTheme),
+      ...getResultAnalyticsParams(resultSummary),
+      ...details,
+    });
   }
 
   return (
@@ -393,6 +474,8 @@ export default function App() {
               startTheme={startTheme}
               onReplay={handleReplay}
               onHome={handleHome}
+              onShareGenerate={handleShareGenerate}
+              onShareSave={handleShareSave}
             />
           )}
         </>

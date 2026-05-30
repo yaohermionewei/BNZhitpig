@@ -1161,7 +1161,14 @@ function ResultSharePreviewOverlay({
   );
 }
 
-export default function ResultScreen({ summary, startTheme, onReplay, onHome }) {
+export default function ResultScreen({
+  summary,
+  startTheme,
+  onReplay,
+  onHome,
+  onShareGenerate,
+  onShareSave,
+}) {
   const normalizedStartTheme = getSafeStartTheme(startTheme);
   const decoratedSummary = useMemo(
     () => (summary ? decorateSummary(summary) : null),
@@ -1345,6 +1352,10 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
           fileName,
         };
       });
+      onShareGenerate?.({
+        file_name: fileName,
+        file_size: blob.size || 0,
+      });
     } catch (error) {
       console.warn("Failed to export result certificate share image", error);
       closeSharePreview();
@@ -1358,6 +1369,10 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     const file = createShareImageFile(sharePreview.blob, sharePreview.fileName);
     const isMobile = isLikelyMobileDevice();
     logShareSaveDiagnostics(file);
+    const shareSaveParams = {
+      file_name: sharePreview.fileName,
+      file_size: file?.size || sharePreview.blob?.size || 0,
+    };
 
     function downloadShareBlob() {
       const link = document.createElement("a");
@@ -1376,6 +1391,10 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
           files: [file],
         });
         showShareSaveToast(SHARE_SAVE_SUCCESS_COPY);
+        onShareSave?.({
+          ...shareSaveParams,
+          method: "native_share",
+        });
         return;
       } catch (error) {
         if (error?.name === "AbortError") return;
@@ -1395,6 +1414,10 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
       }
     }
     downloadShareBlob();
+    onShareSave?.({
+      ...shareSaveParams,
+      method: "download",
+    });
   }
 
   const pageClasses = [

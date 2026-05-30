@@ -12,5 +12,9 @@ node_modules/
 web/node_modules/
 web/dist/
 
-# Local/private IDE config
+# Local/private config
+.env*
+!.env.example
+web/.env*
+!web/.env.example
 project.private.config.json
