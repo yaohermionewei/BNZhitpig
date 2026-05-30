@@ -292,6 +292,10 @@ function useResultVoice(screen, resultKey) {
   }, [screen, resultKey]);
 }
 
+function normalizeGameInputMode(inputMode) {
+  return inputMode === "keyboard" ? "keyboard" : "touch";
+}
+
 export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
   const debugEndingMode = getEndingOverlayDebugPreviewMode();
@@ -301,6 +305,7 @@ export default function App() {
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
   const [resultSummary, setResultSummary] = useState(null);
   const [gameRunId, setGameRunId] = useState(0);
+  const [gameInputMode, setGameInputMode] = useState("touch");
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
   const song = selectedSong || getDefaultSong();
@@ -319,7 +324,8 @@ export default function App() {
     setThemeState(setStartTheme(nextTheme));
   }
 
-  function handleStart() {
+  function handleStart(options = {}) {
+    setGameInputMode(normalizeGameInputMode(options?.inputMode));
     unlockAudioForUserGesture();
     setStartLoadingText(LOADING_COPY.enterWorld);
     setResultSummary(null);
@@ -376,6 +382,7 @@ export default function App() {
               key={`${song.id}-${startTheme}-${gameRunId}`}
               song={song}
               startTheme={startTheme}
+              inputMode={gameInputMode}
               onFinish={handleFinish}
               onHome={handleHome}
             />

@@ -21,6 +21,9 @@ import {
 const START_IMAGE_PRELOAD_PROMISES = new Map();
 const START_IDLE_PRELOAD_TIMEOUT_MS = 2500;
 const START_IDLE_PRELOAD_FALLBACK_MS = 320;
+const START_INPUT_TOUCH = "touch";
+const START_INPUT_KEYBOARD = "keyboard";
+const START_KEYBOARD_CODES = new Set(["Space", "Enter"]);
 
 function wait(durationMs) {
   return new Promise((resolve) => {
@@ -138,6 +141,7 @@ export default function StartScreen({
   const stageRef = useRef(null);
   const heroRef = useRef(null);
   const initialReadyRef = useRef(false);
+  const startInputModeRef = useRef(START_INPUT_TOUCH);
   const [pageReady, setPageReady] = useState(false);
   const [rabbitFrame, setRabbitFrame] = useState(0);
   const [pigFrame, setPigFrame] = useState(0);
@@ -268,10 +272,10 @@ export default function StartScreen({
     function handleStartKeyDown(event) {
       if (event.repeat) return;
       if (!pageReady || isInteractiveKeyboardTarget(event.target)) return;
-      if (event.code !== "Space" && event.code !== "Enter") return;
+      if (!START_KEYBOARD_CODES.has(event.code)) return;
       event.preventDefault();
       playUiSound("confirm");
-      onStart?.();
+      onStart?.({ inputMode: START_INPUT_KEYBOARD });
     }
 
     window.addEventListener("keydown", handleStartKeyDown);
@@ -293,7 +297,18 @@ export default function StartScreen({
 
   function handleStartTap() {
     playUiSound("confirm");
-    onStart?.();
+    onStart?.({ inputMode: startInputModeRef.current });
+  }
+
+  function handleStartPointerDown(event) {
+    startInputModeRef.current =
+      event.pointerType === "touch" ? START_INPUT_TOUCH : START_INPUT_KEYBOARD;
+  }
+
+  function handleStartNativeKeyDown(event) {
+    if (START_KEYBOARD_CODES.has(event.code)) {
+      startInputModeRef.current = START_INPUT_KEYBOARD;
+    }
   }
 
   return (
@@ -429,7 +444,13 @@ export default function StartScreen({
               </div>
             </section>
 
-            <button className="start-action-wrap" type="button" onClick={handleStartTap}>
+            <button
+              className="start-action-wrap"
+              type="button"
+              onPointerDown={handleStartPointerDown}
+              onKeyDown={handleStartNativeKeyDown}
+              onClick={handleStartTap}
+            >
               <span className="start-action-frame">
                 <span className="start-action-inner">
                   <span className="start-action-label">

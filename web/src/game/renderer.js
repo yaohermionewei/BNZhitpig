@@ -290,16 +290,22 @@ const TUTORIAL_HINT_GOLD_DARK = "rgba(90, 54, 16, 0.62)";
 const TUTORIAL_HINT_FONT_FAMILY = ENDING_OVERLAY_ZH_FONT_FAMILY;
 const TUTORIAL_HINT_TEXT_TRACKING = 0;
 const TUTORIAL_HINT_LINE_HEIGHT = 1.26;
-const TUTORIAL_TYPE_HINT_HOLD_COPY = Object.freeze(["长条猪", "长按屏幕攻击"]);
-const TUTORIAL_TYPE_HINT_NORMAL_COPY = Object.freeze(["普通猪", "点屏幕攻击"]);
-const TUTORIAL_TYPE_HINT_LEFT_COPY = Object.freeze(["左转猪", "左滑攻击"]);
-const TUTORIAL_TYPE_HINT_RIGHT_COPY = Object.freeze(["右转猪", "右滑攻击"]);
-const TUTORIAL_TYPE_HINT_COPY_LINES = Object.freeze([
-  ...TUTORIAL_TYPE_HINT_HOLD_COPY,
-  ...TUTORIAL_TYPE_HINT_NORMAL_COPY,
-  ...TUTORIAL_TYPE_HINT_LEFT_COPY,
-  ...TUTORIAL_TYPE_HINT_RIGHT_COPY,
-]);
+const TUTORIAL_INPUT_MODE_TOUCH = "touch";
+const TUTORIAL_INPUT_MODE_KEYBOARD = "keyboard";
+const TUTORIAL_TYPE_HINT_COPY_BY_INPUT_MODE = Object.freeze({
+  [TUTORIAL_INPUT_MODE_TOUCH]: Object.freeze({
+    hold: Object.freeze(["长条猪", "长按屏幕攻击"]),
+    normal: Object.freeze(["普通猪", "点屏幕攻击"]),
+    left: Object.freeze(["左转猪", "左滑攻击"]),
+    right: Object.freeze(["右转猪", "右滑攻击"]),
+  }),
+  [TUTORIAL_INPUT_MODE_KEYBOARD]: Object.freeze({
+    hold: Object.freeze(["长条猪", "按住 空格 攻击"]),
+    normal: Object.freeze(["普通猪", "按 空格 攻击"]),
+    left: Object.freeze(["左转猪", "按 ← 攻击"]),
+    right: Object.freeze(["右转猪", "按 → 攻击"]),
+  }),
+});
 const TUTORIAL_ARROW_MASK = Object.freeze([
   ".......XX",
   "......XXX",
@@ -5725,24 +5731,45 @@ function getActiveTutorialNote(state, currentTime) {
   );
 }
 
-function getTutorialNoteCopy(note) {
+function getTutorialInputMode(inputMode) {
+  return inputMode === TUTORIAL_INPUT_MODE_KEYBOARD
+    ? TUTORIAL_INPUT_MODE_KEYBOARD
+    : TUTORIAL_INPUT_MODE_TOUCH;
+}
+
+function getTutorialCopySet(inputMode) {
+  return TUTORIAL_TYPE_HINT_COPY_BY_INPUT_MODE[getTutorialInputMode(inputMode)];
+}
+
+function getTutorialCopyLines(inputMode) {
+  const copySet = getTutorialCopySet(inputMode);
+  return [
+    ...copySet.hold,
+    ...copySet.normal,
+    ...copySet.left,
+    ...copySet.right,
+  ];
+}
+
+function getTutorialNoteCopy(note, inputMode) {
   if (!note) {
     return null;
   }
 
+  const copySet = getTutorialCopySet(inputMode);
   if (note.kind === "hold") {
-    return TUTORIAL_TYPE_HINT_HOLD_COPY;
+    return copySet.hold;
   }
 
   if (note.direction === "left") {
-    return TUTORIAL_TYPE_HINT_LEFT_COPY;
+    return copySet.left;
   }
 
   if (note.direction === "right") {
-    return TUTORIAL_TYPE_HINT_RIGHT_COPY;
+    return copySet.right;
   }
 
-  return TUTORIAL_TYPE_HINT_NORMAL_COPY;
+  return copySet.normal;
 }
 
 function drawTutorialHintLines(ctx, lines, x, y, options = {}) {
@@ -5906,7 +5933,7 @@ function drawTutorialHints(ctx, viewport, lane, state, uiState = {}, topHudLayou
     1
   );
   const activeNote = getActiveTutorialNote(state, currentTime);
-  const noteCopy = getTutorialNoteCopy(activeNote);
+  const noteCopy = getTutorialNoteCopy(activeNote, uiState.inputMode);
   const impactMetrics = getImpactZoneVisualMetrics(
     viewport,
     lane,
@@ -5915,7 +5942,7 @@ function drawTutorialHints(ctx, viewport, lane, state, uiState = {}, topHudLayou
   const typeMinX = snapToGrid(lane.centerX + impactMetrics.zoneRadiusX + 14, 1);
   const typeMaxWidth = Math.max(0, viewport.width - typeMinX - 14);
   const typeFontSize = noteCopy
-    ? fitTutorialHintFontSize(ctx, TUTORIAL_TYPE_HINT_COPY_LINES, typeMaxWidth, fontSize)
+    ? fitTutorialHintFontSize(ctx, getTutorialCopyLines(uiState.inputMode), typeMaxWidth, fontSize)
     : fontSize;
   const typeLineHeight = typeFontSize * TUTORIAL_HINT_LINE_HEIGHT;
   const typeX = typeMinX;

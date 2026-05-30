@@ -3,7 +3,7 @@ import { GameRunner } from "../game/GameRunner.js";
 import { LOADING_COPY } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
-export default function GameScreen({ song, startTheme, onFinish, onHome }) {
+export default function GameScreen({ song, startTheme, inputMode = "touch", onFinish, onHome }) {
   const canvasRef = useRef(null);
   const runnerRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -17,6 +17,7 @@ export default function GameScreen({ song, startTheme, onFinish, onHome }) {
       canvas,
       song,
       startTheme,
+      inputMode,
       onFinish: (summary) => {
         onFinish({ ...summary, completedAt: Date.now() });
       },
@@ -40,7 +41,7 @@ export default function GameScreen({ song, startTheme, onFinish, onHome }) {
       runner.dispose();
       runnerRef.current = null;
     };
-  }, [song, startTheme, onFinish, onHome]);
+  }, [song, startTheme, inputMode, onFinish, onHome]);
 
   return (
     <div className={`screen game-screen screen-${startTheme}`}>

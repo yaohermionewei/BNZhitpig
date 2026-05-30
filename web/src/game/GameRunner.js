@@ -47,6 +47,10 @@ const KEYBOARD_DIRECTION_BY_CODE = Object.freeze({
   ArrowRight: "right",
 });
 
+function normalizeInputMode(inputMode) {
+  return inputMode === "keyboard" ? "keyboard" : "touch";
+}
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -172,11 +176,12 @@ function withTimeout(promise, timeoutMs, message) {
 }
 
 export class GameRunner {
-  constructor({ canvas, song, startTheme, onFinish, onHome, onLoadingChange }) {
+  constructor({ canvas, song, startTheme, inputMode = "touch", onFinish, onHome, onLoadingChange }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false });
     this.song = song;
     this.startTheme = normalizeStartTheme(startTheme);
+    this.inputMode = normalizeInputMode(inputMode);
     this.onFinish = onFinish;
     this.onHome = onHome;
     this.onLoadingChange = onLoadingChange;
@@ -527,6 +532,7 @@ export class GameRunner {
         rabbitWandAnimation: this.rabbitWandAnimation,
         rabbitWandSwingVariant: RABBIT_WAND_SWING_VARIANT,
         startTheme: this.startTheme,
+        inputMode: this.inputMode,
         loadingColors: getStartThemeLoadingColors(this.startTheme),
       });
     } catch (error) {
