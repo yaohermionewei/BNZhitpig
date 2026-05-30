@@ -40,6 +40,12 @@ const NOTE_HIT_EFFECT_VOLUME = 3.6;
 const NOTE_MISS_EFFECT_VOLUME = 1.8;
 const CRITICAL_FONT_LOAD_TIMEOUT_MS = 1200;
 const PREPARE_RESOURCE_TIMEOUT_MS = 12000;
+const KEYBOARD_TAP_CODES = Object.freeze(["Space", "KeyJ", "KeyK", "KeyF", "KeyD"]);
+const KEYBOARD_TAP_CODE_SET = new Set(KEYBOARD_TAP_CODES);
+const KEYBOARD_DIRECTION_BY_CODE = Object.freeze({
+  ArrowLeft: "left",
+  ArrowRight: "right",
+});
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -194,6 +200,7 @@ export class GameRunner {
     this.crowdMotion = createCrowdMotionState();
     this.rabbitWandAnimation = createRabbitWandAnimationState();
     this.inputGesture = null;
+    this.keyboardHoldCode = null;
     this.resultPending = false;
     this.resultAssetsPromise = null;
     this.disposed = false;
@@ -203,6 +210,8 @@ export class GameRunner {
     this.handlePointerDown = this.handlePointerDown.bind(this);
     this.handlePointerMove = this.handlePointerMove.bind(this);
     this.handlePointerUp = this.handlePointerUp.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.handlePageHide = this.handlePageHide.bind(this);
     this.handlePageShow = this.handlePageShow.bind(this);
@@ -246,6 +255,7 @@ export class GameRunner {
     this.crowdMotion = createCrowdMotionState();
     this.rabbitWandAnimation = createRabbitWandAnimationState();
     this.resetInputGesture();
+    this.resetKeyboardInput();
     this.started = true;
     this.isPaused = false;
     this.pauseReason = null;
@@ -266,6 +276,8 @@ export class GameRunner {
     this.canvas.addEventListener("pointermove", this.handlePointerMove, { passive: false });
     this.canvas.addEventListener("pointerup", this.handlePointerUp, { passive: false });
     this.canvas.addEventListener("pointercancel", this.handlePointerUp, { passive: false });
+    document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener("keyup", this.handleKeyUp);
   }
 
   installLifecycleEvents() {
@@ -656,6 +668,7 @@ export class GameRunner {
     this.failureSequence.duration = ENDING_SEQUENCE_DURATION;
     this.failureSequence.kind = kind;
     this.resetInputGesture();
+    this.resetKeyboardInput();
     if (kind === "failed") {
       this.audioStartToken += 1;
       this.audio.pause();
@@ -701,6 +714,109 @@ export class GameRunner {
       lastX: 0,
       lastY: 0,
     };
+  }
+
+  resetKeyboardInput() {
+    this.keyboardHoldCode = null;
+  }
+
+  isKeyboardGameplayActive() {
+    return (
+      this.started &&
+      !this.introActive &&
+      !this.isPaused &&
+      !this.failureSequence.active &&
+      !this.resultPending
+    );
+  }
+
+  judgeKeyboardTap(code) {
+    const currentTime = this.audio.getCurrentChartTime();
+    const result = judgeTap(this.state, currentTime);
+    if (result?.type === "holdStart") {
+      this.keyboardHoldCode = code;
+    }
+    this.handleRabbitWandAnimationResult(result);
+    this.flushAudioCues();
+    this.finishRunIfNeeded();
+  }
+
+  judgeKeyboardDirection(direction) {
+    const result = judgeDirection(this.state, this.audio.getCurrentChartTime(), direction);
+    this.handleRabbitWandAnimationResult(result);
+    this.flushAudioCues();
+    this.finishRunIfNeeded();
+  }
+
+  releaseKeyboardHold(code) {
+    if (!this.keyboardHoldCode || code !== this.keyboardHoldCode) return;
+    this.keyboardHoldCode = null;
+    releaseHold(this.state, this.audio.getCurrentChartTime());
+    this.releaseRabbitWandHoldAnimation();
+    this.flushAudioCues();
+    this.finishRunIfNeeded();
+  }
+
+  handleKeyDown(event) {
+    const code = event.code;
+
+    if (this.started && this.isPaused && !this.resultPending && this.pauseReason !== "system") {
+      if (code === "Escape" || code === "Enter") {
+        event.preventDefault();
+        if (event.repeat) return;
+        playUiSound("resume");
+        this.resume();
+        return;
+      }
+      if (code === "KeyR") {
+        event.preventDefault();
+        if (event.repeat) return;
+        playUiSound("confirm");
+        this.start();
+        return;
+      }
+    }
+
+    if (!this.isKeyboardGameplayActive()) return;
+
+    if (code === "Escape") {
+      event.preventDefault();
+      if (event.repeat) return;
+      playUiSound("tap");
+      this.pause();
+      return;
+    }
+
+    const direction = KEYBOARD_DIRECTION_BY_CODE[code];
+    if (direction) {
+      event.preventDefault();
+      if (event.repeat) return;
+      this.judgeKeyboardDirection(direction);
+      return;
+    }
+
+    if (!KEYBOARD_TAP_CODE_SET.has(code)) return;
+
+    event.preventDefault();
+    if (event.repeat) return;
+    this.judgeKeyboardTap(code);
+  }
+
+  handleKeyUp(event) {
+    if (!KEYBOARD_TAP_CODE_SET.has(event.code)) return;
+
+    if (this.keyboardHoldCode === event.code) {
+      event.preventDefault();
+    }
+
+    if (!this.isKeyboardGameplayActive()) {
+      if (this.keyboardHoldCode === event.code) {
+        this.keyboardHoldCode = null;
+      }
+      return;
+    }
+
+    this.releaseKeyboardHold(event.code);
   }
 
   handlePointerDown(event) {
@@ -827,6 +943,7 @@ export class GameRunner {
     );
     this.lastTimestamp = 0;
     this.resetInputGesture();
+    this.resetKeyboardInput();
     if (options.pauseAudio !== false) {
       this.audio.pause();
     }
@@ -839,6 +956,7 @@ export class GameRunner {
     const audioStartToken = ++this.audioStartToken;
     this.startingAudio = true;
     this.resetInputGesture();
+    this.resetKeyboardInput();
     this.lastTimestamp = 0;
     try {
       if (this.pendingAudioStart) {
@@ -885,6 +1003,7 @@ export class GameRunner {
     this.pauseReason = null;
     this.lastTimestamp = 0;
     this.resetInputGesture();
+    this.resetKeyboardInput();
     this.stopLoop();
     this.audio.destroy();
     this.onHome?.();
@@ -915,6 +1034,8 @@ export class GameRunner {
     this.started = false;
     this.isPaused = true;
     this.pauseReason = null;
+    this.resetInputGesture();
+    this.resetKeyboardInput();
     this.stopLoop();
     this.audio.destroy();
     this.preloadResultAssets();
@@ -931,6 +1052,8 @@ export class GameRunner {
     this.canvas.removeEventListener("pointermove", this.handlePointerMove);
     this.canvas.removeEventListener("pointerup", this.handlePointerUp);
     this.canvas.removeEventListener("pointercancel", this.handlePointerUp);
+    document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener("keyup", this.handleKeyUp);
     this.resizeObserver?.disconnect();
     if (this.resizeFallbackInstalled) {
       window.removeEventListener("resize", this.handleResize);

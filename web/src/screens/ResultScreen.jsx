@@ -7,6 +7,7 @@ import {
   preloadResultAssets,
 } from "../game/assets.js";
 import { playUiSound } from "../game/uiSounds.js";
+import { isInteractiveKeyboardTarget } from "../utils/keyboard-shortcuts.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
@@ -1236,6 +1237,31 @@ export default function ResultScreen({ summary, startTheme, onReplay, onHome }) 
     usesCertificateResult,
     normalizedStartTheme,
   ]);
+
+  useEffect(() => {
+    function handleResultKeyDown(event) {
+      if (event.repeat) return;
+      if (
+        !decoratedSummary ||
+        isLeavingHome ||
+        isPreparingResult ||
+        isSharePreviewOpen ||
+        isInteractiveKeyboardTarget(event.target)
+      ) {
+        return;
+      }
+
+      if (event.code !== "KeyR" && event.code !== "Enter") return;
+      event.preventDefault();
+      playUiSound("confirm");
+      onReplay?.();
+    }
+
+    window.addEventListener("keydown", handleResultKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleResultKeyDown);
+    };
+  }, [decoratedSummary, isLeavingHome, isPreparingResult, isSharePreviewOpen, onReplay]);
 
   function handleHomeTap() {
     if (isLeavingHome) return;

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { songs } from "../game/songs.js";
 import { playUiSound } from "../game/uiSounds.js";
+import { isInteractiveKeyboardTarget } from "../utils/keyboard-shortcuts.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 import {
@@ -262,6 +263,22 @@ export default function StartScreen({
   useEffect(() => {
     setPigFrame((frame) => frame % pigFrameSources.length);
   }, [pigFrameSources.length]);
+
+  useEffect(() => {
+    function handleStartKeyDown(event) {
+      if (event.repeat) return;
+      if (!pageReady || isInteractiveKeyboardTarget(event.target)) return;
+      if (event.code !== "Space" && event.code !== "Enter") return;
+      event.preventDefault();
+      playUiSound("confirm");
+      onStart?.();
+    }
+
+    window.addEventListener("keydown", handleStartKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleStartKeyDown);
+    };
+  }, [pageReady, onStart]);
 
   function handleSongSelect(item) {
     if (!item.available || item.id === song?.id) {
