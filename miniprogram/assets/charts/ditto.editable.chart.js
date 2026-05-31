@@ -412,140 +412,140 @@ module.exports = {
       "endTime": 54.871
     },
     {
-      "time": 55.414,
+      "time": 55.324,
       "size": 0.94,
       "accent": false,
       "label": "i got"
     },
     {
-      "time": 55.846,
+      "time": 55.756,
       "size": 0.94,
       "accent": false,
       "label": "no"
     },
     {
-      "time": 56.249,
+      "time": 56.159,
       "size": 0.94,
       "accent": false,
       "label": "time"
     },
     {
-      "time": 56.727,
+      "time": 56.637,
       "size": 0.94,
       "accent": false,
       "label": "to"
     },
     {
-      "time": 57.085,
+      "time": 56.995,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 58.316,
+      "endTime": 58.226,
       "label": "lose"
     },
     {
-      "time": 58.96,
+      "time": 58.859,
       "size": 1.08,
       "accent": true,
       "label": "ki"
     },
     {
-      "time": 59.395,
+      "time": 59.294,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 59.852,
+      "time": 59.751,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 60.314,
+      "time": 60.213,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 60.668,
+      "time": 60.567,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 61.899,
+      "endTime": 61.798,
       "label": "lose"
     },
     {
-      "time": 62.598,
+      "time": 62.436,
       "size": 0.94,
       "accent": false,
       "label": "po"
     },
     {
-      "time": 63.037,
+      "time": 62.875,
       "size": 0.94,
       "accent": false,
       "label": "go"
     },
     {
-      "time": 63.454,
+      "time": 63.292,
       "size": 0.94,
       "accent": false,
       "label": "xi"
     },
     {
-      "time": 63.862,
+      "time": 63.7,
       "size": 0.94,
       "accent": false,
       "label": "ba"
     },
     {
-      "time": 64.398,
+      "time": 64.294,
       "size": 1.08,
       "accent": true,
       "label": "ra"
     },
     {
-      "time": 64.697,
+      "time": 64.593,
       "size": 0.94,
       "accent": false,
       "label": "ta"
     },
     {
-      "time": 64.978,
+      "time": 64.874,
       "size": 0.94,
       "accent": false,
       "label": "ta"
     },
     {
-      "time": 65.288,
+      "time": 65.184,
       "size": 1.08,
       "accent": true,
       "label": "ta"
     },
     {
-      "time": 65.571,
+      "time": 65.467,
       "size": 0.94,
       "accent": false,
       "label": "wu"
     },
     {
-      "time": 65.929,
+      "time": 65.825,
       "size": 0.94,
       "accent": false,
       "label": "lin"
     },
     {
-      "time": 66.187,
+      "time": 66.083,
       "size": 1.08,
       "accent": true,
       "label": "xin"
     },
     {
-      "time": 66.503,
+      "time": 66.399,
       "size": 0.94,
       "accent": false,
       "label": "jia"
     },
     {
-      "time": 66.937,
+      "time": 66.833,
       "size": 1.08,
       "accent": true
     },
@@ -567,54 +567,54 @@ module.exports = {
       "endTime": 68.363
     },
     {
-      "time": 69.623,
+      "time": 69.517,
       "size": 1.08,
       "accent": true,
       "label": "got"
     },
     {
-      "time": 70.146,
+      "time": 70.04,
       "size": 0.94,
       "accent": false,
       "label": "no"
     },
     {
-      "time": 70.617,
+      "time": 70.511,
       "size": 1.08,
       "accent": true,
       "label": "thing"
     },
     {
-      "time": 71.011,
+      "time": 70.905,
       "size": 1.08,
       "accent": true,
       "label": "to"
     },
     {
-      "time": 71.598,
+      "time": 71.492,
       "size": 1.16,
       "accent": true,
       "kind": "hold",
-      "endTime": 72.679,
+      "endTime": 72.573,
       "label": "lose"
     },
     {
-      "time": 73.205,
+      "time": 73.139,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 73.653,
+      "time": 73.587,
       "size": 1.08,
       "accent": true
     },
     {
-      "time": 74.101,
+      "time": 74.035,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 74.549,
+      "time": 74.483,
       "size": 0.94,
       "accent": false
     },
@@ -715,47 +715,57 @@ module.exports = {
     {
       "time": 84.049,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "label": "i"
     },
     {
       "time": 84.497,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "label": "dont"
     },
     {
       "time": 84.99,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "label": "want"
     },
     {
       "time": 85.417,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "label": "to"
     },
     {
       "time": 85.819,
       "size": 1.16,
-      "accent": true
+      "accent": true,
+      "direction": "left",
+      "label": "stay"
     },
     {
       "time": 86.19,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "label": "in"
     },
     {
       "time": 86.414,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "label": "the"
     },
     {
       "time": 86.638,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "label": "middle"
     },
     {
       "time": 87.534,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 87.981,
@@ -775,7 +785,8 @@ module.exports = {
     {
       "time": 89.325,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 89.773,
@@ -1038,22 +1049,26 @@ module.exports = {
     {
       "time": 114.499,
       "size": 1.16,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 116.616,
-      "size": 0.94,
-      "accent": false
+      "size": 1.08,
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 118.189,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
-      "time": 120.176,
+      "time": 120.174,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 121.647,
@@ -1097,37 +1112,44 @@ module.exports = {
     {
       "time": 130.071,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
-      "time": 130.967,
+      "time": 130.969,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
-      "time": 131.862,
+      "time": 131.864,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 132.758,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 133.653,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 134.549,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 135.444,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 136.34,
@@ -1182,7 +1204,8 @@ module.exports = {
     {
       "time": 143.056,
       "size": 1.16,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 143.504,
@@ -1202,7 +1225,8 @@ module.exports = {
     {
       "time": 144.848,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 145.295,
@@ -1222,7 +1246,8 @@ module.exports = {
     {
       "time": 146.639,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 147.087,
@@ -1342,7 +1367,8 @@ module.exports = {
     {
       "time": 157.385,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 157.833,
@@ -1362,7 +1388,8 @@ module.exports = {
     {
       "time": 159.176,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 159.624,
@@ -1382,7 +1409,8 @@ module.exports = {
     {
       "time": 160.967,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 161.415,
@@ -1506,12 +1534,14 @@ module.exports = {
     {
       "time": 177.086,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 178.877,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 180.669,
@@ -1533,7 +1563,7 @@ module.exports = {
     "firstNote": 1.503,
     "lastNote": 183.497,
     "noteDensity": "284 notes / 183.497s",
-    "updatedAt": "2026-05-24T07:52:12.633Z"
+    "updatedAt": "2026-05-30T15:05:13.393Z"
   },
   "holdDebugMarkers": [
     {
@@ -1577,13 +1607,13 @@ module.exports = {
       "label": ""
     },
     {
-      "time": 57.085,
-      "endTime": 58.316,
+      "time": 56.995,
+      "endTime": 58.226,
       "label": "lose"
     },
     {
-      "time": 60.668,
-      "endTime": 61.899,
+      "time": 60.567,
+      "endTime": 61.798,
       "label": "lose"
     },
     {
@@ -1592,8 +1622,8 @@ module.exports = {
       "label": ""
     },
     {
-      "time": 71.598,
-      "endTime": 72.679,
+      "time": 71.492,
+      "endTime": 72.573,
       "label": "lose"
     },
     {
