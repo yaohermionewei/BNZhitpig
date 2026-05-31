@@ -340,6 +340,7 @@ export default function App() {
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
   const pageViewKeyRef = useRef("");
+  const resultFinishTrackedKeyRef = useRef("");
   const song = selectedSong || getDefaultSong();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
   useResultVoice(screen, resultVoicePlayId || null);
@@ -379,6 +380,30 @@ export default function App() {
     startTheme,
   ]);
 
+  useEffect(() => {
+    if (debugLoadingMode || debugEndingMode || debugResultVoicesMode) return;
+    if (screen !== "result" || !resultSummary || !resultVoicePlayId) return;
+
+    const resultFinishKey = `${resultVoicePlayId}:${resultSummary.completedAt || ""}`;
+    if (resultFinishTrackedKeyRef.current === resultFinishKey) return;
+    resultFinishTrackedKeyRef.current = resultFinishKey;
+
+    trackEvent("game_finish", {
+      ...getSongAnalyticsParams(song, startTheme),
+      ...getResultAnalyticsParams(resultSummary),
+      source_screen: "result",
+    });
+  }, [
+    debugEndingMode,
+    debugLoadingMode,
+    debugResultVoicesMode,
+    resultSummary,
+    resultVoicePlayId,
+    screen,
+    song,
+    startTheme,
+  ]);
+
   function handleStart(options = {}) {
     setGameInputMode(normalizeGameInputMode(options?.inputMode));
     trackEvent("game_start", getSongAnalyticsParams(song, startTheme));
@@ -390,10 +415,6 @@ export default function App() {
   }
 
   function handleFinish(summary) {
-    trackEvent("game_finish", {
-      ...getSongAnalyticsParams(song, startTheme),
-      ...getResultAnalyticsParams(summary),
-    });
     setResultSummary(summary);
     setResultVoicePlayId((id) => id + 1);
     setScreen("result");

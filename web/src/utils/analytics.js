@@ -63,6 +63,7 @@ export function trackPageView(screenName, params = {}) {
   if (!gtag || !screenName) return;
 
   gtag("event", "page_view", {
+    transport_type: "beacon",
     page_title: `BNZ Hit Pig - ${screenName}`,
     page_location: getVirtualPageLocation(screenName),
     page_path: getVirtualPagePath(screenName),
@@ -75,5 +76,8 @@ export function trackEvent(eventName, params = {}) {
   const gtag = getGtag();
   if (!gtag || !eventName) return;
 
-  gtag("event", eventName, params);
+  gtag("event", eventName, {
+    transport_type: "beacon",
+    ...params,
+  });
 }
