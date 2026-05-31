@@ -444,6 +444,14 @@ export default function App() {
     });
   }
 
+  function handleShareSaveClick(details = {}) {
+    trackEvent("result_share_save_click", {
+      ...getSongAnalyticsParams(song, startTheme),
+      ...getResultAnalyticsParams(resultSummary),
+      ...details,
+    });
+  }
+
   function handleShareSave(details = {}) {
     trackEvent("result_share_save", {
       ...getSongAnalyticsParams(song, startTheme),
@@ -496,6 +504,7 @@ export default function App() {
               onReplay={handleReplay}
               onHome={handleHome}
               onShareGenerate={handleShareGenerate}
+              onShareSaveClick={handleShareSaveClick}
               onShareSave={handleShareSave}
             />
           )}

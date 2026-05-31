@@ -1167,6 +1167,7 @@ export default function ResultScreen({
   onReplay,
   onHome,
   onShareGenerate,
+  onShareSaveClick,
   onShareSave,
 }) {
   const normalizedStartTheme = getSafeStartTheme(startTheme);
@@ -1385,7 +1386,14 @@ export default function ResultScreen({
       link.remove();
     }
 
-    if (isMobile && canNativeShareFile(file)) {
+    const canUseNativeShare = isMobile && canNativeShareFile(file);
+    onShareSaveClick?.({
+      ...shareSaveParams,
+      method: canUseNativeShare ? "native_share" : "download",
+      is_mobile: isMobile,
+    });
+
+    if (canUseNativeShare) {
       try {
         await navigator.share({
           files: [file],
