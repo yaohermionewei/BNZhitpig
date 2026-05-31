@@ -31,11 +31,12 @@ https://bnzhitpig.wystudio.zone
 3. 做最终谱面调校。
 4. 测低端安卓机和关键移动浏览器。
 5. 发布前最后把血量从 10 改成 20，并确认 HUD 血条显示仍然清楚。
-6. 本地跑一次构建。
-7. 发布前重新启用 Netlify 构建。
-8. 通过 GitHub -> Netlify 自动部署。
-9. 用正式域名做 smoke test。
-10. 做最终发布判断。
+6. 接入 GA4 免费版基础统计。
+7. 本地跑一次构建。
+8. 发布前重新启用 Netlify 构建。
+9. 通过 GitHub -> Netlify 自动部署。
+10. 用正式域名做 smoke test。
+11. 做最终发布判断。
 
 ## Netlify 构建策略
 
@@ -86,6 +87,23 @@ https://bnzhitpig.wystudio.zone
   - 微信内置浏览器。
   - 一到两个常见国产 Android 浏览器。
 - [ ] 测 iPhone Safari 和 iPhone 微信内置浏览器。
+- [ ] 接入 GA4 免费版基础统计。
+  - 不启用 Netlify Web Analytics 付费 add-on。
+  - 不开启 Netlify auto recharge。
+  - 在 Google Analytics 创建 GA4 property 和 Web data stream。
+  - 正式域名使用：`https://bnzhitpig.wystudio.zone`。
+  - 将 GA4 Measurement ID 作为环境变量配置，例如 `VITE_GA_MEASUREMENT_ID`。
+  - 先只统计基础事件，避免上线前过度复杂；事件名以代码实际发送到 GA4 的名字为准：
+    - `page_view`：GA4 默认页面访问。
+    - `game_start`：玩家点击开始并进入游戏。
+    - `game_finish`：玩家完成一局并进入结算页。
+    - `game_replay`：玩家从结果页再来一局。
+    - `game_home`：玩家从游戏页或结果页回到首页。
+    - `result_share_generate`：玩家点击生成分享战报，并成功生成战报预览。
+    - `result_share_save`：玩家保存、下载或调用系统分享战报。
+  - 不上传玩家姓名、IP、联系方式、设备唯一标识或其他个人敏感信息。
+  - 发布前用 GA4 Realtime 验证事件能收到。
+  - 备注：GA4 在中国大陆网络和部分浏览器/拦截器环境下可能漏数，第一版先作为趋势参考；如果后续需要更准的国内数据，再考虑自建 first-party 统计接口。
 - [ ] Netlify 部署后，用正式域名做 smoke test。
   - 首页能打开。
   - 点击后音频能解锁并播放。
@@ -93,6 +111,7 @@ https://bnzhitpig.wystudio.zone
   - 结果页能正常渲染。
   - 结果页战报图能正常导出。
   - 刷新页面不会 404。
+  - GA4 Realtime 能看到 `page_view`、`game_start`、`game_finish`、`result_share_generate` 或 `result_share_save` 测试事件。
 
 ## P1：强烈建议完成
 
@@ -121,7 +140,10 @@ https://bnzhitpig.wystudio.zone
 
 ## P2：上线后可以慢慢做
 
-- [ ] 访问统计。
+- [ ] 更精细的访问统计 / 自建 first-party 统计接口。
+  - 仅当 GA4 免费统计不够用，或者国内漏数明显时再做。
+  - 可以统计每日开始游戏人数、进入结算人数、分享人数和基础设备类型。
+  - 继续避免采集个人敏感信息。
 - [ ] 错误监控。
 - [ ] 排行榜产品设计。
 - [ ] 排行榜数据库 / 服务商选择。
