@@ -40,6 +40,8 @@ const NOTE_HIT_EFFECT_VOLUME = 3.6;
 const NOTE_MISS_EFFECT_VOLUME = 1.8;
 const CRITICAL_FONT_LOAD_TIMEOUT_MS = 1200;
 const PREPARE_RESOURCE_TIMEOUT_MS = 12000;
+const TUTORIAL_BATTLE_START_COUNT_STORAGE_KEY = "bunniesTutorialBattleStartCountV1";
+const TUTORIAL_HINT_VISIBLE_BATTLE_LIMIT = 3;
 const KEYBOARD_TAP_CODES = Object.freeze(["Space", "KeyJ", "KeyK", "KeyF", "KeyD"]);
 const KEYBOARD_TAP_CODE_SET = new Set(KEYBOARD_TAP_CODES);
 const KEYBOARD_DIRECTION_BY_CODE = Object.freeze({
@@ -175,6 +177,32 @@ function withTimeout(promise, timeoutMs, message) {
   });
 }
 
+function isValidTutorialBattleStartCount(value) {
+  return Number.isInteger(value) && value >= 0;
+}
+
+function incrementTutorialBattleStartCount() {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) {
+      return 1;
+    }
+
+    const storedValue = window.localStorage.getItem(TUTORIAL_BATTLE_START_COUNT_STORAGE_KEY);
+    const parsedValue = storedValue === null ? 0 : Number(storedValue);
+    const currentCount = isValidTutorialBattleStartCount(parsedValue) ? parsedValue : 0;
+    const nextCount = currentCount + 1;
+    window.localStorage.setItem(TUTORIAL_BATTLE_START_COUNT_STORAGE_KEY, String(nextCount));
+    return nextCount;
+  } catch (error) {
+    console.warn("Failed to persist tutorial battle count", error);
+    return 1;
+  }
+}
+
+function shouldShowTutorialHintsForBattleStart() {
+  return incrementTutorialBattleStartCount() <= TUTORIAL_HINT_VISIBLE_BATTLE_LIMIT;
+}
+
 export class GameRunner {
   constructor({ canvas, song, startTheme, inputMode = "touch", onFinish, onHome, onLoadingChange }) {
     this.canvas = canvas;
@@ -206,6 +234,7 @@ export class GameRunner {
     this.rabbitWandAnimation = createRabbitWandAnimationState();
     this.inputGesture = null;
     this.keyboardHoldCode = null;
+    this.showTutorialHints = true;
     this.resultPending = false;
     this.resultAssetsPromise = null;
     this.disposed = false;
@@ -256,6 +285,7 @@ export class GameRunner {
   start() {
     this.preloadResultAssets();
     this.state = createGameState(this.song.chart);
+    this.showTutorialHints = shouldShowTutorialHintsForBattleStart();
     this.failureSequence = createFailureSequenceState();
     this.crowdMotion = createCrowdMotionState();
     this.rabbitWandAnimation = createRabbitWandAnimationState();
@@ -529,6 +559,7 @@ export class GameRunner {
         magicVisualTime: this.magicVisualTime,
         showLaneBase: false,
         gameplayActive: this.started && !this.introActive,
+        showTutorialHints: this.showTutorialHints,
         rabbitWandAnimation: this.rabbitWandAnimation,
         rabbitWandSwingVariant: RABBIT_WAND_SWING_VARIANT,
         startTheme: this.startTheme,

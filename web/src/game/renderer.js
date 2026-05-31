@@ -6363,7 +6363,9 @@ function drawHud(ctx, viewport, state, uiState = {}, lane = null) {
   drawLifePauseHud(ctx, viewport, state, topHudLayout);
   if (lane) {
     drawCenterComboHud(ctx, viewport, lane, state);
-    drawTutorialHints(ctx, viewport, lane, state, uiState, topHudLayout);
+    if (uiState.showTutorialHints !== false) {
+      drawTutorialHints(ctx, viewport, lane, state, uiState, topHudLayout);
+    }
   }
   ctx.restore();
   ctx.textAlign = "left";
