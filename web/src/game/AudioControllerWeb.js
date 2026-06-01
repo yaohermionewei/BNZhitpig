@@ -70,6 +70,34 @@ function waitForAudioResume(audioContext) {
   });
 }
 
+function waitForAudioClock(audioContext, source) {
+  const before = typeof audioContext?.currentTime === "number" ? audioContext.currentTime : 0;
+  return new Promise((resolve) => {
+    window.setTimeout(() => {
+      const after = typeof audioContext?.currentTime === "number" ? audioContext.currentTime : 0;
+      const delta = after - before;
+      const result = {
+        ok: audioContext?.state === "running" && delta > 0,
+        state: audioContext?.state || "unknown",
+        delta,
+      };
+      emitAudioDebug(source, {
+        phase: "clock-verify",
+        result: {
+          ok: result.ok,
+          state: result.state,
+        },
+        clock: {
+          before: Number(before.toFixed(4)),
+          after: Number(after.toFixed(4)),
+          delta: Number(delta.toFixed(4)),
+        },
+      });
+      resolve(result);
+    }, AUDIO_CLOCK_PROBE_DELAY_MS);
+  });
+}
+
 function getOrCreateSharedAudioContext(source = "get-or-create") {
   if (!sharedAudioContext || sharedAudioContext.state === "closed") {
     sharedAudioContext = new AudioContextCtor();
@@ -117,7 +145,8 @@ function shouldReplaceAudioContext(result) {
   return (
     result?.state === "closed" ||
     result?.state === "interrupted" ||
-    result?.errorName === "TimeoutError"
+    result?.errorName === "TimeoutError" ||
+    result?.errorName === "AudioClockStalledError"
   );
 }
 
@@ -295,6 +324,16 @@ function createAudioContextNotRunningError(result) {
   if (result?.errorMessage) {
     error.resumeErrorMessage = result.errorMessage;
   }
+  return error;
+}
+
+function createAudioClockStalledError(result) {
+  const error = new Error(
+    `Audio context clock did not advance after ${AUDIO_CLOCK_PROBE_DELAY_MS}ms.`
+  );
+  error.name = "AudioClockStalledError";
+  error.audioState = result?.state || "unknown";
+  error.clockDelta = result?.delta || 0;
   return error;
 }
 
@@ -545,7 +584,11 @@ export class AudioControllerWeb {
     return this.audioContext?.state || sharedAudioContext?.state || "unavailable";
   }
 
-  async playFromOffset(offset, playbackRequestId = this.beginPlaybackRequest()) {
+  async playFromOffset(
+    offset,
+    playbackRequestId = this.beginPlaybackRequest(),
+    allowContextRetry = true
+  ) {
     if (!this.buffer) {
       await this.ensureBufferForCurrentContext(playbackRequestId);
       if (!this.isPlaybackRequestCurrent(playbackRequestId)) {
@@ -597,11 +640,40 @@ export class AudioControllerWeb {
         requestedOffset: offset,
         controller: this.getDebugSnapshot(),
       });
-      this.probeAudioClock("audio.playFromOffset");
+      const clockVerified = await this.verifyAudioClock(
+        "audio.playFromOffset",
+        playbackRequestId
+      );
+      if (!clockVerified) {
+        return false;
+      }
       return true;
     } catch (error) {
+      if (
+        allowContextRetry &&
+        error?.name === "AudioClockStalledError" &&
+        this.isPlaybackRequestCurrent(playbackRequestId)
+      ) {
+        emitAudioDebug("audio.playFromOffset", {
+          phase: "clock-stalled-retry",
+          requestedOffset: this.offset,
+          error: getAudioErrorDetails(error),
+          controller: this.getDebugSnapshot(),
+        });
+        this.playing = false;
+        this.destroySource();
+        this.audioContext = replaceSharedAudioContext(
+          this.audioContext,
+          "audio.playFromOffset:clock-stalled"
+        );
+        this.buffer = null;
+        if (!this.isPlaybackRequestCurrent(playbackRequestId)) {
+          return false;
+        }
+        return this.playFromOffset(this.offset, playbackRequestId, false);
+      }
       this.playing = false;
-      this.source = null;
+      this.destroySource();
       if (typeof this.errorHandler === "function") {
         this.errorHandler(error);
       }
@@ -706,6 +778,20 @@ export class AudioControllerWeb {
 
   isPlaybackRequestCurrent(playbackRequestId) {
     return playbackRequestId === this.playbackRequestId;
+  }
+
+  async verifyAudioClock(source, playbackRequestId) {
+    if (!this.audioContext) {
+      throw createAudioClockStalledError({ state: "unavailable", delta: 0 });
+    }
+    const result = await waitForAudioClock(this.audioContext, source);
+    if (!this.isPlaybackRequestCurrent(playbackRequestId)) {
+      return false;
+    }
+    if (result.ok) {
+      return true;
+    }
+    throw createAudioClockStalledError(result);
   }
 
   getDebugSnapshot() {
