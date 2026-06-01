@@ -16,6 +16,7 @@ import {
   preloadResultAssets,
 } from "./assets.js";
 import { buildResultSummary } from "./result.js";
+import { setBunniesMediaSessionMetadata } from "./mediaSession.js";
 import { normalizeStartTheme, getStartThemeLoadingColors } from "../utils/start-theme.js";
 import { LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 
@@ -486,6 +487,7 @@ export class GameRunner {
         this.pendingAudioStart = true;
         const audioStartToken = ++this.audioStartToken;
         this.emitDebug("runner.intro-audio-start:before");
+        setBunniesMediaSessionMetadata();
         await this.audio.start(this.song.chart);
         this.emitDebug("runner.intro-audio-start:after");
         if (audioStartToken !== this.audioStartToken) {
@@ -1023,10 +1025,12 @@ export class GameRunner {
     try {
       if (this.pendingAudioStart) {
         this.emitDebug("runner.resume-audio-start:before");
+        setBunniesMediaSessionMetadata();
         await this.audio.start(this.song.chart);
         this.emitDebug("runner.resume-audio-start:after");
       } else if (!this.introActive) {
         this.emitDebug("runner.resume-audio-resume:before");
+        setBunniesMediaSessionMetadata();
         await this.audio.resume();
         this.emitDebug("runner.resume-audio-resume:after");
       }

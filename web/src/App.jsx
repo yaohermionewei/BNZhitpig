@@ -17,6 +17,7 @@ import {
 } from "./game/resultVoicePlayback.js";
 import { LOADING_COPY } from "./utils/loading-copy.js";
 import { trackEvent, trackPageView } from "./utils/analytics.js";
+import { setBunniesMediaSessionMetadata } from "./game/mediaSession.js";
 
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
@@ -127,6 +128,7 @@ function useAmbientBgm(playbackArea) {
     }
 
     function playAmbientBgm() {
+      setBunniesMediaSessionMetadata();
       audio.volume = AMBIENT_BGM_VOLUME;
       const playPromise = audio.play();
       if (!playPromise || typeof playPromise.then !== "function") {
@@ -475,6 +477,10 @@ export default function App() {
   const song = selectedSong || getDefaultSong();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
   useResultVoice(screen, resultVoicePlayId || null);
+
+  useEffect(() => {
+    setBunniesMediaSessionMetadata();
+  }, []);
 
   useEffect(() => {
     if (!audioDebugPanelEnabled || typeof window === "undefined") return undefined;
