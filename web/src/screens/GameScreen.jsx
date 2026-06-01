@@ -42,7 +42,7 @@ export default function GameScreen({ song, startTheme, inputMode = "touch", onFi
       })
       .catch((prepareError) => {
         console.error(prepareError);
-        setError("音频或资源加载失败，请刷新重试");
+        setError("加载失败，刷新重试");
         setLoading(false);
       });
 
