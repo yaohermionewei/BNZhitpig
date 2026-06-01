@@ -6,8 +6,18 @@ import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 export default function GameScreen({ song, startTheme, inputMode = "touch", onFinish, onHome }) {
   const canvasRef = useRef(null);
   const runnerRef = useRef(null);
+  const onFinishRef = useRef(onFinish);
+  const onHomeRef = useRef(onHome);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  }, [onFinish]);
+
+  useEffect(() => {
+    onHomeRef.current = onHome;
+  }, [onHome]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -19,9 +29,9 @@ export default function GameScreen({ song, startTheme, inputMode = "touch", onFi
       startTheme,
       inputMode,
       onFinish: (summary) => {
-        onFinish({ ...summary, completedAt: Date.now() });
+        onFinishRef.current?.({ ...summary, completedAt: Date.now() });
       },
-      onHome,
+      onHome: () => onHomeRef.current?.(),
       onLoadingChange: setLoading,
     });
     runnerRef.current = runner;
@@ -41,7 +51,7 @@ export default function GameScreen({ song, startTheme, inputMode = "touch", onFi
       runner.dispose();
       runnerRef.current = null;
     };
-  }, [song, startTheme, inputMode, onFinish, onHome]);
+  }, [song, startTheme, inputMode]);
 
   return (
     <div className={`screen game-screen screen-${startTheme}`}>

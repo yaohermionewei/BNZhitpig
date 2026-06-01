@@ -7,7 +7,7 @@ import {
   updateGameState,
 } from "./engine.js";
 import { renderFrame, getControlRects } from "./renderer.js";
-import { AudioControllerWeb } from "./AudioControllerWeb.js";
+import { AudioControllerWeb, emitAudioDebug } from "./AudioControllerWeb.js";
 import { playUiSound, playVictoryFanfare } from "./uiSounds.js";
 import {
   EFFECT_AUDIO_POOL_SIZES,
@@ -283,6 +283,8 @@ export class GameRunner {
   }
 
   start() {
+    this.emitDebug("runner.start:before");
+    this.audio.stop();
     this.preloadResultAssets();
     this.state = createGameState(this.song.chart);
     this.showTutorialHints = shouldShowTutorialHintsForBattleStart();
@@ -304,6 +306,7 @@ export class GameRunner {
     this.lastTimestamp = 0;
     this.stopLoop();
     this.startLoop();
+    this.emitDebug("runner.start:after");
   }
 
   installEvents() {
@@ -377,16 +380,20 @@ export class GameRunner {
 
   handleLifecyclePause() {
     if (!this.started || this.resultPending || this.failureSequence.active) return;
+    this.emitDebug("runner.lifecycle-pause:before");
     this.pause({ reason: "system" });
+    this.emitDebug("runner.lifecycle-pause:after");
   }
 
   handleLifecycleReturn() {
     if (!this.started || this.resultPending || this.disposed) return;
+    this.emitDebug("runner.lifecycle-return:before");
     this.lastTimestamp = 0;
     this.resizeCanvas();
     if (this.pauseReason === "system") {
       this.renderCurrentFrame();
     }
+    this.emitDebug("runner.lifecycle-return:after");
   }
 
   installResizeObserver() {
@@ -478,21 +485,23 @@ export class GameRunner {
         this.startingAudio = true;
         this.pendingAudioStart = true;
         const audioStartToken = ++this.audioStartToken;
+        this.emitDebug("runner.intro-audio-start:before");
         await this.audio.start(this.song.chart);
-        if (
-          audioStartToken !== this.audioStartToken ||
-          this.disposed ||
-          this.resultPending ||
-          this.isPaused ||
-          !this.started
-        ) {
+        this.emitDebug("runner.intro-audio-start:after");
+        if (audioStartToken !== this.audioStartToken) {
+          this.emitDebug("runner.intro-audio-start:stale");
+          return;
+        }
+        if (this.disposed || this.resultPending || this.isPaused || !this.started) {
           this.audio.pause();
           this.startingAudio = false;
+          this.emitDebug("runner.intro-audio-start:cancelled");
           return;
         }
         this.startingAudio = false;
         this.pendingAudioStart = false;
         this.introActive = false;
+        this.emitDebug("runner.intro-audio-start:ready");
       }
     } else if (!this.failureSequence.active) {
       const currentTime = this.audio.getCurrentChartTime();
@@ -526,6 +535,9 @@ export class GameRunner {
   handleUpdateError(error) {
     if (this.disposed || this.resultPending) return;
     console.error("game update failed", error);
+    this.emitDebug("runner.update-error", {
+      error: this.formatDebugError(error),
+    });
     this.startingAudio = false;
     this.pendingAudioStart = this.introActive && this.introElapsed >= INTRO_DURATION;
     this.pause({ reason: "system", pauseAudio: false });
@@ -884,11 +896,13 @@ export class GameRunner {
       }
       if (this.pointHitsRect(point, rects.pauseRestart)) {
         playUiSound("confirm");
+        this.emitDebug("runner.pause-menu-restart");
         this.start();
         return;
       }
       if (this.pointHitsRect(point, rects.resume)) {
         playUiSound("resume");
+        this.emitDebug("runner.pause-menu-resume");
         this.resume();
         return;
       }
@@ -970,6 +984,10 @@ export class GameRunner {
 
   pause(options = {}) {
     if (!this.started || this.isPaused) return;
+    this.emitDebug("runner.pause:before", {
+      reason: options.reason === "system" ? "system" : "user",
+      pauseAudio: options.pauseAudio !== false,
+    });
     const reason = options.reason === "system" ? "system" : "user";
     this.isPaused = true;
     this.pauseReason = reason;
@@ -986,20 +1004,31 @@ export class GameRunner {
     }
     this.stopLoop();
     this.renderCurrentFrame();
+    this.emitDebug("runner.pause:after");
   }
 
   async resume() {
-    if (!this.isPaused || this.startingAudio) return;
+    if (!this.isPaused || this.startingAudio) {
+      this.emitDebug("runner.resume:ignored", {
+        ignoredBecause: !this.isPaused ? "not-paused" : "starting-audio",
+      });
+      return;
+    }
     const audioStartToken = ++this.audioStartToken;
     this.startingAudio = true;
     this.resetInputGesture();
     this.resetKeyboardInput();
     this.lastTimestamp = 0;
+    this.emitDebug("runner.resume:before");
     try {
       if (this.pendingAudioStart) {
+        this.emitDebug("runner.resume-audio-start:before");
         await this.audio.start(this.song.chart);
+        this.emitDebug("runner.resume-audio-start:after");
       } else if (!this.introActive) {
+        this.emitDebug("runner.resume-audio-resume:before");
         await this.audio.resume();
+        this.emitDebug("runner.resume-audio-resume:after");
       }
       if (
         audioStartToken !== this.audioStartToken ||
@@ -1007,7 +1036,12 @@ export class GameRunner {
         this.resultPending ||
         !this.started
       ) {
+        if (audioStartToken !== this.audioStartToken) {
+          this.emitDebug("runner.resume:stale");
+          return;
+        }
         this.audio.pause();
+        this.emitDebug("runner.resume:cancelled");
         return;
       }
       this.isPaused = false;
@@ -1017,20 +1051,26 @@ export class GameRunner {
         this.introActive = false;
       }
       this.startLoop();
+      this.emitDebug("runner.resume:after");
     } catch (error) {
       console.error("game audio resume failed", error);
+      this.emitDebug("runner.resume:error", {
+        error: this.formatDebugError(error),
+      });
       this.isPaused = true;
       this.pauseReason = "system";
       this.renderCurrentFrame();
     } finally {
       if (audioStartToken === this.audioStartToken) {
         this.startingAudio = false;
+        this.emitDebug("runner.resume:finally");
       }
     }
   }
 
   goHome() {
     if (this.resultPending) return;
+    this.emitDebug("runner.go-home");
     this.audioStartToken += 1;
     this.startingAudio = false;
     this.pendingAudioStart = false;
@@ -1064,6 +1104,7 @@ export class GameRunner {
 
   finishRun() {
     if (this.resultPending) return;
+    this.emitDebug("runner.finish");
     this.audioStartToken += 1;
     this.startingAudio = false;
     this.pendingAudioStart = false;
@@ -1081,6 +1122,7 @@ export class GameRunner {
   }
 
   dispose() {
+    this.emitDebug("runner.dispose");
     this.disposed = true;
     this.stopLoop();
     this.audio.destroy();
@@ -1095,5 +1137,42 @@ export class GameRunner {
     if (this.resizeFallbackInstalled) {
       window.removeEventListener("resize", this.handleResize);
     }
+  }
+
+  getDebugSnapshot() {
+    return {
+      started: !!this.started,
+      isPaused: !!this.isPaused,
+      pauseReason: this.pauseReason || null,
+      startingAudio: !!this.startingAudio,
+      pendingAudioStart: !!this.pendingAudioStart,
+      introActive: !!this.introActive,
+      introElapsed: Number((this.introElapsed || 0).toFixed(4)),
+      resultPending: !!this.resultPending,
+      failureSequenceActive: !!this.failureSequence?.active,
+      frameHandle: this.frameHandle || 0,
+      lastTimestamp: Number((this.lastTimestamp || 0).toFixed(2)),
+      audioStartToken: this.audioStartToken,
+      stateTime: Number((this.state?.currentTime || 0).toFixed(4)),
+      magicVisualTime: Number((this.magicVisualTime || 0).toFixed(4)),
+      audio: this.audio.getDebugSnapshot(),
+    };
+  }
+
+  formatDebugError(error) {
+    if (!error) return null;
+    return {
+      name: error.name || "Error",
+      message: error.message || String(error),
+      audioState: error.audioState || null,
+      resumeErrorMessage: error.resumeErrorMessage || null,
+    };
+  }
+
+  emitDebug(source, detail = {}) {
+    emitAudioDebug(source, {
+      runner: this.getDebugSnapshot(),
+      ...detail,
+    });
   }
 }

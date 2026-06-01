@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getDefaultSong } from "./game/songs.js";
 import { getStartTheme, setStartTheme, START_THEMES } from "./utils/start-theme.js";
 import StageShell from "./screens/StageShell.jsx";
@@ -6,7 +6,9 @@ import StartScreen from "./screens/StartScreen.jsx";
 import GameScreen from "./screens/GameScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
 import {
-  unlockAudioForUserGesture,
+  AUDIO_DEBUG_EVENT_NAME,
+  getSharedAudioContextState,
+  primeAudioForUserGesture,
 } from "./game/AudioControllerWeb.js";
 import { resultVoiceClips } from "./game/resultVoiceClips.js";
 import {
@@ -30,6 +32,8 @@ const AMBIENT_BGM_VOLUME = 1;
 const AMBIENT_BGM_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 const RESULT_VOICE_DELAY_MS = 1000;
 const RESULT_VOICE_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
+const AUDIO_DEBUG_QUERY_KEY = "debugAudio";
+const AUDIO_DEBUG_ENTRY_LIMIT = 10;
 
 function getLoadingShimmerDebugPreviewMode() {
   if (!import.meta.env.DEV || typeof window === "undefined") {
@@ -64,7 +68,22 @@ function getDebugResultVoiceAmbientEnabled() {
   return new URLSearchParams(window.location.search).get("debugBgm") !== "0";
 }
 
-function getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode) {
+function getAudioDebugEnabled() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get(AUDIO_DEBUG_QUERY_KEY) === "1";
+}
+
+function getAudioDebugPanelEnabled() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get(AUDIO_DEBUG_QUERY_KEY) === "1";
+}
+
+function getAmbientBgmArea(
+  screen,
+  debugLoadingMode,
+  debugEndingMode,
+  debugResultVoicesMode
+) {
   if (debugResultVoicesMode) {
     return getDebugResultVoiceAmbientEnabled() ? "result" : "off";
   }
@@ -327,10 +346,120 @@ function normalizeGameInputMode(inputMode) {
   return inputMode === "keyboard" ? "keyboard" : "touch";
 }
 
+function getUserActivationSnapshot() {
+  if (typeof navigator === "undefined" || !navigator.userActivation) {
+    return null;
+  }
+
+  return {
+    isActive: navigator.userActivation.isActive,
+    hasBeenActive: navigator.userActivation.hasBeenActive,
+  };
+}
+
+function getBrowserAudioDebugInfo() {
+  if (typeof navigator === "undefined") {
+    return {
+      userAgent: "",
+      isWeChatLike: false,
+      isWeComLike: false,
+      userActivation: null,
+    };
+  }
+
+  const userAgent = navigator.userAgent || "";
+  return {
+    userAgent,
+    isWeChatLike: /MicroMessenger/i.test(userAgent),
+    isWeComLike: /wxwork|WeCom/i.test(userAgent),
+    userActivation: getUserActivationSnapshot(),
+  };
+}
+
+function formatDebugActivation(activation) {
+  if (!activation) return "n/a";
+  return `${activation.isActive ? "active" : "inactive"}/${activation.hasBeenActive ? "used" : "fresh"}`;
+}
+
+function formatAudioDebugEntry(entry) {
+  if (!entry) return "";
+
+  const result = entry.result || {};
+  const runner = entry.runner || {};
+  const audio = entry.audio || runner.audio || {};
+  const beforeActivation = formatDebugActivation(entry.before?.userActivation);
+  const afterActivation = formatDebugActivation(entry.after?.userActivation);
+  const errorText =
+    result.errorName || result.errorMessage
+      ? `\nerr: ${result.errorName || "Error"} ${result.errorMessage || ""}`.trimEnd()
+      : "";
+  const runnerText = entry.runner
+    ? `\nrunner paused=${String(runner.isPaused)} starting=${String(runner.startingAudio)} intro=${String(runner.introActive)} pending=${String(runner.pendingAudioStart)} frame=${runner.frameHandle || 0}`
+    : "";
+  const audioText =
+    entry.audio || runner.audio
+      ? `\naudio ${audio.contextState || audio.sharedState || "unknown"} t=${audio.currentTime ?? "n/a"} playing=${String(Boolean(audio.playing))} offset=${audio.offset ?? "n/a"} pausedAt=${audio.pausedAt ?? "n/a"} source=${String(Boolean(audio.hasSource))}`
+      : "";
+  const phaseText = entry.phase ? `phase=${entry.phase}` : "";
+
+  return [
+    `#${entry.id} ${entry.source}`,
+    [phaseText, `${entry.beforeState || entry.sharedState || "n/a"} -> ${entry.afterState || entry.sharedState || "n/a"}`]
+      .filter(Boolean)
+      .join(" "),
+    result.ok !== undefined || result.state
+      ? `ok=${String(Boolean(result.ok))} state=${result.state || "unknown"} ${entry.elapsedMs ?? ""}ms`
+      : "",
+    `activation ${beforeActivation} -> ${afterActivation}`,
+    `wechat=${String(Boolean(entry.after?.isWeChatLike))} wecom=${String(Boolean(entry.after?.isWeComLike))}`,
+    runnerText,
+    audioText,
+    errorText,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function AudioDebugPanel({ entries, currentState }) {
+  const latestEntry = entries[entries.length - 1] || null;
+  const latestResult = latestEntry?.result || null;
+  const details = entries.length
+    ? entries.map(formatAudioDebugEntry).join("\n\n")
+    : "No audio prime attempts yet.";
+
+  function handleCopy() {
+    const payload = JSON.stringify(entries, null, 2);
+    navigator.clipboard?.writeText(payload).catch(() => {
+      // Debug-only helper; the visible panel still contains the data.
+    });
+  }
+
+  return (
+    <aside className="audio-debug-panel" aria-label="Audio debug">
+      <div className="audio-debug-title">Audio debug</div>
+      <div className="audio-debug-row">
+        ctx: <strong>{currentState}</strong>
+      </div>
+      {latestEntry && (
+        <div className="audio-debug-row">
+          latest: <strong>{latestEntry.source}</strong>{" "}
+          {latestResult?.ok ? "ok" : "blocked"} / {latestResult?.state || "unknown"}
+        </div>
+      )}
+      <pre className="audio-debug-log">{details}</pre>
+      <button className="audio-debug-copy" type="button" onClick={handleCopy}>
+        Copy
+      </button>
+    </aside>
+  );
+}
+
 export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
   const debugEndingMode = getEndingOverlayDebugPreviewMode();
   const debugResultVoicesMode = getResultVoiceDebugPreviewMode();
+  const audioDebugEnabled = getAudioDebugEnabled();
+  const audioDebugPanelEnabled = getAudioDebugPanelEnabled();
   const [screen, setScreen] = useState("start");
   const [startTheme, setThemeState] = useState(() => getStartTheme());
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
@@ -339,11 +468,34 @@ export default function App() {
   const [gameInputMode, setGameInputMode] = useState("touch");
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
+  const [audioDebugEntries, setAudioDebugEntries] = useState([]);
   const pageViewKeyRef = useRef("");
   const resultFinishTrackedKeyRef = useRef("");
+  const audioDebugEntryIdRef = useRef(0);
   const song = selectedSong || getDefaultSong();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
   useResultVoice(screen, resultVoicePlayId || null);
+
+  useEffect(() => {
+    if (!audioDebugPanelEnabled || typeof window === "undefined") return undefined;
+
+    function handleAudioDebugEvent(event) {
+      const detail = event.detail || {};
+      const debugEntry = {
+        id: audioDebugEntryIdRef.current + 1,
+        ...detail,
+      };
+      audioDebugEntryIdRef.current = debugEntry.id;
+      setAudioDebugEntries((entries) =>
+        [...entries, debugEntry].slice(-AUDIO_DEBUG_ENTRY_LIMIT)
+      );
+    }
+
+    window.addEventListener(AUDIO_DEBUG_EVENT_NAME, handleAudioDebugEvent);
+    return () => {
+      window.removeEventListener(AUDIO_DEBUG_EVENT_NAME, handleAudioDebugEvent);
+    };
+  }, [audioDebugPanelEnabled]);
 
   const appState = useMemo(
     () => ({
@@ -404,37 +556,82 @@ export default function App() {
     startTheme,
   ]);
 
-  function handleStart(options = {}) {
+  const handlePrimeBattleAudio = useCallback(
+    async (source = "unknown") => {
+      const beforeState = getSharedAudioContextState();
+      const browserInfoBefore = getBrowserAudioDebugInfo();
+      const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
+      let result;
+
+      try {
+        result = await primeAudioForUserGesture(`prime:${source}`);
+      } catch (error) {
+        result = {
+          ok: false,
+          state: getSharedAudioContextState(),
+          errorName: error?.name || "Error",
+          errorMessage: error?.message || String(error),
+        };
+      }
+
+      if (audioDebugEnabled) {
+        const finishedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
+        const debugEntry = {
+          id: audioDebugEntryIdRef.current + 1,
+          source,
+          beforeState,
+          afterState: getSharedAudioContextState(),
+          result,
+          elapsedMs: Math.round(finishedAt - startedAt),
+          before: browserInfoBefore,
+          after: getBrowserAudioDebugInfo(),
+        };
+        audioDebugEntryIdRef.current = debugEntry.id;
+        console.info("[audio-debug] battle audio prime", debugEntry);
+        if (audioDebugPanelEnabled) {
+          setAudioDebugEntries((entries) =>
+            [...entries, debugEntry].slice(-AUDIO_DEBUG_ENTRY_LIMIT)
+          );
+        }
+      }
+
+      return result;
+    },
+    [audioDebugEnabled, audioDebugPanelEnabled]
+  );
+
+  const handleStart = useCallback((options = {}) => {
     setGameInputMode(normalizeGameInputMode(options?.inputMode));
     trackEvent("game_start", getSongAnalyticsParams(song, startTheme));
-    unlockAudioForUserGesture();
+    handlePrimeBattleAudio(options?.audioSource || "start");
     setStartLoadingText(LOADING_COPY.enterWorld);
     setResultSummary(null);
     setGameRunId((id) => id + 1);
     setScreen("game");
-  }
+  }, [handlePrimeBattleAudio, song, startTheme]);
 
-  function handleFinish(summary) {
+  const handleFinish = useCallback((summary) => {
     setResultSummary(summary);
     setResultVoicePlayId((id) => id + 1);
     setScreen("result");
-  }
+  }, []);
 
-  function handleReplay() {
+  const handleReplay = useCallback(() => {
     trackEvent("game_replay", getSongAnalyticsParams(song, startTheme));
+    handlePrimeBattleAudio("result-replay");
     setResultSummary(null);
     setGameRunId((id) => id + 1);
     setScreen("game");
-  }
+  }, [handlePrimeBattleAudio, song, startTheme]);
 
-  function handleHome() {
+  const handleHome = useCallback(() => {
     trackEvent("game_home", {
       ...getSongAnalyticsParams(song, startTheme),
       source_screen: screen,
     });
     setStartLoadingText(LOADING_COPY.returnWorld);
     setScreen("start");
-  }
+  }, [screen, song, startTheme]);
 
   function handleShareGenerate(details = {}) {
     trackEvent("result_share_generate", {
@@ -509,6 +706,12 @@ export default function App() {
             />
           )}
         </>
+      )}
+      {audioDebugPanelEnabled && (
+        <AudioDebugPanel
+          entries={audioDebugEntries}
+          currentState={getSharedAudioContextState()}
+        />
       )}
     </StageShell>
   );

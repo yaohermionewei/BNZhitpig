@@ -1144,6 +1144,56 @@ button {
   -webkit-user-select: none;
 }
 
+.audio-debug-panel {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  left: max(8px, env(safe-area-inset-left));
+  z-index: 9999;
+  box-sizing: border-box;
+  width: min(230px, calc(100vw - 16px));
+  max-height: min(28vh, 210px);
+  padding: 7px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 238, 180, 0.88);
+  background: rgba(18, 20, 28, 0.82);
+  color: #fff4c7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  line-height: 1.25;
+  text-align: left;
+  pointer-events: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.audio-debug-title {
+  margin-bottom: 4px;
+  color: #9ee6ff;
+  font-weight: 700;
+}
+
+.audio-debug-row {
+  margin-bottom: 4px;
+}
+
+.audio-debug-log {
+  max-height: 88px;
+  margin: 5px 0 6px;
+  overflow: auto;
+  white-space: pre-wrap;
+  pointer-events: auto;
+}
+
+.audio-debug-copy {
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 238, 180, 0.88);
+  border-radius: 0;
+  background: rgba(255, 238, 180, 0.12);
+  color: #fff4c7;
+  font: inherit;
+  pointer-events: auto;
+}
+
 .error-overlay {
   position: absolute;
   inset: 0;
