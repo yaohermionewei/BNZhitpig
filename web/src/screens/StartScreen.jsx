@@ -378,16 +378,6 @@ export default function StartScreen({
         <div className="start-shell">
           <div className="start-top-actions">
             <button
-              className={`start-support-button start-support-button-${startTheme}`}
-              type="button"
-              aria-label="赞赏作者"
-              onClick={handleSupportTap}
-            >
-              <PixelThumbIcon />
-              <span className="start-support-label pixel-font-zh">赞赏作者</span>
-            </button>
-
-            <button
               className="start-theme-toggle"
               type="button"
               aria-label={startTheme === "dark" ? "切换到夕阳模式" : "切换到夜晚模式"}
@@ -401,6 +391,16 @@ export default function StartScreen({
                   draggable="false"
                 />
               </span>
+            </button>
+
+            <button
+              className={`start-support-button start-support-button-${startTheme}`}
+              type="button"
+              aria-label="赞赏作者"
+              onClick={handleSupportTap}
+            >
+              <PixelThumbIcon />
+              <span className="start-support-label pixel-font-zh">赞赏作者</span>
             </button>
           </div>
 

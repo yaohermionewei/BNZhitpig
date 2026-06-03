@@ -36,6 +36,10 @@ const RESULT_VOICE_DELAY_MS = 1000;
 const RESULT_VOICE_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 const AUDIO_DEBUG_QUERY_KEY = "debugAudio";
 const AUDIO_DEBUG_ENTRY_LIMIT = 10;
+const DEBUG_SUPPORT_SCREEN_KEY = "debugScreen";
+const DEBUG_SUPPORT_SCREEN_VALUE = "support";
+const DEBUG_SUPPORT_THEME_KEY = "debugStartTheme";
+const DEBUG_SUPPORT_QR_LOADING_KEY = "debugSupportQrLoading";
 
 function getLoadingShimmerDebugPreviewMode() {
   if (!import.meta.env.DEV || typeof window === "undefined") {
@@ -60,6 +64,31 @@ function getResultVoiceDebugPreviewMode() {
   }
 
   return new URLSearchParams(window.location.search).get("debugResultVoices") === "1";
+}
+
+function getSupportScreenDebugMode() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get(DEBUG_SUPPORT_SCREEN_KEY) === DEBUG_SUPPORT_SCREEN_VALUE;
+}
+
+function getSupportQrLoadingDebugMode() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get(DEBUG_SUPPORT_QR_LOADING_KEY) === "1";
+}
+
+function getStartThemeDebugOverride() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return null;
+  }
+
+  const theme = new URLSearchParams(window.location.search).get(DEBUG_SUPPORT_THEME_KEY);
+  return theme === START_THEMES.dark || theme === START_THEMES.light ? theme : null;
 }
 
 function getDebugResultVoiceAmbientEnabled() {
@@ -316,6 +345,82 @@ function useResultVoice(screen, resultKey) {
   }, [screen, resultKey]);
 }
 
+function useVisualViewportCssVars() {
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const root = document.documentElement;
+    let animationFrame = 0;
+
+    function chooseViewportSize(visualSize, fallbackSize) {
+      if (visualSize >= 120 || !fallbackSize) {
+        return visualSize || fallbackSize || 0;
+      }
+
+      return fallbackSize || visualSize || 0;
+    }
+
+    function readViewportMetrics() {
+      const visualViewport = window.visualViewport;
+      const fallbackWidth = window.innerWidth || root.clientWidth || 0;
+      const fallbackHeight = window.innerHeight || root.clientHeight || 0;
+      const visualWidth = visualViewport?.width || 0;
+      const visualHeight = visualViewport?.height || 0;
+      const width = chooseViewportSize(visualWidth, fallbackWidth);
+      const height = chooseViewportSize(visualHeight, fallbackHeight);
+      const offsetTop = visualViewport?.offsetTop || 0;
+      const offsetLeft = visualViewport?.offsetLeft || 0;
+
+      return {
+        width: Math.max(1, width),
+        height: Math.max(1, height),
+        offsetTop: Math.max(0, offsetTop),
+        offsetLeft: Math.max(0, offsetLeft),
+      };
+    }
+
+    function updateViewportVars() {
+      animationFrame = 0;
+      const { width, height, offsetTop, offsetLeft } = readViewportMetrics();
+
+      root.style.setProperty("--app-visual-width", `${width}px`);
+      root.style.setProperty("--app-visual-height", `${height}px`);
+      root.style.setProperty("--app-visual-vw", `${width / 100}px`);
+      root.style.setProperty("--app-visual-vh", `${height / 100}px`);
+      root.style.setProperty("--app-visual-offset-top", `${offsetTop}px`);
+      root.style.setProperty("--app-visual-offset-left", `${offsetLeft}px`);
+    }
+
+    function scheduleViewportUpdate() {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(updateViewportVars);
+    }
+
+    updateViewportVars();
+
+    window.addEventListener("resize", scheduleViewportUpdate, { passive: true });
+    window.addEventListener("orientationchange", scheduleViewportUpdate, { passive: true });
+    window.visualViewport?.addEventListener("resize", scheduleViewportUpdate, {
+      passive: true,
+    });
+    window.visualViewport?.addEventListener("scroll", scheduleViewportUpdate, {
+      passive: true,
+    });
+
+    return () => {
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+      window.removeEventListener("resize", scheduleViewportUpdate);
+      window.removeEventListener("orientationchange", scheduleViewportUpdate);
+      window.visualViewport?.removeEventListener("resize", scheduleViewportUpdate);
+      window.visualViewport?.removeEventListener("scroll", scheduleViewportUpdate);
+    };
+  }, []);
+}
+
 function toAnalyticsNumber(value) {
   const number =
     typeof value === "string" ? Number.parseFloat(value.replace(/,/g, "")) : Number(value);
@@ -462,10 +567,12 @@ export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
   const debugEndingMode = getEndingOverlayDebugPreviewMode();
   const debugResultVoicesMode = getResultVoiceDebugPreviewMode();
+  const supportScreenDebugMode = getSupportScreenDebugMode();
+  const supportQrLoadingDebugMode = getSupportQrLoadingDebugMode();
   const audioDebugEnabled = getAudioDebugEnabled();
   const audioDebugPanelEnabled = getAudioDebugPanelEnabled();
-  const [screen, setScreen] = useState("start");
-  const [startTheme, setThemeState] = useState(() => getStartTheme());
+  const [screen, setScreen] = useState(() => (supportScreenDebugMode ? "support" : "start"));
+  const [startTheme, setThemeState] = useState(() => getStartTheme(getStartThemeDebugOverride()));
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
   const [resultSummary, setResultSummary] = useState(null);
   const [gameRunId, setGameRunId] = useState(0);
@@ -477,6 +584,7 @@ export default function App() {
   const resultFinishTrackedKeyRef = useRef("");
   const audioDebugEntryIdRef = useRef(0);
   const song = selectedSong || getDefaultSong();
+  useVisualViewportCssVars();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
   useResultVoice(screen, resultVoicePlayId || null);
 
@@ -704,7 +812,11 @@ export default function App() {
             />
           )}
           {screen === "support" && (
-            <SupportScreen startTheme={startTheme} onBack={handleSupportBack} />
+            <SupportScreen
+              startTheme={startTheme}
+              onBack={handleSupportBack}
+              forceQrLoading={supportQrLoadingDebugMode}
+            />
           )}
           {screen === "game" && (
             <GameScreen

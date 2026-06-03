@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { playUiSound } from "../game/uiSounds.js";
 
-const SUPPORT_COPY_SAMPLE = "赞赏作者如果你喜欢爆锤方猪欢迎给我打赏微信扫码返回首页";
+const SUPPORT_QR_LOADING_TEXT = "赞赏码加载中...";
+const SUPPORT_COPY_SAMPLE = `赞赏作者如果你喜欢爆锤方猪欢迎给我打赏微信扫码返回首页${SUPPORT_QR_LOADING_TEXT}`;
 const REWARD_CODE_DESKTOP_SRC = "/assets/images/ui/support-wechat-reward-code-desktop.png";
 const REWARD_CODE_MOBILE_SRC = "/assets/images/ui/support-wechat-reward-code-mobile.png";
 
@@ -13,8 +14,10 @@ function waitForSupportFonts() {
   document.fonts.load('400 30px "PixelZhFusion"', SUPPORT_COPY_SAMPLE).catch(() => {});
 }
 
-export default function SupportScreen({ startTheme, onBack }) {
+export default function SupportScreen({ startTheme, onBack, forceQrLoading = false }) {
   const normalizedTheme = startTheme === "light" ? "light" : "dark";
+  const [rewardCodeLoaded, setRewardCodeLoaded] = useState(false);
+  const showRewardCode = rewardCodeLoaded && !forceQrLoading;
 
   useEffect(() => {
     waitForSupportFonts();
@@ -44,16 +47,41 @@ export default function SupportScreen({ startTheme, onBack }) {
           <div className="support-qr-shadow" aria-hidden="true" />
           <div className="support-qr-board">
             <div className="support-qr-board-face">
-              <picture>
+              {!showRewardCode && (
+                <div
+                  className="support-qr-loading"
+                  role="status"
+                  aria-live="polite"
+                  aria-label={SUPPORT_QR_LOADING_TEXT}
+                >
+                  <span
+                    className="support-qr-loading-text magic-loading-text pixel-font-zh"
+                    data-text={SUPPORT_QR_LOADING_TEXT}
+                    aria-hidden="true"
+                  >
+                    {SUPPORT_QR_LOADING_TEXT}
+                  </span>
+                </div>
+              )}
+              <picture
+                className={showRewardCode ? "support-qr-picture" : "support-qr-picture support-qr-picture-loading"}
+              >
                 <source media="(max-width: 560px)" srcSet={REWARD_CODE_MOBILE_SRC} />
                 <img
                   className="support-qr-image"
                   src={REWARD_CODE_DESKTOP_SRC}
                   alt="微信赞赏码"
                   draggable="false"
+                  onLoad={() => {
+                    if (!forceQrLoading) {
+                      setRewardCodeLoaded(true);
+                    }
+                  }}
                 />
               </picture>
-              <p className="support-qr-caption pixel-font-zh">微信扫码给我打赏</p>
+              {showRewardCode && (
+                <p className="support-qr-caption pixel-font-zh">微信扫码给我打赏</p>
+              )}
             </div>
           </div>
         </div>
