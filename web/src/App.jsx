@@ -5,6 +5,7 @@ import StageShell from "./screens/StageShell.jsx";
 import StartScreen from "./screens/StartScreen.jsx";
 import GameScreen from "./screens/GameScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
+import SupportScreen from "./screens/SupportScreen.jsx";
 import {
   AUDIO_DEBUG_EVENT_NAME,
   getSharedAudioContextState,
@@ -89,7 +90,8 @@ function getAmbientBgmArea(
     return getDebugResultVoiceAmbientEnabled() ? "result" : "off";
   }
   if (debugLoadingMode || debugEndingMode) return "off";
-  return screen === "start" || screen === "result" ? screen : "off";
+  if (screen === "start" || screen === "support") return "start";
+  return screen === "result" ? screen : "off";
 }
 
 function useAmbientBgm(playbackArea) {
@@ -616,6 +618,11 @@ export default function App() {
     setScreen("game");
   }, [handlePrimeBattleAudio, song, startTheme]);
 
+  const handleSupportOpen = useCallback(() => {
+    trackEvent("support_open", getSongAnalyticsParams(song, startTheme));
+    setScreen("support");
+  }, [song, startTheme]);
+
   const handleFinish = useCallback((summary) => {
     setResultSummary(summary);
     setResultVoicePlayId((id) => id + 1);
@@ -638,6 +645,11 @@ export default function App() {
     setStartLoadingText(LOADING_COPY.returnWorld);
     setScreen("start");
   }, [screen, song, startTheme]);
+
+  const handleSupportBack = useCallback(() => {
+    trackEvent("support_back", getSongAnalyticsParams(song, startTheme));
+    setScreen("start");
+  }, [song, startTheme]);
 
   function handleShareGenerate(details = {}) {
     trackEvent("result_share_generate", {
@@ -685,10 +697,14 @@ export default function App() {
               onThemeToggle={() =>
                 updateTheme(startTheme === START_THEMES.dark ? START_THEMES.light : START_THEMES.dark)
               }
+              onSupportOpen={handleSupportOpen}
               onSelectSong={setSelectedSong}
               onStart={handleStart}
               loadingText={startLoadingText}
             />
+          )}
+          {screen === "support" && (
+            <SupportScreen startTheme={startTheme} onBack={handleSupportBack} />
           )}
           {screen === "game" && (
             <GameScreen

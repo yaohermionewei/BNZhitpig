@@ -130,9 +130,38 @@ function formatStageStyle(backdropOffsetY) {
   };
 }
 
+function PixelThumbIcon() {
+  return (
+    <svg
+      className="start-support-icon"
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      focusable="false"
+      shapeRendering="crispEdges"
+    >
+      <path
+        d="M4 10H7L9 8V5H10V2H13V4H14V8H17V9H18V12H17V15H16V17H7V18H4V10Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinejoin="miter"
+        strokeLinecap="square"
+        strokeWidth="2"
+      />
+      <path
+        d="M7 10V17"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="square"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
 export default function StartScreen({
   state,
   onThemeToggle,
+  onSupportOpen,
   onSelectSong,
   onStart,
   loadingText = LOADING_COPY.enterWorld,
@@ -300,6 +329,11 @@ export default function StartScreen({
     onStart?.({ inputMode: startInputModeRef.current });
   }
 
+  function handleSupportTap() {
+    playUiSound("tap");
+    onSupportOpen?.();
+  }
+
   function handleStartPointerDown(event) {
     startInputModeRef.current =
       event.pointerType === "touch" ? START_INPUT_TOUCH : START_INPUT_KEYBOARD;
@@ -342,21 +376,33 @@ export default function StartScreen({
         <div className="start-backdrop-bottom" />
 
         <div className="start-shell">
-          <button
-            className="start-theme-toggle"
-            type="button"
-            aria-label={startTheme === "dark" ? "切换到夕阳模式" : "切换到夜晚模式"}
-            onClick={onThemeToggle}
-          >
-            <span className={`start-theme-icon start-theme-icon-${startTheme}`}>
-              <img
-                className="start-theme-icon-image"
-                src={themeToggleIconSrc}
-                alt=""
-                draggable="false"
-              />
-            </span>
-          </button>
+          <div className="start-top-actions">
+            <button
+              className={`start-support-button start-support-button-${startTheme}`}
+              type="button"
+              aria-label="赞赏作者"
+              onClick={handleSupportTap}
+            >
+              <PixelThumbIcon />
+              <span className="start-support-label pixel-font-zh">赞赏作者</span>
+            </button>
+
+            <button
+              className="start-theme-toggle"
+              type="button"
+              aria-label={startTheme === "dark" ? "切换到夕阳模式" : "切换到夜晚模式"}
+              onClick={onThemeToggle}
+            >
+              <span className={`start-theme-icon start-theme-icon-${startTheme}`}>
+                <img
+                  className="start-theme-icon-image"
+                  src={themeToggleIconSrc}
+                  alt=""
+                  draggable="false"
+                />
+              </span>
+            </button>
+          </div>
 
           <div className="start-title-wrap">
             <div className="start-title-main">
