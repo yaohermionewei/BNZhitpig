@@ -1555,14 +1555,6 @@
     "songId": "ditto",
     "authoring": "chart-editor-v1",
     "noteCount": 284,
-    "sourceMode": "osu-taiko",
-    "sourceBeatmapSetId": 2283439,
-    "sourceBeatmapId": 4869686,
-    "sourceDifficulty": "Futsuu",
-    "alignment": "starts-at-audio-head",
-    "firstNote": 1.503,
-    "lastNote": 183.497,
-    "noteDensity": "284 notes / 183.497s",
     "updatedAt": "2026-05-30T15:05:13.393Z"
   },
   "holdDebugMarkers": [

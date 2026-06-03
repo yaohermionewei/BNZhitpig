@@ -175,6 +175,12 @@ tools/chart-editor/backups
 - `Delete`：删除选中 note
 - `Cmd/Ctrl + S`：保存
 
+## Credits
+
+- Ditto rhythm chart reference: osu! taiko `Futsuu` difficulty by [Dayzeek](https://osu.ppy.sh/users/5009970), from [NewJeans - Ditto](https://osu.ppy.sh/beatmapsets/2283439#taiko/4869686).
+- Chart adaptation, timing edits, and game integration: this project.
+- Song, artist names, osu!, and related marks belong to their respective rights holders.
+
 ## 资源脚本
 
 在仓库根目录运行：

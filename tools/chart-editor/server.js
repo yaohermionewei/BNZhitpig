@@ -193,7 +193,10 @@ function normalizeChart(rawChart) {
     },
     notes,
     meta: {
-      ...(source.meta || {}),
+      songId:
+        source.meta && typeof source.meta.songId === "string" && source.meta.songId.trim()
+          ? source.meta.songId.trim()
+          : "ditto",
       noteCount: notes.length,
       authoring: "chart-editor-v1",
       updatedAt: new Date().toISOString(),
