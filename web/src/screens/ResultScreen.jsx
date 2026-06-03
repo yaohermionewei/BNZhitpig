@@ -884,7 +884,13 @@ function ResultCertificateButton({
   className = "",
   disabled = false,
   sound = null,
+  variant = "primary",
 }) {
+  const variantClassName =
+    variant === "secondary"
+      ? "result-certificate-button-secondary"
+      : "result-certificate-button-primary";
+
   function handleClick(event) {
     if (sound) playUiSound(sound);
     onClick?.(event);
@@ -892,23 +898,14 @@ function ResultCertificateButton({
 
   return (
     <button
-      className={`result-certificate-button ${className}`.trim()}
+      className={`result-certificate-button pixel-action-button ${variantClassName} ${className}`.trim()}
       type="button"
       onClick={handleClick}
       disabled={disabled}
     >
-      <span className="result-certificate-button-shadow" />
-      <span className="result-certificate-button-frame">
-        <span className="result-certificate-button-border result-certificate-button-border-top" />
-        <span className="result-certificate-button-border result-certificate-button-border-right" />
-        <span className="result-certificate-button-border result-certificate-button-border-bottom" />
-        <span className="result-certificate-button-border result-certificate-button-border-left" />
-        <span className="result-certificate-button-corner result-certificate-button-corner-top-left" />
-        <span className="result-certificate-button-corner result-certificate-button-corner-top-right" />
-        <span className="result-certificate-button-corner result-certificate-button-corner-bottom-left" />
-        <span className="result-certificate-button-corner result-certificate-button-corner-bottom-right" />
-        <span className="result-certificate-button-face">
-          <span className="result-text-block result-certificate-button-text result-fixed-text-zh pixel-font-zh">
+      <span className="pixel-action-button-frame">
+        <span className="pixel-action-button-inner">
+          <span className="result-text-block pixel-action-button-text result-fixed-text-zh pixel-font-zh">
             {children}
           </span>
         </span>
@@ -1033,10 +1030,10 @@ function ResultCertificateScreen({
         </button>
 
         <div className="result-certificate-actions">
-          <ResultCertificateButton onClick={onHome} sound="back">
+          <ResultCertificateButton variant="secondary" onClick={onHome} sound="back">
             回首页
           </ResultCertificateButton>
-          <ResultCertificateButton onClick={onReplay} sound="confirm">
+          <ResultCertificateButton variant="primary" onClick={onReplay} sound="confirm">
             再来一局
           </ResultCertificateButton>
         </div>

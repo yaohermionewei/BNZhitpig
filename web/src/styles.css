@@ -953,7 +953,10 @@ button {
   --support-title-block-height: 74px;
   --support-title-qr-gap: clamp(22px, calc(var(--app-visual-vh, 1dvh) * 4.8), 40px);
   --support-qr-button-gap: clamp(28px, calc(var(--app-visual-vh, 1dvh) * 7.3), 62px);
-  --support-button-height: calc(14.667cqw);
+  --support-action-artboard-width: max(100cqw, calc(100cqh * 819 / 1518));
+  --support-action-artboard-height: max(100cqh, calc(100cqw * 1518 / 819));
+  --support-action-reference-width: min(var(--support-action-artboard-width), calc(100cqw / 0.828));
+  --support-button-height: clamp(42px, calc(var(--support-action-artboard-height) * 0.0646), 64px);
   --support-block-width: min(70cqw, 292px);
   --support-min-adaptive-width: min(54cqw, 220px);
   --support-height-fit-width: calc(
@@ -1129,13 +1132,47 @@ button {
   white-space: nowrap;
 }
 
-.support-home-button {
-  width: var(--support-adaptive-width);
+.support-actions {
+  width: calc(var(--support-action-reference-width) * 0.828);
+  height: var(--support-button-height);
   margin-top: var(--support-qr-button-gap);
+  display: flex;
+  gap: 8.06%;
+  pointer-events: auto;
 }
 
-.support-home-button .start-action-label {
-  padding-left: 0;
+.support-actions .pixel-action-button {
+  --pixel-action-button-border-size: calc(var(--support-action-reference-width) * 0.009);
+  --pixel-action-button-corner-step: calc(var(--support-action-reference-width) * 0.008);
+  --pixel-action-button-corner-step-2: calc(var(--support-action-reference-width) * 0.016);
+  --pixel-action-button-inner-corner-step: calc(var(--support-action-reference-width) * 0.0065);
+  --pixel-action-button-inner-corner-step-2: calc(var(--support-action-reference-width) * 0.013);
+  --result-certificate-button-text-size: clamp(18px, calc(var(--support-action-reference-width) * 0.0428), 35px);
+}
+
+.support-screen.page-light .support-actions .result-certificate-button {
+  --result-certificate-button-fill: #ee8d4a;
+  --result-certificate-button-border-color: #6b3418;
+}
+
+.support-screen .support-actions .result-certificate-button-secondary {
+  --result-certificate-button-fill: var(--support-bg);
+  --result-certificate-button-border-color: #17233d;
+  --result-certificate-button-text-color: #17233d;
+}
+
+.support-screen .support-actions .result-certificate-button-primary {
+  --result-certificate-button-border-color: #17233d;
+}
+
+.support-screen.page-light .support-actions .result-certificate-button-secondary {
+  --result-certificate-button-fill: #e8c08c;
+  --result-certificate-button-border-color: #6b3418;
+  --result-certificate-button-text-color: #582f28;
+}
+
+.support-save-toast {
+  z-index: 20;
 }
 
 .game-loading-overlay {
@@ -3131,12 +3168,13 @@ button {
   box-shadow: 0 14px 0 rgba(0, 0, 0, 0.24);
 }
 
-.result-certificate-button {
-  --result-certificate-button-border-size: max(3px, 0.9cqw);
-  --result-certificate-button-corner-step: max(3px, 0.8cqw);
-  --result-certificate-button-corner-step-2: max(6px, 1.6cqw);
-  --result-certificate-button-face-corner-step: max(3px, 0.65cqw);
-  --result-certificate-button-face-corner-step-2: max(5px, 1.3cqw);
+.pixel-action-button {
+  --pixel-action-button-border-size: 0.9cqw;
+  --pixel-action-button-corner-step: 0.8cqw;
+  --pixel-action-button-corner-step-2: 1.6cqw;
+  --pixel-action-button-inner-corner-step: 0.65cqw;
+  --pixel-action-button-inner-corner-step-2: 1.3cqw;
+  --result-certificate-button-text-color: #fff0d7;
   --result-certificate-button-fill: #325389;
   --result-certificate-button-border-color: #4f668a;
   position: relative;
@@ -3146,195 +3184,140 @@ button {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #f3e7d5;
+  color: var(--result-certificate-button-text-color);
   text-align: center;
   pointer-events: auto;
 }
 
-.result-certificate-page.page-light .result-certificate-button {
+.result-certificate-button {
+  --result-certificate-button-text-size: clamp(18px, 4.28cqw, 35px);
+}
+
+.result-certificate-page.page-light .pixel-action-button {
   --result-certificate-button-fill: #ee8d4a;
   --result-certificate-button-border-color: #6b3418;
-  color: #fff0d7;
+  --result-certificate-button-text-color: #fff0d7;
 }
 
-.result-certificate-button-shadow {
-  position: absolute;
-  inset: 0.75cqw 0.55cqw -0.2cqw 0.55cqw;
-  background: rgba(0, 0, 0, 0.38);
+.result-certificate-button-secondary {
+  --result-certificate-button-fill: #17233d;
+  --result-certificate-button-border-color: #4f668a;
 }
 
-.result-certificate-button-frame,
-.result-certificate-button-face {
+.result-certificate-page.page-light .result-certificate-button-secondary {
+  --result-certificate-button-fill: #e8c08c;
+  --result-certificate-button-border-color: #6b3418;
+  --result-certificate-button-text-color: #582f28;
+}
+
+.pixel-action-button:focus-visible {
+  outline: max(2px, 0.4cqw) solid rgba(255, 228, 146, 0.9);
+  outline-offset: 0.55cqw;
+}
+
+.pixel-action-button-frame,
+.pixel-action-button-inner {
   position: relative;
   display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
 }
 
-.result-certificate-button-frame {
-  padding: var(--result-certificate-button-border-size);
-  overflow: hidden;
+.pixel-action-button-frame {
+  padding: var(--pixel-action-button-border-size);
   background: var(--result-certificate-button-border-color);
   clip-path: polygon(
-    var(--result-certificate-button-corner-step-2) 0,
-    calc(100% - var(--result-certificate-button-corner-step-2)) 0,
-    calc(100% - var(--result-certificate-button-corner-step-2)) var(--result-certificate-button-corner-step),
-    calc(100% - var(--result-certificate-button-corner-step)) var(--result-certificate-button-corner-step),
-    calc(100% - var(--result-certificate-button-corner-step)) var(--result-certificate-button-corner-step-2),
-    100% var(--result-certificate-button-corner-step-2),
-    100% calc(100% - var(--result-certificate-button-corner-step-2)),
-    calc(100% - var(--result-certificate-button-corner-step)) calc(100% - var(--result-certificate-button-corner-step-2)),
-    calc(100% - var(--result-certificate-button-corner-step)) calc(100% - var(--result-certificate-button-corner-step)),
-    calc(100% - var(--result-certificate-button-corner-step-2)) calc(100% - var(--result-certificate-button-corner-step)),
-    calc(100% - var(--result-certificate-button-corner-step-2)) 100%,
-    var(--result-certificate-button-corner-step-2) 100%,
-    var(--result-certificate-button-corner-step-2) calc(100% - var(--result-certificate-button-corner-step)),
-    var(--result-certificate-button-corner-step) calc(100% - var(--result-certificate-button-corner-step)),
-    var(--result-certificate-button-corner-step) calc(100% - var(--result-certificate-button-corner-step-2)),
-    0 calc(100% - var(--result-certificate-button-corner-step-2)),
-    0 var(--result-certificate-button-corner-step-2),
-    var(--result-certificate-button-corner-step) var(--result-certificate-button-corner-step-2),
-    var(--result-certificate-button-corner-step) var(--result-certificate-button-corner-step),
-    var(--result-certificate-button-corner-step-2) var(--result-certificate-button-corner-step)
+    var(--pixel-action-button-corner-step-2) 0,
+    calc(100% - var(--pixel-action-button-corner-step-2)) 0,
+    calc(100% - var(--pixel-action-button-corner-step-2)) var(--pixel-action-button-corner-step),
+    calc(100% - var(--pixel-action-button-corner-step)) var(--pixel-action-button-corner-step),
+    calc(100% - var(--pixel-action-button-corner-step)) var(--pixel-action-button-corner-step-2),
+    100% var(--pixel-action-button-corner-step-2),
+    100% calc(100% - var(--pixel-action-button-corner-step-2)),
+    calc(100% - var(--pixel-action-button-corner-step)) calc(100% - var(--pixel-action-button-corner-step-2)),
+    calc(100% - var(--pixel-action-button-corner-step)) calc(100% - var(--pixel-action-button-corner-step)),
+    calc(100% - var(--pixel-action-button-corner-step-2)) calc(100% - var(--pixel-action-button-corner-step)),
+    calc(100% - var(--pixel-action-button-corner-step-2)) 100%,
+    var(--pixel-action-button-corner-step-2) 100%,
+    var(--pixel-action-button-corner-step-2) calc(100% - var(--pixel-action-button-corner-step)),
+    var(--pixel-action-button-corner-step) calc(100% - var(--pixel-action-button-corner-step)),
+    var(--pixel-action-button-corner-step) calc(100% - var(--pixel-action-button-corner-step-2)),
+    0 calc(100% - var(--pixel-action-button-corner-step-2)),
+    0 var(--pixel-action-button-corner-step-2),
+    var(--pixel-action-button-corner-step) var(--pixel-action-button-corner-step-2),
+    var(--pixel-action-button-corner-step) var(--pixel-action-button-corner-step),
+    var(--pixel-action-button-corner-step-2) var(--pixel-action-button-corner-step)
   );
 }
 
-.result-certificate-button-border,
-.result-certificate-button-corner {
-  position: absolute;
-  z-index: 1;
-  display: none;
-  background: var(--result-certificate-button-border-color);
-  pointer-events: none;
-}
-
-.result-certificate-button-border-top,
-.result-certificate-button-border-bottom {
-  left: calc(var(--result-certificate-button-border-size) * 2);
-  right: calc(var(--result-certificate-button-border-size) * 2);
-  height: var(--result-certificate-button-border-size);
-}
-
-.result-certificate-button-border-top {
-  top: 0;
-}
-
-.result-certificate-button-border-bottom {
-  bottom: 0;
-}
-
-.result-certificate-button-border-left,
-.result-certificate-button-border-right {
-  top: calc(var(--result-certificate-button-border-size) * 2);
-  bottom: calc(var(--result-certificate-button-border-size) * 2);
-  width: var(--result-certificate-button-border-size);
-}
-
-.result-certificate-button-border-left {
-  left: 0;
-}
-
-.result-certificate-button-border-right {
-  right: 0;
-}
-
-.result-certificate-button-corner {
-  width: var(--result-certificate-button-border-size);
-  height: var(--result-certificate-button-border-size);
-}
-
-.result-certificate-button-corner-top-left {
-  top: var(--result-certificate-button-border-size);
-  left: var(--result-certificate-button-border-size);
-}
-
-.result-certificate-button-corner-top-right {
-  top: var(--result-certificate-button-border-size);
-  right: var(--result-certificate-button-border-size);
-}
-
-.result-certificate-button-corner-bottom-left {
-  bottom: var(--result-certificate-button-border-size);
-  left: var(--result-certificate-button-border-size);
-}
-
-.result-certificate-button-corner-bottom-right {
-  right: var(--result-certificate-button-border-size);
-  bottom: var(--result-certificate-button-border-size);
-}
-
-.result-certificate-button-face {
-  position: relative;
-  z-index: 2;
-  align-items: center;
-  justify-content: center;
+.pixel-action-button-inner {
   padding: 0 2cqw;
-  overflow: hidden;
   background: var(--result-certificate-button-fill);
   clip-path: polygon(
-    var(--result-certificate-button-face-corner-step-2) 0,
-    calc(100% - var(--result-certificate-button-face-corner-step-2)) 0,
-    calc(100% - var(--result-certificate-button-face-corner-step-2)) var(--result-certificate-button-face-corner-step),
-    calc(100% - var(--result-certificate-button-face-corner-step)) var(--result-certificate-button-face-corner-step),
-    calc(100% - var(--result-certificate-button-face-corner-step)) var(--result-certificate-button-face-corner-step-2),
-    100% var(--result-certificate-button-face-corner-step-2),
-    100% calc(100% - var(--result-certificate-button-face-corner-step-2)),
-    calc(100% - var(--result-certificate-button-face-corner-step)) calc(100% - var(--result-certificate-button-face-corner-step-2)),
-    calc(100% - var(--result-certificate-button-face-corner-step)) calc(100% - var(--result-certificate-button-face-corner-step)),
-    calc(100% - var(--result-certificate-button-face-corner-step-2)) calc(100% - var(--result-certificate-button-face-corner-step)),
-    calc(100% - var(--result-certificate-button-face-corner-step-2)) 100%,
-    var(--result-certificate-button-face-corner-step-2) 100%,
-    var(--result-certificate-button-face-corner-step-2) calc(100% - var(--result-certificate-button-face-corner-step)),
-    var(--result-certificate-button-face-corner-step) calc(100% - var(--result-certificate-button-face-corner-step)),
-    var(--result-certificate-button-face-corner-step) calc(100% - var(--result-certificate-button-face-corner-step-2)),
-    0 calc(100% - var(--result-certificate-button-face-corner-step-2)),
-    0 var(--result-certificate-button-face-corner-step-2),
-    var(--result-certificate-button-face-corner-step) var(--result-certificate-button-face-corner-step-2),
-    var(--result-certificate-button-face-corner-step) var(--result-certificate-button-face-corner-step),
-    var(--result-certificate-button-face-corner-step-2) var(--result-certificate-button-face-corner-step)
+    var(--pixel-action-button-inner-corner-step-2) 0,
+    calc(100% - var(--pixel-action-button-inner-corner-step-2)) 0,
+    calc(100% - var(--pixel-action-button-inner-corner-step-2)) var(--pixel-action-button-inner-corner-step),
+    calc(100% - var(--pixel-action-button-inner-corner-step)) var(--pixel-action-button-inner-corner-step),
+    calc(100% - var(--pixel-action-button-inner-corner-step)) var(--pixel-action-button-inner-corner-step-2),
+    100% var(--pixel-action-button-inner-corner-step-2),
+    100% calc(100% - var(--pixel-action-button-inner-corner-step-2)),
+    calc(100% - var(--pixel-action-button-inner-corner-step)) calc(100% - var(--pixel-action-button-inner-corner-step-2)),
+    calc(100% - var(--pixel-action-button-inner-corner-step)) calc(100% - var(--pixel-action-button-inner-corner-step)),
+    calc(100% - var(--pixel-action-button-inner-corner-step-2)) calc(100% - var(--pixel-action-button-inner-corner-step)),
+    calc(100% - var(--pixel-action-button-inner-corner-step-2)) 100%,
+    var(--pixel-action-button-inner-corner-step-2) 100%,
+    var(--pixel-action-button-inner-corner-step-2) calc(100% - var(--pixel-action-button-inner-corner-step)),
+    var(--pixel-action-button-inner-corner-step) calc(100% - var(--pixel-action-button-inner-corner-step)),
+    var(--pixel-action-button-inner-corner-step) calc(100% - var(--pixel-action-button-inner-corner-step-2)),
+    0 calc(100% - var(--pixel-action-button-inner-corner-step-2)),
+    0 var(--pixel-action-button-inner-corner-step-2),
+    var(--pixel-action-button-inner-corner-step) var(--pixel-action-button-inner-corner-step-2),
+    var(--pixel-action-button-inner-corner-step) var(--pixel-action-button-inner-corner-step),
+    var(--pixel-action-button-inner-corner-step-2) var(--pixel-action-button-inner-corner-step)
   );
 }
 
-.result-certificate-button-text {
-  color: #fff0d7;
-  font-size: clamp(18px, 4.28cqw, 35px);
+.pixel-action-button-text {
+  display: block;
+  color: var(--result-certificate-button-text-color);
+  font-size: var(--result-certificate-button-text-size);
   line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
   text-shadow: none;
+  transform: translateZ(0);
 }
 
-.result-certificate-button:active {
+.pixel-action-button:active {
   transform: translateY(0.38cqw);
 }
 
-.result-certificate-button:disabled {
+.pixel-action-button:disabled {
   cursor: default;
   opacity: 0.48;
-}
-
-.result-certificate-button:focus-visible {
-  outline: max(2px, 0.4cqw) solid rgba(255, 228, 146, 0.9);
-  outline-offset: 0.55cqw;
 }
 
 .result-share-preview-download-button {
   flex: 0 0 auto;
   width: min(38vw, 132px);
   height: clamp(40px, 10.8cqw, 46px);
+  --result-certificate-button-text-size: clamp(14px, 3.45cqw, 23px);
 }
 
 .result-share-preview-save-to-album-button {
   width: min(48vw, 172px);
 }
 
-.result-share-preview-download-button .result-certificate-button-face {
+.result-share-preview-download-button .pixel-action-button-inner {
   padding: 0 max(10px, 2cqw);
 }
 
-.result-share-preview-download-button .result-certificate-button-text {
+.result-share-preview-download-button .pixel-action-button-text {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(14px, 3.45cqw, 23px);
 }
 
 .result-share-preview-toast {
