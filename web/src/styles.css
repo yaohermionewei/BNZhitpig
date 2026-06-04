@@ -1171,10 +1171,6 @@ button {
   --result-certificate-button-text-color: #582f28;
 }
 
-.support-save-toast {
-  z-index: 240;
-}
-
 .game-loading-overlay {
   z-index: 5;
 }
@@ -3338,6 +3334,10 @@ button {
   background: rgba(8, 8, 10, 0.82);
   transform: translate(-50%, -50%);
   pointer-events: none;
+}
+
+.support-save-toast.result-share-preview-toast {
+  z-index: 240;
 }
 
 .result-share-preview-toast-text {

@@ -137,7 +137,6 @@ export default function SupportScreen({ startTheme, onBack, forceQrLoading = fal
       document.body.appendChild(link);
       link.click();
       link.remove();
-      showSupportSaveToast(SUPPORT_SAVE_SUCCESS_COPY);
       window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
     } catch (error) {
       console.warn("Failed to save reward code", error);
