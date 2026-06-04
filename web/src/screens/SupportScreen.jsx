@@ -137,6 +137,7 @@ export default function SupportScreen({ startTheme, onBack, forceQrLoading = fal
       document.body.appendChild(link);
       link.click();
       link.remove();
+      showSupportSaveToast(SUPPORT_SAVE_SUCCESS_COPY);
       window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
     } catch (error) {
       console.warn("Failed to save reward code", error);
@@ -217,6 +218,7 @@ export default function SupportScreen({ startTheme, onBack, forceQrLoading = fal
           className="support-save-toast result-share-preview-toast result-fixed-text-zh pixel-font-zh"
           role="status"
           aria-live="polite"
+          onClick={(event) => event.stopPropagation()}
         >
           <span className="result-share-preview-toast-text">{supportSaveToast}</span>
         </div>

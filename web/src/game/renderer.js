@@ -354,6 +354,76 @@ const PAUSE_OVERLAY_PALETTES = Object.freeze({
     shadowColor: "rgba(88, 47, 40, 0.18)",
   }),
 });
+const PAUSE_HOME_ICON_MASK = Object.freeze([
+  "...............",
+  ".......X.......",
+  "......XXX......",
+  ".....XXXXX.....",
+  "....XXXXXXX....",
+  "...XXXXXXXXX...",
+  "..XXXXXXXXXXX..",
+  ".XXXXXXXXXXXXX.",
+  "...XXXXXXXXX...",
+  "...XXXXXXXXX...",
+  "...XXXXXXXXX...",
+  "...XXXXXXXXX...",
+  "...XXXXXXXXX...",
+  "...XXXXXXXXX...",
+  "...............",
+]);
+const PAUSE_RESTART_ICON_MASK = Object.freeze([
+  "................................",
+  "................................",
+  "................................",
+  "................................",
+  "..........XXXXXXXXXXXX..........",
+  "..........XXXXXXXXXXXX..........",
+  "........XXXXXXXXXXXXXXXX..XX....",
+  "........XXXXXXXXXXXXXXXX..XX....",
+  "......XXXXXX........XXXXXXXX....",
+  "......XXXXXX........XXXXXXXX....",
+  "....XXXXXX............XXXXXX....",
+  "....XXXXXX............XXXXXX....",
+  "....XXXX............XXXXXXXX....",
+  "....XXXX............XXXXXXXX....",
+  "....XXXX........................",
+  "....XXXX........................",
+  "....XXXX................XXXX....",
+  "....XXXX................XXXX....",
+  "....XXXX................XXXX....",
+  "....XXXX................XXXX....",
+  "....XXXXXX............XXXXXX....",
+  "....XXXXXX............XXXXXX....",
+  "......XXXXXX........XXXXXX......",
+  "......XXXXXX........XXXXXX......",
+  "........XXXXXXXXXXXXXXXX........",
+  "........XXXXXXXXXXXXXXXX........",
+  "..........XXXXXXXXXXXX..........",
+  "..........XXXXXXXXXXXX..........",
+  "................................",
+  "................................",
+  "................................",
+  "................................",
+]);
+const PAUSE_PLAY_ICON_MASK = Object.freeze([
+  "...............",
+  "...XX..........",
+  "...XXXX........",
+  "...XXXXXX......",
+  "...XXXXXXXX....",
+  "...XXXXXXXXXX..",
+  "...XXXXXXXXXXX.",
+  "...XXXXXXXXXXXX",
+  "...XXXXXXXXXXX.",
+  "...XXXXXXXXXX..",
+  "...XXXXXXXX....",
+  "...XXXXXX......",
+  "...XXXX........",
+  "...XX..........",
+  "...............",
+]);
+const PAUSE_RESTART_ICON_DRAW_SIZE = 34;
+const pauseRestartIconSourceCache = new Map();
 // Debug switch: bypass the offscreen-canvas pixel text rasterization pipeline
 // so we can inspect the underlying font shapes directly.
 const DEBUG_DISABLE_PIXEL_TEXT_RASTERIZATION = true;
@@ -6843,116 +6913,119 @@ function drawWarmPixelLineButtonShell(ctx, rect, palette = PAUSE_OVERLAY_PALETTE
   fillPixelCutRect(ctx, rect.left + 4, rect.top + 4, width - 8, height - 8, 6, 2, faceColor);
 }
 
-function drawPauseHomeIcon(ctx, rect, color = PAUSE_OVERLAY_PALETTES.light.iconColor) {
-  const centerX = rect.left + (rect.right - rect.left) / 2;
-  const centerY = rect.top + (rect.bottom - rect.top) / 2;
-  const roofHalf = 12;
-  const roofTop = centerY - 13;
-  const roofBaseY = centerY - 1;
-  const bodyWidth = 18;
-  const bodyHeight = 14;
-  const bodyLeft = snapToGrid(centerX - bodyWidth / 2, 1);
-  const bodyTop = snapToGrid(centerY - 1, 1);
-  const bodyRadius = 3.5;
-  const roofRadius = 3;
-  const leftRoofX = centerX - roofHalf;
-  const rightRoofX = centerX + roofHalf;
-  const bodyRight = bodyLeft + bodyWidth;
-  const bodyBottom = bodyTop + bodyHeight;
+function drawPausePixelIcon(ctx, rect, mask, palette = PAUSE_OVERLAY_PALETTES.light, options = {}) {
+  const columns = Math.max(...mask.map((row) => row.length));
+  const rows = mask.length;
+  const width = rect.right - rect.left;
+  const height = rect.bottom - rect.top;
+  const iconPadding = options.padding ?? 16;
+  const maxIconWidth = Math.max(1, width - iconPadding);
+  const maxIconHeight = Math.max(1, height - iconPadding);
+  const cellSize = Math.max(1, Math.floor(Math.min(maxIconWidth / columns, maxIconHeight / rows)));
+  const iconWidth = columns * cellSize;
+  const iconHeight = rows * cellSize;
+  const originX = snapToGrid(rect.left + width / 2 - iconWidth / 2 + (options.offsetX || 0), 1);
+  const originY = snapToGrid(rect.top + height / 2 - iconHeight / 2 + (options.offsetY || 0), 1);
+  const iconColor = palette.iconColor || PAUSE_OVERLAY_PALETTES.light.iconColor;
 
   ctx.save();
-  ctx.fillStyle = color;
-
-  ctx.beginPath();
-  ctx.moveTo(bodyLeft, bodyBottom - bodyRadius);
-  ctx.quadraticCurveTo(bodyLeft, bodyBottom, bodyLeft + bodyRadius, bodyBottom);
-  ctx.lineTo(bodyRight - bodyRadius, bodyBottom);
-  ctx.quadraticCurveTo(bodyRight, bodyBottom, bodyRight, bodyBottom - bodyRadius);
-  ctx.lineTo(bodyRight, roofBaseY + 2);
-  ctx.lineTo(rightRoofX + roofRadius * 0.2, roofBaseY + 2);
-  ctx.quadraticCurveTo(rightRoofX, roofBaseY + 2, rightRoofX - roofRadius * 0.8, roofBaseY - roofRadius * 0.2);
-  ctx.lineTo(centerX + roofRadius * 0.8, roofTop + roofRadius * 0.9);
-  ctx.quadraticCurveTo(centerX, roofTop - roofRadius * 0.4, centerX - roofRadius * 0.8, roofTop + roofRadius * 0.9);
-  ctx.lineTo(leftRoofX + roofRadius * 0.8, roofBaseY - roofRadius * 0.2);
-  ctx.quadraticCurveTo(leftRoofX, roofBaseY + 2, leftRoofX - roofRadius * 0.2, roofBaseY + 2);
-  ctx.lineTo(bodyLeft, roofBaseY + 2);
-  ctx.closePath();
-  ctx.fill();
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = iconColor;
+  for (let row = 0; row < rows; row += 1) {
+    const maskRow = mask[row];
+    for (let column = 0; column < columns; column += 1) {
+      if (maskRow[column] !== "X") {
+        continue;
+      }
+      ctx.fillRect(
+        originX + column * cellSize,
+        originY + row * cellSize,
+        cellSize,
+        cellSize
+      );
+    }
+  }
   ctx.restore();
 }
 
-function drawPauseReplayIcon(ctx, rect, color = PAUSE_OVERLAY_PALETTES.light.iconColor) {
-  const centerX = rect.left + (rect.right - rect.left) / 2;
-  const centerY = rect.top + (rect.bottom - rect.top) / 2;
-  const radius = 12;
-  const arcStartAngle = Math.PI * 0.04;
-  const arcEndAngle = Math.PI * 1.54;
-  const arrowTipAngle = -Math.PI * 0.34;
-  const arrowOffsetX = 4;
-  const arrowOffsetY = -1;
-  const tipX = centerX + Math.cos(arrowTipAngle) * radius + arrowOffsetX;
-  const tipY = centerY + Math.sin(arrowTipAngle) * radius + arrowOffsetY;
-  const arrowLength = 10;
-  const arrowHalfHeight = 5;
+function drawPauseHomeIcon(ctx, rect, palette = PAUSE_OVERLAY_PALETTES.light) {
+  drawPausePixelIcon(ctx, rect, PAUSE_HOME_ICON_MASK, palette);
+}
+
+function createPauseIconMaskCanvas(mask, color) {
+  const cacheKey = `${color}:${mask.length}:${mask[0] || ""}`;
+  if (pauseRestartIconSourceCache.has(cacheKey)) {
+    return pauseRestartIconSourceCache.get(cacheKey);
+  }
+
+  const columns = Math.max(...mask.map((row) => row.length));
+  const rows = mask.length;
+  const canvas = createWebOffscreenCanvas({ width: columns, height: rows });
+  if (!canvas) {
+    return null;
+  }
+
+  const sourceCtx = canvas.getContext("2d");
+  sourceCtx.clearRect(0, 0, columns, rows);
+  sourceCtx.imageSmoothingEnabled = false;
+  sourceCtx.fillStyle = color;
+  for (let row = 0; row < rows; row += 1) {
+    const maskRow = mask[row];
+    for (let column = 0; column < columns; column += 1) {
+      if (maskRow[column] !== "X") {
+        continue;
+      }
+      sourceCtx.fillRect(column, row, 1, 1);
+    }
+  }
+
+  pauseRestartIconSourceCache.set(cacheKey, canvas);
+  return canvas;
+}
+
+function drawPauseReplayIcon(ctx, rect, palette = PAUSE_OVERLAY_PALETTES.light) {
+  const width = rect.right - rect.left;
+  const height = rect.bottom - rect.top;
+  const iconColor = palette.iconColor || PAUSE_OVERLAY_PALETTES.light.iconColor;
+  const sourceCanvas = createPauseIconMaskCanvas(PAUSE_RESTART_ICON_MASK, iconColor);
+
+  if (!sourceCanvas) {
+    drawPausePixelIcon(ctx, rect, PAUSE_RESTART_ICON_MASK, palette, {
+      padding: 8,
+    });
+    return;
+  }
+
+  const iconSize = Math.min(PAUSE_RESTART_ICON_DRAW_SIZE, width - 8, height - 8);
+  const originX = snapToGrid(rect.left + width / 2 - iconSize / 2, 1);
+  const originY = snapToGrid(rect.top + height / 2 - iconSize / 2, 1);
 
   ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 4;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, arcStartAngle, arcEndAngle, false);
-  ctx.stroke();
-
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(tipX - arrowLength, tipY - arrowHalfHeight);
-  ctx.lineTo(tipX - arrowLength, tipY + arrowHalfHeight);
-  ctx.closePath();
-  ctx.fill();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(sourceCanvas, originX, originY, iconSize, iconSize);
   ctx.restore();
 }
 
-function drawPausePlayIcon(ctx, rect, color = PAUSE_OVERLAY_PALETTES.light.iconColor) {
-  const centerX = rect.left + (rect.right - rect.left) / 2;
-  const centerY = rect.top + (rect.bottom - rect.top) / 2;
-  const leftX = centerX - 7;
-  const rightX = centerX + 11;
-  const topY = centerY - 11;
-  const bottomY = centerY + 11;
-  const radius = 4;
-  const noseRadius = 4;
-
-  ctx.save();
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(leftX, topY + radius);
-  ctx.quadraticCurveTo(leftX, topY, leftX + radius, topY);
-  ctx.lineTo(rightX - noseRadius, centerY - noseRadius * 0.7);
-  ctx.quadraticCurveTo(rightX + noseRadius * 0.8, centerY, rightX - noseRadius, centerY + noseRadius * 0.7);
-  ctx.lineTo(leftX + radius, bottomY);
-  ctx.quadraticCurveTo(leftX, bottomY, leftX, bottomY - radius);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
+function drawPausePlayIcon(ctx, rect, palette = PAUSE_OVERLAY_PALETTES.light) {
+  drawPausePixelIcon(ctx, rect, PAUSE_PLAY_ICON_MASK, palette, {
+    offsetX: 1,
+  });
 }
 
 function drawPauseIconButton(ctx, rect, iconType, palette = PAUSE_OVERLAY_PALETTES.light) {
-  const iconColor = palette.iconColor || PAUSE_OVERLAY_PALETTES.light.iconColor;
-
   drawWarmPixelLineButtonShell(ctx, rect, palette);
 
   if (iconType === "home") {
-    drawPauseHomeIcon(ctx, rect, iconColor);
+    drawPauseHomeIcon(ctx, rect, palette);
     return;
   }
 
   if (iconType === "restart") {
-    drawPauseReplayIcon(ctx, rect, iconColor);
+    drawPauseReplayIcon(ctx, rect, palette);
     return;
   }
 
-  drawPausePlayIcon(ctx, rect, iconColor);
+  drawPausePlayIcon(ctx, rect, palette);
 }
 
 function drawPauseOverlay(ctx, viewport, options = {}) {

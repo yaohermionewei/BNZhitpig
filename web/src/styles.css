@@ -1172,7 +1172,7 @@ button {
 }
 
 .support-save-toast {
-  z-index: 20;
+  z-index: 240;
 }
 
 .game-loading-overlay {
