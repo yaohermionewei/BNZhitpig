@@ -32,7 +32,7 @@ const ResultVoiceDebugPreview = import.meta.env.DEV
 const AMBIENT_BGM_SRC = "/assets/audio/home-loop-bgm-quiet.m4a";
 const AMBIENT_BGM_VOLUME = 1;
 const AMBIENT_BGM_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
-const RESULT_VOICE_DELAY_MS = 1000;
+const RESULT_VOICE_DELAY_MS = 0;
 const RESULT_VOICE_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 const AUDIO_DEBUG_QUERY_KEY = "debugAudio";
 const AUDIO_DEBUG_ENTRY_LIMIT = 10;
@@ -578,6 +578,7 @@ export default function App() {
   const [gameRunId, setGameRunId] = useState(0);
   const [gameInputMode, setGameInputMode] = useState("touch");
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
+  const [resultVoiceReadyPlayId, setResultVoiceReadyPlayId] = useState(0);
   const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
   const [audioDebugEntries, setAudioDebugEntries] = useState([]);
   const pageViewKeyRef = useRef("");
@@ -586,7 +587,7 @@ export default function App() {
   const song = selectedSong || getDefaultSong();
   useVisualViewportCssVars();
   useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
-  useResultVoice(screen, resultVoicePlayId || null);
+  useResultVoice(screen, resultVoiceReadyPlayId || null);
 
   useEffect(() => {
     setBunniesMediaSessionMetadata();
@@ -722,6 +723,7 @@ export default function App() {
     handlePrimeBattleAudio(options?.audioSource || "start");
     setStartLoadingText(LOADING_COPY.enterWorld);
     setResultSummary(null);
+    setResultVoiceReadyPlayId(0);
     setGameRunId((id) => id + 1);
     setScreen("game");
   }, [handlePrimeBattleAudio, song, startTheme]);
@@ -733,6 +735,7 @@ export default function App() {
 
   const handleFinish = useCallback((summary) => {
     setResultSummary(summary);
+    setResultVoiceReadyPlayId(0);
     setResultVoicePlayId((id) => id + 1);
     setScreen("result");
   }, []);
@@ -741,9 +744,17 @@ export default function App() {
     trackEvent("game_replay", getSongAnalyticsParams(song, startTheme));
     handlePrimeBattleAudio("result-replay");
     setResultSummary(null);
+    setResultVoiceReadyPlayId(0);
     setGameRunId((id) => id + 1);
     setScreen("game");
   }, [handlePrimeBattleAudio, song, startTheme]);
+
+  const handleResultReadyForVoice = useCallback((playId) => {
+    if (!playId) return;
+    setResultVoiceReadyPlayId((currentPlayId) =>
+      currentPlayId === playId ? currentPlayId : playId
+    );
+  }, []);
 
   const handleHome = useCallback(() => {
     trackEvent("game_home", {
@@ -832,6 +843,8 @@ export default function App() {
             <ResultScreen
               summary={resultSummary}
               startTheme={startTheme}
+              resultVoicePlayId={resultVoicePlayId}
+              onResultReadyForVoice={handleResultReadyForVoice}
               onReplay={handleReplay}
               onHome={handleHome}
               onShareGenerate={handleShareGenerate}

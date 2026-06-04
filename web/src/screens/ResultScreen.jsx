@@ -349,11 +349,12 @@ function buildDigitGlyphs(value) {
   return [{ id: "empty", char: "", rows: createEmptyDigitRows() }];
 }
 
-function buildStatItem(key, label, value) {
+function buildStatItem(key, label, value, options = {}) {
   const displayValue = String(value ?? 0);
   return {
     key,
     label,
+    badge: options.badge || "",
     value: displayValue,
     digitGlyphs: buildDigitGlyphs(displayValue),
   };
@@ -760,6 +761,9 @@ function decorateSummary(summary) {
   const displayScore = formatResultScoreDisplay(summary?.scoreDisplay);
   const rank = summary?.rank || "B";
   const rankCopy = getRankCopy(rank);
+  const missCount = Number(summary?.miss || 0);
+  const totalNotes = Number(summary?.totalNotes || 0);
+  const shouldShowFullComboBadge = !summary?.failed && totalNotes > 0 && missCount === 0;
 
   return {
     ...summary,
@@ -784,7 +788,12 @@ function decorateSummary(summary) {
       buildStatItem("perfect", "完美爆锤", summary?.perfect),
       buildStatItem("good", "优秀爆锤", summary?.good),
       buildStatItem("miss", "爆锤落空", summary?.miss),
-      buildStatItem("combo", "最高连击", summary?.maxCombo),
+      buildStatItem(
+        "combo",
+        "最高连锤",
+        summary?.maxCombo,
+        shouldShowFullComboBadge ? { badge: "全部锤中" } : undefined
+      ),
     ],
   };
 }
@@ -999,8 +1008,15 @@ function ResultCertificateScreen({
           <div className="result-certificate-stats">
             {summary.stats.map((item) => (
               <div className="result-certificate-stat-row" key={item.key}>
-                <span className="result-text-block result-certificate-stat-label result-fixed-text-zh pixel-font-zh">
-                  {item.label}
+                <span className="result-certificate-stat-label-group">
+                  <span className="result-text-block result-certificate-stat-label result-fixed-text-zh pixel-font-zh">
+                    {item.label}
+                  </span>
+                  {item.badge && (
+                    <span className="result-text-block result-certificate-stat-badge result-fixed-text-zh pixel-font-zh">
+                      {item.badge}
+                    </span>
+                  )}
                 </span>
                 <span className="result-text-block result-certificate-stat-value result-fixed-text-en pixel-font-en">
                   {item.value}
@@ -1161,6 +1177,8 @@ function ResultSharePreviewOverlay({
 export default function ResultScreen({
   summary,
   startTheme,
+  resultVoicePlayId = 0,
+  onResultReadyForVoice,
   onReplay,
   onHome,
   onShareGenerate,
@@ -1184,6 +1202,7 @@ export default function ResultScreen({
   const certificatePageRef = useRef(null);
   const shareGenerationIdRef = useRef(0);
   const shareSaveToastTimerRef = useRef(0);
+  const voiceReadyPlayIdRef = useRef(0);
   const isSharePreviewOpen = sharePreview.status !== "idle";
   const isGeneratingShare = sharePreview.status === "generating";
 
@@ -1242,6 +1261,13 @@ export default function ResultScreen({
     usesCertificateResult,
     normalizedStartTheme,
   ]);
+
+  useEffect(() => {
+    if (!decoratedSummary || isPreparingResult || !resultVoicePlayId) return;
+    if (voiceReadyPlayIdRef.current === resultVoicePlayId) return;
+    voiceReadyPlayIdRef.current = resultVoicePlayId;
+    onResultReadyForVoice?.(resultVoicePlayId);
+  }, [decoratedSummary, isPreparingResult, onResultReadyForVoice, resultVoicePlayId]);
 
   useEffect(() => {
     function handleResultKeyDown(event) {
