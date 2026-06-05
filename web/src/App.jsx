@@ -579,6 +579,8 @@ export default function App() {
   const [gameInputMode, setGameInputMode] = useState("touch");
   const [resultVoicePlayId, setResultVoicePlayId] = useState(0);
   const [resultVoiceReadyPlayId, setResultVoiceReadyPlayId] = useState(0);
+  const [hasShownGameSoundToast, setHasShownGameSoundToast] = useState(false);
+  const [showGameSoundToastForRun, setShowGameSoundToastForRun] = useState(false);
   const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
   const [audioDebugEntries, setAudioDebugEntries] = useState([]);
   const pageViewKeyRef = useRef("");
@@ -724,9 +726,10 @@ export default function App() {
     setStartLoadingText(LOADING_COPY.enterWorld);
     setResultSummary(null);
     setResultVoiceReadyPlayId(0);
+    setShowGameSoundToastForRun(!hasShownGameSoundToast);
     setGameRunId((id) => id + 1);
     setScreen("game");
-  }, [handlePrimeBattleAudio, song, startTheme]);
+  }, [handlePrimeBattleAudio, hasShownGameSoundToast, song, startTheme]);
 
   const handleSupportOpen = useCallback(() => {
     trackEvent("support_open", getSongAnalyticsParams(song, startTheme));
@@ -745,9 +748,14 @@ export default function App() {
     handlePrimeBattleAudio("result-replay");
     setResultSummary(null);
     setResultVoiceReadyPlayId(0);
+    setShowGameSoundToastForRun(false);
     setGameRunId((id) => id + 1);
     setScreen("game");
   }, [handlePrimeBattleAudio, song, startTheme]);
+
+  const handleGameSoundToastShown = useCallback(() => {
+    setHasShownGameSoundToast(true);
+  }, []);
 
   const handleResultReadyForVoice = useCallback((playId) => {
     if (!playId) return;
@@ -835,6 +843,8 @@ export default function App() {
               song={song}
               startTheme={startTheme}
               inputMode={gameInputMode}
+              showIntroSoundToast={showGameSoundToastForRun}
+              onIntroSoundToastShown={handleGameSoundToastShown}
               onFinish={handleFinish}
               onHome={handleHome}
             />

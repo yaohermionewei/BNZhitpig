@@ -12,12 +12,16 @@ export default function GameScreen({
   inputMode = "touch",
   onFinish,
   onHome,
+  showIntroSoundToast = false,
+  onIntroSoundToastShown,
 }) {
   const canvasRef = useRef(null);
   const runnerRef = useRef(null);
   const onFinishRef = useRef(onFinish);
   const onHomeRef = useRef(onHome);
+  const onIntroSoundToastShownRef = useRef(onIntroSoundToastShown);
   const soundToastTimerRef = useRef(0);
+  const hasShownSoundToastRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [soundToastVisible, setSoundToastVisible] = useState(false);
@@ -29,6 +33,10 @@ export default function GameScreen({
   useEffect(() => {
     onHomeRef.current = onHome;
   }, [onHome]);
+
+  useEffect(() => {
+    onIntroSoundToastShownRef.current = onIntroSoundToastShown;
+  }, [onIntroSoundToastShown]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -66,14 +74,16 @@ export default function GameScreen({
   }, [song, startTheme, inputMode]);
 
   useEffect(() => {
-    if (loading || error) {
+    if (!showIntroSoundToast || hasShownSoundToastRef.current || loading || error) {
       setSoundToastVisible(false);
       window.clearTimeout(soundToastTimerRef.current);
       return undefined;
     }
 
     window.clearTimeout(soundToastTimerRef.current);
+    hasShownSoundToastRef.current = true;
     setSoundToastVisible(true);
+    onIntroSoundToastShownRef.current?.();
     soundToastTimerRef.current = window.setTimeout(() => {
       setSoundToastVisible(false);
     }, SOUND_TOAST_DURATION_MS);
@@ -81,7 +91,7 @@ export default function GameScreen({
     return () => {
       window.clearTimeout(soundToastTimerRef.current);
     };
-  }, [error, loading]);
+  }, [error, loading, showIntroSoundToast]);
 
   return (
     <div className={`screen game-screen screen-${startTheme}`}>
