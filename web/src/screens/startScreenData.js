@@ -501,15 +501,38 @@ export function getStartSongMarkSrc(theme) {
   return START_SONG_MARK_SOURCES[theme] || START_SONG_MARK_SOURCES[DEFAULT_START_THEME];
 }
 
-export function getStartCriticalImageSources(theme) {
+export function getStartBlockingImageSources(theme) {
   const normalizedTheme = theme === START_THEMES.light ? START_THEMES.light : START_THEMES.dark;
+  const rabbitFrameSources = getRabbitFrameSources(normalizedTheme);
+  const pigFrameSources = getPigFrameSources(normalizedTheme);
+
+  return Array.from(
+    new Set(
+      [
+        getStartBackdropSrc(normalizedTheme),
+        rabbitFrameSources[0],
+        pigFrameSources[0],
+      ].filter(Boolean)
+    )
+  );
+}
+
+export function getStartDeferredImageSources(theme) {
+  const normalizedTheme = theme === START_THEMES.light ? START_THEMES.light : START_THEMES.dark;
+  const alternateTheme =
+    normalizedTheme === START_THEMES.light ? START_THEMES.dark : START_THEMES.light;
+
   return Array.from(
     new Set([
-      getStartBackdropSrc(normalizedTheme),
       getThemeToggleIconSrc(normalizedTheme),
       getStartSongMarkSrc(normalizedTheme),
-      ...getRabbitFrameSources(normalizedTheme),
-      ...getPigFrameSources(normalizedTheme),
+      ...getRabbitFrameSources(normalizedTheme).slice(1),
+      ...getPigFrameSources(normalizedTheme).slice(1),
+      ...getStartBlockingImageSources(alternateTheme),
+      getThemeToggleIconSrc(alternateTheme),
+      getStartSongMarkSrc(alternateTheme),
+      ...getRabbitFrameSources(alternateTheme).slice(1),
+      ...getPigFrameSources(alternateTheme).slice(1),
     ])
   );
 }

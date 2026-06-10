@@ -16,6 +16,7 @@ import {
   preloadResultAssets,
 } from "./assets.js";
 import { buildResultSummary } from "./result.js";
+import { isLikelyMobileDevice } from "../utils/device.js";
 import { setBunniesMediaSessionMetadata } from "./mediaSession.js";
 import { normalizeStartTheme, getStartThemeLoadingColors } from "../utils/start-theme.js";
 import { LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
@@ -41,6 +42,8 @@ const NOTE_HIT_EFFECT_VOLUME = 3.6;
 const NOTE_MISS_EFFECT_VOLUME = 1.8;
 const CRITICAL_FONT_LOAD_TIMEOUT_MS = 1200;
 const PREPARE_RESOURCE_TIMEOUT_MS = 12000;
+const DESKTOP_DPR_MAX = 2;
+const MOBILE_DPR_MAX = 1.5;
 const TUTORIAL_BATTLE_START_COUNT_STORAGE_KEY = "bunniesTutorialBattleStartCountV1";
 const TUTORIAL_HINT_VISIBLE_BATTLE_LIMIT = 3;
 const KEYBOARD_TAP_CODES = Object.freeze(["Space", "KeyJ", "KeyK", "KeyF", "KeyD"]);
@@ -413,7 +416,8 @@ export class GameRunner {
 
   resizeCanvas() {
     const rect = this.canvas.getBoundingClientRect();
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const maxDpr = isLikelyMobileDevice() ? MOBILE_DPR_MAX : DESKTOP_DPR_MAX;
+    const dpr = Math.min(maxDpr, window.devicePixelRatio || 1);
     const width = Math.max(1, Math.round(rect.width));
     const height = Math.max(1, Math.round(rect.height));
     const pixelWidth = Math.max(1, Math.round(width * dpr));

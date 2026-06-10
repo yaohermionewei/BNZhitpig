@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { songs } from "../game/songs.js";
 import { playUiSound } from "../game/uiSounds.js";
+import { isLikelyMobileDevice } from "../utils/device.js";
 import { isInteractiveKeyboardTarget } from "../utils/keyboard-shortcuts.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
@@ -12,7 +13,8 @@ import {
   getPigFrameSources,
   getRabbitFrameSources,
   getStartBackdropSrc,
-  getStartCriticalImageSources,
+  getStartBlockingImageSources,
+  getStartDeferredImageSources,
   getStartSongMarkSrc,
   getStartSongs,
   getThemeToggleIconSrc,
@@ -21,6 +23,10 @@ import {
 const START_IMAGE_PRELOAD_PROMISES = new Map();
 const START_IDLE_PRELOAD_TIMEOUT_MS = 2500;
 const START_IDLE_PRELOAD_FALLBACK_MS = 320;
+const START_MOBILE_RABBIT_FRAME_INTERVAL_MS = 360;
+const START_MOBILE_PIG_FRAME_INTERVAL_MS = 400;
+const START_DESKTOP_RABBIT_FRAME_INTERVAL_MS = 220;
+const START_DESKTOP_PIG_FRAME_INTERVAL_MS = 240;
 const START_INPUT_TOUCH = "touch";
 const START_INPUT_KEYBOARD = "keyboard";
 const START_KEYBOARD_CODES = new Set(["Space", "Enter"]);
@@ -55,14 +61,18 @@ function preloadImage(src) {
   return loadPromise;
 }
 
-function preloadStartImages(theme) {
-  const sources = Array.from(new Set(getStartCriticalImageSources(theme)));
+function preloadImages(sources) {
+  const uniqueSources = Array.from(new Set(sources.filter(Boolean)));
 
-  return Promise.allSettled(sources.map((src) => preloadImage(src)));
+  return Promise.allSettled(uniqueSources.map((src) => preloadImage(src)));
 }
 
-function getAlternateStartTheme(theme) {
-  return theme === "light" ? "dark" : "light";
+function preloadStartBlockingImages(theme) {
+  return preloadImages(getStartBlockingImageSources(theme));
+}
+
+function preloadStartDeferredImages(theme) {
+  return preloadImages(getStartDeferredImageSources(theme));
 }
 
 function scheduleIdleStartImagePreload(theme) {
@@ -71,7 +81,7 @@ function scheduleIdleStartImagePreload(theme) {
   }
 
   const runPreload = () => {
-    preloadStartImages(getAlternateStartTheme(theme));
+    preloadStartDeferredImages(theme);
   };
 
   if (typeof window.requestIdleCallback === "function") {
@@ -179,6 +189,7 @@ export default function StartScreen({
     height: 782,
     heroOffsetTop: 0,
   });
+  const isMobileDevice = useMemo(() => isLikelyMobileDevice(), []);
   const rabbitFrameSources = useMemo(() => getRabbitFrameSources(startTheme), [startTheme]);
   const pigFrameSources = useMemo(() => getPigFrameSources(startTheme), [startTheme]);
   const startSongs = useMemo(() => getStartSongs(song?.id || "ditto"), [song?.id]);
@@ -251,7 +262,7 @@ export default function StartScreen({
       : [waitForStartFonts(), wait(START_LOADING_MIN_DURATION_MS)];
 
     Promise.allSettled([
-      preloadStartImages(startTheme),
+      preloadStartBlockingImages(startTheme),
       ...firstLoadTasks,
     ]).then(() => {
       if (!cancelled) {
@@ -270,24 +281,30 @@ export default function StartScreen({
   }, [startTheme]);
 
   useEffect(() => {
+    const frameInterval = isMobileDevice
+      ? START_MOBILE_RABBIT_FRAME_INTERVAL_MS
+      : START_DESKTOP_RABBIT_FRAME_INTERVAL_MS;
     const frameTimer = window.setInterval(() => {
       setRabbitFrame((frame) => (frame + 1) % rabbitFrameSources.length);
-    }, 220);
+    }, frameInterval);
 
     return () => {
       window.clearInterval(frameTimer);
     };
-  }, [rabbitFrameSources.length]);
+  }, [isMobileDevice, rabbitFrameSources.length]);
 
   useEffect(() => {
+    const frameInterval = isMobileDevice
+      ? START_MOBILE_PIG_FRAME_INTERVAL_MS
+      : START_DESKTOP_PIG_FRAME_INTERVAL_MS;
     const frameTimer = window.setInterval(() => {
       setPigFrame((frame) => (frame + 1) % pigFrameSources.length);
-    }, 240);
+    }, frameInterval);
 
     return () => {
       window.clearInterval(frameTimer);
     };
-  }, [pigFrameSources.length]);
+  }, [isMobileDevice, pigFrameSources.length]);
 
   useEffect(() => {
     setRabbitFrame((frame) => frame % rabbitFrameSources.length);

@@ -13,6 +13,7 @@ import {
   playResultVoiceClip,
   stopResultVoicePlayback,
 } from "./game/resultVoicePlayback.js";
+import { isLikelyMobileDevice } from "./utils/device.js";
 import { LOADING_COPY } from "./utils/loading-copy.js";
 import { trackEvent, trackPageView } from "./utils/analytics.js";
 import { setBunniesMediaSessionMetadata } from "./game/mediaSession.js";
@@ -54,6 +55,7 @@ const RESULT_VOICE_DELAY_MS = 0;
 const RESULT_VOICE_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
 const AUDIO_DEBUG_QUERY_KEY = "debugAudio";
 const AUDIO_DEBUG_ENTRY_LIMIT = 10;
+const MOBILE_GAME_PRELOAD_DELAY_MS = 3500;
 const DEBUG_SUPPORT_SCREEN_KEY = "debugScreen";
 const DEBUG_SUPPORT_SCREEN_VALUE = "support";
 const DEBUG_SUPPORT_THEME_KEY = "debugStartTheme";
@@ -85,6 +87,20 @@ function scheduleIdlePreload(loadModule, label, timeout = 2500) {
   return () => {
     cancelled = true;
     window.clearTimeout(timerId);
+  };
+}
+
+function scheduleDelayedIdlePreload(loadModule, label, delayMs, timeout = 2500) {
+  if (typeof window === "undefined") return undefined;
+
+  let cancelIdlePreload = null;
+  const timerId = window.setTimeout(() => {
+    cancelIdlePreload = scheduleIdlePreload(loadModule, label, timeout);
+  }, delayMs);
+
+  return () => {
+    window.clearTimeout(timerId);
+    cancelIdlePreload?.();
   };
 }
 
@@ -174,9 +190,18 @@ function getAmbientBgmArea(
   return screen === "result" ? screen : "off";
 }
 
+function hasUserActivation() {
+  if (typeof navigator === "undefined" || !navigator.userActivation) {
+    return false;
+  }
+
+  return navigator.userActivation.isActive || navigator.userActivation.hasBeenActive;
+}
+
 function useAmbientBgm(playbackArea) {
   const audioRef = useRef(null);
   const previousPlaybackAreaRef = useRef("off");
+  const isMobileDevice = useMemo(() => isLikelyMobileDevice(), []);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -184,13 +209,14 @@ function useAmbientBgm(playbackArea) {
     const shouldPlay = playbackArea !== "off";
     let cancelled = false;
     let unlockBound = false;
-    const audio =
-      audioRef.current ||
-      Object.assign(new Audio(AMBIENT_BGM_SRC), {
-        loop: true,
-        preload: "auto",
-        volume: AMBIENT_BGM_VOLUME,
-      });
+    const audioPreload = isMobileDevice ? "none" : "auto";
+    const audio = audioRef.current || new Audio();
+    audio.loop = true;
+    audio.preload = audioPreload;
+    if (!audio.src) {
+      audio.src = AMBIENT_BGM_SRC;
+    }
+    audio.volume = AMBIENT_BGM_VOLUME;
     audioRef.current = audio;
 
     function removeUnlockListeners() {
@@ -237,7 +263,11 @@ function useAmbientBgm(playbackArea) {
         audio.pause();
         audio.currentTime = 0;
       }
-      playAmbientBgm();
+      if (isMobileDevice && !hasUserActivation()) {
+        bindUnlockListeners();
+      } else {
+        playAmbientBgm();
+      }
     } else {
       removeUnlockListeners();
       audio.pause();
@@ -249,7 +279,7 @@ function useAmbientBgm(playbackArea) {
       cancelled = true;
       removeUnlockListeners();
     };
-  }, [playbackArea]);
+  }, [isMobileDevice, playbackArea]);
 }
 
 let resultVoiceClipBag = [];
@@ -622,6 +652,7 @@ export default function App() {
   const supportQrLoadingDebugMode = getSupportQrLoadingDebugMode();
   const audioDebugEnabled = getAudioDebugEnabled();
   const audioDebugPanelEnabled = getAudioDebugPanelEnabled();
+  const isMobileDevice = useMemo(() => isLikelyMobileDevice(), []);
   const [screen, setScreen] = useState(() => (supportScreenDebugMode ? "support" : "start"));
   const [startTheme, setThemeState] = useState(() => getStartTheme(getStartThemeDebugOverride()));
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
@@ -656,8 +687,14 @@ export default function App() {
       return undefined;
     }
 
-    return scheduleIdlePreload(loadGameScreen, "game screen");
-  }, [debugEndingMode, debugLoadingMode, debugResultVoicesMode, screen]);
+    return isMobileDevice
+      ? scheduleDelayedIdlePreload(
+          loadGameScreen,
+          "game screen",
+          MOBILE_GAME_PRELOAD_DELAY_MS
+        )
+      : scheduleIdlePreload(loadGameScreen, "game screen");
+  }, [debugEndingMode, debugLoadingMode, debugResultVoicesMode, isMobileDevice, screen]);
 
   useEffect(() => {
     if (
