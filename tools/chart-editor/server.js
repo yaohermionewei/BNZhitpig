@@ -6,30 +6,113 @@ const { URL } = require("url");
 const ROOT = path.resolve(__dirname, "..", "..");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const AUDIO_DIR = path.join(ROOT, "web", "public", "assets", "audio");
-const CHART_SOURCE_PATH = path.join(ROOT, "shared", "charts", "ditto.editable.chart.json");
-const CHART_TARGETS = [
+const DEFAULT_NOTE_FALL_SPEED_MULTIPLIER = 1.1;
+const MIN_NOTE_FALL_SPEED_MULTIPLIER = 0.5;
+const MAX_NOTE_FALL_SPEED_MULTIPLIER = 1.3;
+const CHART_CATALOG = [
   {
-    key: "shared-esm",
-    path: path.join(ROOT, "shared", "charts", "ditto.editable.chart.js"),
-    format: "esm",
+    id: "ditto/default",
+    songId: "ditto",
+    songTitle: "Ditto",
+    difficultyId: "default",
+    difficultyLabel: "默认",
+    editorTitle: "Ditto 单轨谱面",
+    defaults: {
+      title: "Ditto Editable Chart",
+      bpmHint: 134,
+      audioSrc: "/assets/audio/ditto.m4a",
+      noteFallSpeedMultiplier: 1.1,
+    },
+    sourcePath: path.join(ROOT, "shared", "charts", "ditto.editable.chart.json"),
+    targets: [
+      {
+        key: "shared-esm",
+        path: path.join(ROOT, "shared", "charts", "ditto.editable.chart.js"),
+        format: "esm",
+      },
+      {
+        key: "web-src",
+        path: path.join(ROOT, "web", "src", "game", "ditto.editable.chart.js"),
+        format: "esm",
+      },
+      {
+        key: "web-public",
+        path: path.join(ROOT, "web", "public", "assets", "charts", "ditto.editable.chart.js"),
+        format: "cjs",
+      },
+      {
+        key: "miniprogram",
+        path: path.join(ROOT, "miniprogram", "assets", "charts", "ditto.editable.chart.js"),
+        format: "cjs",
+      },
+    ],
   },
   {
-    key: "web-src",
-    path: path.join(ROOT, "web", "src", "game", "ditto.editable.chart.js"),
-    format: "esm",
+    id: "supershy/easy",
+    songId: "supershy",
+    songTitle: "Super Shy",
+    difficultyId: "easy",
+    difficultyLabel: "普通",
+    editorTitle: "Super Shy 普通谱面",
+    defaults: {
+      title: "Super Shy [Easy]",
+      bpmHint: 150,
+      audioSrc: "/assets/audio/super-shy.mp3",
+      noteFallSpeedMultiplier: 0.85,
+    },
+    sourcePath: path.join(ROOT, "shared", "charts", "supershy.easy.editable.chart.json"),
+    targets: [
+      {
+        key: "shared-esm",
+        path: path.join(ROOT, "shared", "charts", "supershy.easy.editable.chart.js"),
+        format: "esm",
+      },
+      {
+        key: "web-src",
+        path: path.join(ROOT, "web", "src", "game", "supershy.easy.editable.chart.js"),
+        format: "esm",
+      },
+      {
+        key: "web-public",
+        path: path.join(ROOT, "web", "public", "assets", "charts", "supershy.easy.editable.chart.js"),
+        format: "cjs",
+      },
+    ],
   },
   {
-    key: "web-public",
-    path: path.join(ROOT, "web", "public", "assets", "charts", "ditto.editable.chart.js"),
-    format: "cjs",
-  },
-  {
-    key: "miniprogram",
-    path: path.join(ROOT, "miniprogram", "assets", "charts", "ditto.editable.chart.js"),
-    format: "cjs",
+    id: "supershy/normal",
+    songId: "supershy",
+    songTitle: "Super Shy",
+    difficultyId: "normal",
+    difficultyLabel: "困难",
+    editorTitle: "Super Shy 困难谱面",
+    defaults: {
+      title: "Super Shy [Normal]",
+      bpmHint: 150,
+      audioSrc: "/assets/audio/super-shy.mp3",
+      noteFallSpeedMultiplier: 0.78,
+    },
+    sourcePath: path.join(ROOT, "shared", "charts", "supershy.normal.editable.chart.json"),
+    targets: [
+      {
+        key: "shared-esm",
+        path: path.join(ROOT, "shared", "charts", "supershy.normal.editable.chart.js"),
+        format: "esm",
+      },
+      {
+        key: "web-src",
+        path: path.join(ROOT, "web", "src", "game", "supershy.normal.editable.chart.js"),
+        format: "esm",
+      },
+      {
+        key: "web-public",
+        path: path.join(ROOT, "web", "public", "assets", "charts", "supershy.normal.editable.chart.js"),
+        format: "cjs",
+      },
+    ],
   },
 ];
-const CHART_PATH = CHART_SOURCE_PATH;
+const DEFAULT_CHART_ID = CHART_CATALOG[0].id;
 const BACKUP_DIR = path.join(__dirname, "backups");
 const PORT = Number(process.env.CHART_EDITOR_PORT || 4317);
 
@@ -97,12 +180,52 @@ function sendFile(request, response, filePath) {
   fs.createReadStream(filePath).pipe(response);
 }
 
-function loadEditableChart() {
-  return JSON.parse(fs.readFileSync(CHART_SOURCE_PATH, "utf8"));
+function getChartEntry(chartId = DEFAULT_CHART_ID) {
+  return (
+    CHART_CATALOG.find((entry) => entry.id === chartId) ||
+    CHART_CATALOG.find((entry) => entry.id === DEFAULT_CHART_ID)
+  );
+}
+
+function getChartCatalogPayload() {
+  return CHART_CATALOG.map((entry) => ({
+    id: entry.id,
+    songId: entry.songId,
+    songTitle: entry.songTitle,
+    difficultyId: entry.difficultyId,
+    difficultyLabel: entry.difficultyLabel,
+    editorTitle: entry.editorTitle,
+    chartSourcePath: path.relative(ROOT, entry.sourcePath),
+    chartPaths: entry.targets.map((target) => path.relative(ROOT, target.path)),
+    audioUrl: entry.defaults.audioSrc,
+  }));
+}
+
+function loadEditableChart(chartEntry) {
+  return JSON.parse(fs.readFileSync(chartEntry.sourcePath, "utf8"));
 }
 
 function roundTime(value) {
   return Number(Number(value).toFixed(3));
+}
+
+function normalizeNoteFallSpeedMultiplier(value, fallback = DEFAULT_NOTE_FALL_SPEED_MULTIPLIER) {
+  const numericValue = Number(value);
+  const numericFallback = Number(fallback);
+  const safeFallback =
+    Number.isFinite(numericFallback) && numericFallback > 0
+      ? numericFallback
+      : DEFAULT_NOTE_FALL_SPEED_MULTIPLIER;
+
+  if (
+    !Number.isFinite(numericValue) ||
+    numericValue < MIN_NOTE_FALL_SPEED_MULTIPLIER ||
+    numericValue > MAX_NOTE_FALL_SPEED_MULTIPLIER
+  ) {
+    return Number(safeFallback.toFixed(2));
+  }
+
+  return Number(numericValue.toFixed(2));
 }
 
 function sanitizeNote(note, index) {
@@ -146,7 +269,7 @@ function sanitizeNote(note, index) {
   return nextNote;
 }
 
-function normalizeChart(rawChart) {
+function normalizeChart(rawChart, chartEntry = getChartEntry()) {
   const source = rawChart || {};
   const rawNotes = Array.isArray(source.notes) ? source.notes : [];
   const notes = rawNotes
@@ -178,13 +301,20 @@ function normalizeChart(rawChart) {
 
   const chart = {
     version: Number(source.version) || 1,
-    title: typeof source.title === "string" && source.title.trim() ? source.title.trim() : "Ditto Editable Chart",
-    bpmHint: Number(source.bpmHint) || 134,
+    title:
+      typeof source.title === "string" && source.title.trim()
+        ? source.title.trim()
+        : chartEntry.defaults.title,
+    bpmHint: Number(source.bpmHint) || chartEntry.defaults.bpmHint,
     audioSrc:
       typeof source.audioSrc === "string" && source.audioSrc.trim()
         ? source.audioSrc.trim()
-        : "/assets/audio/ditto.m4a",
+        : chartEntry.defaults.audioSrc,
     audioStartTime: roundTime(Math.max(0, Number(source.audioStartTime) || 0)),
+    noteFallSpeedMultiplier: normalizeNoteFallSpeedMultiplier(
+      source.noteFallSpeedMultiplier,
+      chartEntry.defaults.noteFallSpeedMultiplier
+    ),
     duration: roundTime(duration),
     windows: {
       perfect: Number(source.windows && source.windows.perfect) || 0.07,
@@ -196,7 +326,15 @@ function normalizeChart(rawChart) {
       songId:
         source.meta && typeof source.meta.songId === "string" && source.meta.songId.trim()
           ? source.meta.songId.trim()
-          : "ditto",
+          : chartEntry.songId,
+      difficultyId:
+        source.meta && typeof source.meta.difficultyId === "string" && source.meta.difficultyId.trim()
+          ? source.meta.difficultyId.trim()
+          : chartEntry.difficultyId,
+      difficultyLabel:
+        source.meta && typeof source.meta.difficultyLabel === "string" && source.meta.difficultyLabel.trim()
+          ? source.meta.difficultyLabel.trim()
+          : chartEntry.difficultyLabel,
       noteCount: notes.length,
       authoring: "chart-editor-v1",
       updatedAt: new Date().toISOString(),
@@ -223,15 +361,15 @@ function serializeChart(chart, format = "cjs") {
   return `${assignment}${JSON.stringify(chart, null, 2)};\n`;
 }
 
-function createChartBackups() {
+function createChartBackups(chartEntry) {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const backupTargets = [
     {
       key: "source",
-      path: CHART_SOURCE_PATH,
+      path: chartEntry.sourcePath,
     },
-    ...CHART_TARGETS,
+    ...chartEntry.targets,
   ];
 
   return backupTargets.map((target) => {
@@ -239,7 +377,7 @@ function createChartBackups() {
       return null;
     }
 
-    const backupName = `${target.key}.ditto.editable.chart.${timestamp}.js`;
+    const backupName = `${target.key}.${chartEntry.id.replace(/[^\w.-]+/g, "-")}.${timestamp}${path.extname(target.path)}`;
     const backupPath = path.join(BACKUP_DIR, backupName);
     fs.copyFileSync(target.path, backupPath);
     return path.relative(ROOT, backupPath);
@@ -263,33 +401,45 @@ function readRequestBody(request) {
 }
 
 async function handleApi(request, response, url) {
+  if (url.pathname === "/api/charts" && request.method === "GET") {
+    return sendJson(response, 200, {
+      defaultChartId: DEFAULT_CHART_ID,
+      charts: getChartCatalogPayload(),
+    });
+  }
+
   if (url.pathname === "/api/chart" && request.method === "GET") {
-    const chart = normalizeChart(loadEditableChart());
+    const chartEntry = getChartEntry(url.searchParams.get("chartId") || DEFAULT_CHART_ID);
+    const chart = normalizeChart(loadEditableChart(chartEntry), chartEntry);
     return sendJson(response, 200, {
       chart,
-      chartPath: path.relative(ROOT, CHART_SOURCE_PATH),
-      chartSourcePath: path.relative(ROOT, CHART_SOURCE_PATH),
-      chartPaths: CHART_TARGETS.map((target) => path.relative(ROOT, target.path)),
+      chartId: chartEntry.id,
+      editorTitle: chartEntry.editorTitle,
+      chartPath: path.relative(ROOT, chartEntry.sourcePath),
+      chartSourcePath: path.relative(ROOT, chartEntry.sourcePath),
+      chartPaths: chartEntry.targets.map((target) => path.relative(ROOT, target.path)),
       audioUrl: chart.audioSrc,
     });
   }
 
   if (url.pathname === "/api/chart" && request.method === "POST") {
     try {
+      const chartEntry = getChartEntry(url.searchParams.get("chartId") || DEFAULT_CHART_ID);
       const rawBody = await readRequestBody(request);
       const parsed = JSON.parse(rawBody || "{}");
-      const chart = normalizeChart(parsed.chart);
-      const backupPaths = createChartBackups();
+      const chart = normalizeChart(parsed.chart, chartEntry);
+      const backupPaths = createChartBackups(chartEntry);
 
-      fs.writeFileSync(CHART_SOURCE_PATH, serializeChart(chart, "json"));
+      fs.writeFileSync(chartEntry.sourcePath, serializeChart(chart, "json"));
 
-      CHART_TARGETS.forEach((target) => {
+      chartEntry.targets.forEach((target) => {
         fs.writeFileSync(target.path, serializeChart(chart, target.format));
       });
 
       return sendJson(response, 200, {
         ok: true,
         chart,
+        chartId: chartEntry.id,
         savedAt: new Date().toISOString(),
         backupPaths,
       });
@@ -347,8 +497,7 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Chart editor running at http://127.0.0.1:${PORT}`);
-  console.log(`Editing chart source: ${path.relative(ROOT, CHART_SOURCE_PATH)}`);
   console.log(
-    `Syncing charts: ${CHART_TARGETS.map((target) => path.relative(ROOT, target.path)).join(", ")}`
+    `Editable charts: ${CHART_CATALOG.map((entry) => `${entry.id} -> ${path.relative(ROOT, entry.sourcePath)}`).join(", ")}`
   );
 });

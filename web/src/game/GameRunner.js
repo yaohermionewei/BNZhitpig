@@ -11,6 +11,7 @@ import { AudioControllerWeb, emitAudioDebug } from "./AudioControllerWeb.js";
 import { playUiSound, playVictoryFanfare } from "./uiSounds.js";
 import {
   EFFECT_AUDIO_POOL_SIZES,
+  getGameSceneBackgroundSource,
   loadImage,
   loadCharacterSprites,
   preloadResultAssets,
@@ -205,12 +206,22 @@ function shouldShowTutorialHintsForBattleStart() {
 }
 
 export class GameRunner {
-  constructor({ canvas, song, startTheme, inputMode = "touch", onFinish, onHome, onLoadingChange }) {
+  constructor({
+    canvas,
+    song,
+    startTheme,
+    inputMode = "touch",
+    sceneOnly = false,
+    onFinish,
+    onHome,
+    onLoadingChange,
+  }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false });
     this.song = song;
     this.startTheme = normalizeStartTheme(startTheme);
     this.inputMode = normalizeInputMode(inputMode);
+    this.sceneOnly = !!sceneOnly;
     this.onFinish = onFinish;
     this.onHome = onHome;
     this.onLoadingChange = onLoadingChange;
@@ -263,6 +274,24 @@ export class GameRunner {
     this.installResizeObserver();
     this.resizeCanvas();
     this.drawWarmupFrame();
+    if (this.sceneOnly) {
+      const [, sceneBackground, songCoverImage] = await withTimeout(
+        Promise.all([
+          waitForCriticalPixelFonts(),
+          loadImage(getGameSceneBackgroundSource(this.startTheme)),
+          loadImage(this.song.coverImageSrc),
+        ]),
+        PREPARE_RESOURCE_TIMEOUT_MS,
+        "Scene preview resources timed out while preparing."
+      );
+      if (sceneBackground) {
+        this.characterSprites = { sceneBackground };
+      }
+      this.songCoverImage = songCoverImage;
+      this.onLoadingChange?.(false);
+      this.renderCurrentFrame();
+      return;
+    }
     await withTimeout(
       Promise.all([
         waitForCriticalPixelFonts(),
@@ -308,6 +337,32 @@ export class GameRunner {
     this.stopLoop();
     this.startLoop();
     this.emitDebug("runner.start:after");
+  }
+
+  startSceneOnlyPreview() {
+    this.emitDebug("runner.scene-only.start:before");
+    this.audio.stop();
+    this.state = createGameState(this.song.chart);
+    this.showTutorialHints = false;
+    this.failureSequence = createFailureSequenceState();
+    this.crowdMotion = createCrowdMotionState();
+    this.rabbitWandAnimation = createRabbitWandAnimationState();
+    this.resetInputGesture();
+    this.resetKeyboardInput();
+    this.started = true;
+    this.isPaused = false;
+    this.pauseReason = null;
+    this.introActive = false;
+    this.introElapsed = 0;
+    this.magicVisualTime = 0;
+    this.startingAudio = false;
+    this.pendingAudioStart = false;
+    this.audioStartToken += 1;
+    this.resultPending = false;
+    this.lastTimestamp = 0;
+    this.stopLoop();
+    this.startLoop();
+    this.emitDebug("runner.scene-only.start:after");
   }
 
   installEvents() {
@@ -380,6 +435,7 @@ export class GameRunner {
   }
 
   handleLifecyclePause() {
+    if (this.sceneOnly) return;
     if (!this.started || this.resultPending || this.failureSequence.active) return;
     this.emitDebug("runner.lifecycle-pause:before");
     this.pause({ reason: "system" });
@@ -387,6 +443,14 @@ export class GameRunner {
   }
 
   handleLifecycleReturn() {
+    if (this.sceneOnly) {
+      this.lastTimestamp = 0;
+      this.resizeCanvas();
+      if (this.started && !this.frameHandle) {
+        this.startLoop();
+      }
+      return;
+    }
     if (!this.started || this.resultPending || this.disposed) return;
     this.emitDebug("runner.lifecycle-return:before");
     this.lastTimestamp = 0;
@@ -478,6 +542,7 @@ export class GameRunner {
 
   async update(dt) {
     if (!this.started || this.isPaused) return;
+    if (this.sceneOnly) return;
 
     if (this.introActive) {
       if (this.startingAudio) return;
@@ -548,11 +613,13 @@ export class GameRunner {
   renderCurrentFrame() {
     if (!this.ctx || !this.viewport || !this.state) return;
     const introProgress = this.introActive ? this.introElapsed / INTRO_DURATION : 1;
-    const sceneTime = this.started
-      ? this.introActive
-        ? this.introElapsed
-        : this.state.currentTime
-      : 0;
+    const sceneTime = this.sceneOnly
+      ? this.magicVisualTime
+      : this.started
+        ? this.introActive
+          ? this.introElapsed
+          : this.state.currentTime
+        : 0;
     try {
       renderFrame(this.ctx, this.viewport, this.state, {
         paused: this.isPaused,
@@ -564,6 +631,7 @@ export class GameRunner {
         gameOverOverlayKind: this.failureSequence?.kind || "failed",
         selectedSongId: this.song.id,
         songTitle: this.song.title,
+        songDifficultyLabel: this.song.difficultyLabel || "",
         songCoverImage: this.songCoverImage,
         characterSprites: this.characterSprites,
         crowdMotion: this.crowdMotion,
@@ -579,6 +647,7 @@ export class GameRunner {
         startTheme: this.startTheme,
         inputMode: this.inputMode,
         loadingColors: getStartThemeLoadingColors(this.startTheme),
+        sceneOnly: this.sceneOnly,
       });
     } catch (error) {
       console.error("render frame failed", error);
@@ -809,6 +878,8 @@ export class GameRunner {
   }
 
   handleKeyDown(event) {
+    if (this.sceneOnly) return;
+
     const code = event.code;
 
     if (this.started && this.isPaused && !this.resultPending && this.pauseReason !== "system") {
@@ -854,6 +925,8 @@ export class GameRunner {
   }
 
   handleKeyUp(event) {
+    if (this.sceneOnly) return;
+
     if (!KEYBOARD_TAP_CODE_SET.has(event.code)) return;
 
     if (this.keyboardHoldCode === event.code) {
@@ -873,6 +946,8 @@ export class GameRunner {
   handlePointerDown(event) {
     event.preventDefault();
     this.canvas.setPointerCapture?.(event.pointerId);
+    if (this.sceneOnly) return;
+
     const point = getCanvasPoint(event, this.canvas);
     if (this.failureSequence.active) return;
 
@@ -936,6 +1011,8 @@ export class GameRunner {
 
   handlePointerMove(event) {
     event.preventDefault();
+    if (this.sceneOnly) return;
+
     if (!this.started || this.isPaused || this.failureSequence.active || this.introActive) return;
     const result = this.resolveDirectionGesture(event, false);
     this.handleRabbitWandAnimationResult(result);
@@ -944,6 +1021,8 @@ export class GameRunner {
 
   handlePointerUp(event) {
     event.preventDefault();
+    if (this.sceneOnly) return;
+
     if (!this.started || this.isPaused || this.failureSequence.active || this.introActive) return;
     const result = this.resolveDirectionGesture(event, true);
     this.handleRabbitWandAnimationResult(result);

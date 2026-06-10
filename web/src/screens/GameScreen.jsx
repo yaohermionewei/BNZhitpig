@@ -10,6 +10,7 @@ export default function GameScreen({
   song,
   startTheme,
   inputMode = "touch",
+  sceneOnly = false,
   onFinish,
   onHome,
   showIntroSoundToast = false,
@@ -47,6 +48,7 @@ export default function GameScreen({
       song,
       startTheme,
       inputMode,
+      sceneOnly,
       onFinish: (summary) => {
         onFinishRef.current?.({ ...summary, completedAt: Date.now() });
       },
@@ -57,7 +59,13 @@ export default function GameScreen({
     runner
       .prepare()
       .then(() => {
-        if (!cancelled) runner.start();
+        if (!cancelled) {
+          if (sceneOnly) {
+            runner.startSceneOnlyPreview();
+          } else {
+            runner.start();
+          }
+        }
       })
       .catch((prepareError) => {
         console.error(prepareError);
@@ -71,7 +79,7 @@ export default function GameScreen({
       runner.dispose();
       runnerRef.current = null;
     };
-  }, [song, startTheme, inputMode]);
+  }, [song, startTheme, inputMode, sceneOnly]);
 
   useEffect(() => {
     if (!showIntroSoundToast || hasShownSoundToastRef.current || loading || error) {
@@ -93,10 +101,12 @@ export default function GameScreen({
     };
   }, [error, loading, showIntroSoundToast]);
 
+  const showLoadingOverlay = loading && !sceneOnly;
+
   return (
     <div className={`screen game-screen screen-${startTheme}`}>
       <canvas ref={canvasRef} className="game-canvas" />
-      {soundToastVisible && (
+      {!sceneOnly && soundToastVisible && (
         <div
           className="game-sound-toast result-share-preview-toast result-fixed-text-zh pixel-font-zh"
           role="status"
@@ -105,7 +115,7 @@ export default function GameScreen({
           <span className="result-share-preview-toast-text">{SOUND_TOAST_COPY}</span>
         </div>
       )}
-      {loading && (
+      {showLoadingOverlay && (
         <MagicLoadingOverlay
           theme={startTheme}
           text={LOADING_COPY.prepareAttack}

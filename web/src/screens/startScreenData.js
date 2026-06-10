@@ -73,6 +73,15 @@ const CLOUD_TONE_BY_CHAR = Object.freeze({
 });
 
 function buildSongs(selectedSongId) {
+  const isSuperShySelected = selectedSongId === "supershy-easy" || selectedSongId === "supershy-normal";
+  const unavailableHardDifficulty = Object.freeze({
+    id: null,
+    label: "",
+    selected: false,
+    available: false,
+    placeholder: true,
+  });
+
   return [
     {
       id: "ditto",
@@ -85,6 +94,43 @@ function buildSongs(selectedSongId) {
       ],
       selected: selectedSongId === "ditto",
       available: true,
+      difficulties: [
+        {
+          id: "ditto",
+          label: "普通",
+          selected: selectedSongId === "ditto",
+          available: true,
+          locked: true,
+        },
+        unavailableHardDifficulty,
+      ],
+    },
+    {
+      id: "supershy",
+      defaultSongId: "supershy-easy",
+      title: "Super Shy",
+      titleSegments: [
+        {
+          text: "Super Shy",
+          fontType: "en",
+        },
+      ],
+      selected: isSuperShySelected,
+      available: true,
+      difficulties: [
+        {
+          id: "supershy-easy",
+          label: "普通",
+          selected: selectedSongId === "supershy-easy",
+          available: true,
+        },
+        {
+          id: "supershy-normal",
+          label: "困难",
+          selected: selectedSongId === "supershy-normal",
+          available: true,
+        },
+      ],
     },
     {
       id: "more-coming-soon",

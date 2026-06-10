@@ -55,6 +55,13 @@
 - 如果用户只说“游戏”“音游”“网页版本”“当前版本”“小游戏”，默认指 `web`。
 - 如果需要新增资源、调整 UI、改玩法、修 bug、做发布准备，优先检查和修改 `web` 下的实现。
 
+## 平台和布局原则
+
+- 三个游戏形态都采用 mobile-first：`web`、`miniprogram`、`web-parkour` 的核心体验优先为手机竖屏和触摸操作设计。
+- 桌面端需要顺带覆盖和保持可用，但不是主要设计基准；不要为了桌面大屏牺牲手机体验。
+- 做 UI、交互、画布布局、输入方式、资源加载和性能优化时，先考虑移动端尺寸、触摸手感、移动浏览器音频限制和弱网/加载表现。
+- 桌面适配应作为 responsive enhancement：保证画面居中、比例合理、可操作、文字不溢出，但不把界面改成桌面优先布局。
+
 共享谱面源：
 
 - `shared/charts/ditto.editable.chart.json`
@@ -166,10 +173,51 @@ npm run assets:stage
 - 改动范围尽量限制在当前任务相关的文件和行为内。
 - 不要回滚、覆盖或清理用户已有的未提交改动，除非用户明确要求。
 - 优先沿用项目里已有的写法、结构和命名方式。
+- 新增或修改 Markdown 文档时，默认使用中文撰写；除非用户明确要求英文，或原文件/外部规范必须使用英文。
 - 做 UI 改动时，如果有可用的本地 dev server，尽量用浏览器实际查看效果。
 - 做玩法相关改动时，要同时关注 engine、audio、renderer 和 chart data；节奏游戏的 timing 问题可能来自任一层。
 - 生成资源时，保持源脚本和输出路径清晰，方便之后重新生成和审阅。
 - 稳定的项目决策应该记录在这里，不要只留在聊天记录里。
+
+## 设计系统优先
+
+- 任何新的 UI、视觉、交互、结果页、调试页或宣传/预览设计，都要先参考本项目已有设计系统和既有实现，不要自己杜撰新的 property、token、组件变体、命名或视觉规则。
+- 优先参考：
+  - `docs/castle-stage-pixel-design-system.zh-CN.md`
+  - `docs/ui-design-system-summary.zh-CN.md`
+  - `web/src/styles.css`
+  - 现有 screen/component 实现，例如 `web/src/screens/StartScreen.jsx`、`web/src/screens/GameScreen.jsx`、`web/src/screens/ResultScreen.jsx`。
+- 如果现有设计系统没有覆盖某个新需求，先向用户说明缺口、拟新增的 property/token/组件变体是什么、为什么需要新增；得到确认后再落地。
+- 不要因为做单个页面或临时功能，就绕开现有设计系统另起一套颜色、字号、圆角、阴影、动效、组件状态或命名方式。
+
+## 中文像素字体子集
+
+- 当前游戏 UI 使用中文像素字字体子集包，相关说明见 `web/public/assets/fonts/README.md`。
+- 新增或修改 feature 时，如果引入了新的中文 UI 文案、按钮文案、结果页文案、loading 文案、提示语或调试预览文案，必须多做一步：把新增汉字加入中文字体子集字符表，并重新生成对应的中文像素字体子集包。
+- Web 侧重点关注 `web/public/assets/fonts/bunnies-pixel-zh-ui.subset.txt` 和 `web/public/assets/fonts/bunnies-pixel-zh-ui.woff2`。
+- 不要只改 JSX/JS 里的中文字符串就结束；否则新字可能回退到系统字体，破坏像素风一致性。
+- 如果不确定某个新增字符是否已在子集里，先检查 subset 文本文件；缺字时补齐并重新生成字体。
+- 完成涉及中文 UI 文案的改动后，验证页面中新增文字没有字体回退、缺字、字形不一致或布局溢出。
+
+## Git 提交和预览产物
+
+- 仓库里混有不少开发者模式、debug 模式、设计审阅和预览产物，尤其集中在 `previews/`。
+- 常见预览/临时产物还可能出现在 `test-results/`、`web/tmp-result-preview/`、`docs/*preview*`、`docs/*design-system-board*`、`web/public/assets/images/*preview*/`、`web/public/assets/images/rank-thin/` 等位置。
+- 用户希望保留本地调试能力；不要因为正式发布或准备提交，就擅自删除用户仍可能使用的 debug 页面、debug URL、验收入口或本地测试工具。
+- 但调试工具和临时验收脚手架默认不应该进入 GitHub 提交。尤其是一次性 debug 页面、临时实验样式、预览资源、测试输出和大体积审阅产物，除非用户明确要求提交，否则只保留在本地或保持未跟踪。
+- 如果新增的是长期有价值的开发工具，提交前需要和用户确认是否纳入代码库；如果纳入，必须确保只在开发环境生效，例如通过 `import.meta.env.DEV` 或等价机制隔离，避免普通玩家在生产环境访问。
+- 当用户要求提交到 GitHub 时，默认不要把 `previews/`、debug preview、临时审阅截图、测试结果、临时 HTML 预览页或类似生成产物一起提交。
+- 不要因为这些目录里有未跟踪文件就犹豫是否要提交；除非用户明确说要提交预览/审阅产物，否则应忽略它们。
+- 提交前用 `git status --short` 和按路径暂存，确保只提交本次任务需要的源码、配置、正式资源或文档。
+- 如果某个生成资源是否属于正式运行时资产不确定，先问用户，不要擅自把 preview/debug 产物纳入提交。
+
+## 提交和部署
+
+- 这个项目的发布链路默认走 GitHub：完成需要上线的改动后，提交并推送到 GitHub，由已配置好的 Cloudflare 和/或 Netlify 自动同步部署。
+- 不要默认使用 `wrangler login`、`wrangler pages deploy`、Cloudflare Pages 临时内部部署、Netlify CLI 或其他手动部署路径；这些会引入额外登录/授权和不必要的分叉流程。
+- 如果用户说“提交”“发到 GitHub”“发布”“部署”，优先理解为提交并推送当前相关改动到 GitHub，让平台自动拉取，而不是直接把 `web/dist` 手动上传到 Cloudflare 或 Netlify。
+- 用户在迭代期间可能会暂时关闭 Netlify 同步，所以通常只有 Cloudflare 会从 GitHub 自动更新；等所有东西 ready 后，用户会自行重新打开 Netlify 同步。
+- 除非用户明确要求手动部署或临时预览链接，否则不要启动 Cloudflare OAuth、要求用户授权 `wrangler`、或尝试绕过 GitHub 自动部署链路。
 
 ## 体验地址和本地服务
 
@@ -181,6 +229,7 @@ npm run assets:stage
 - 如果已有服务占用默认端口，使用实际可用端口，并把最终地址清楚告诉用户。
 - 对 `web` 主线，通常在 `web` 目录运行 `npm run dev`；对 `web-parkour`，在 `web-parkour` 目录运行 `npm run dev`。
 - 最终回复里的体验地址应该是本次刚确认过的地址，而不是记忆中的旧地址。
+- 如果为了验证效果自行打开了浏览器、内置浏览器或任何会播放游戏音频的页面，验证完成后要关闭对应标签页，或确保页面停止播放音频；不要把有背景音乐/音效的游戏页面留在用户电脑上持续发声。
 
 ## 适合记录在这里的内容
 

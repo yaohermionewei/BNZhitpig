@@ -4,6 +4,7 @@ export default {
   "bpmHint": 134,
   "audioSrc": "/assets/audio/ditto.m4a",
   "audioStartTime": 0,
+  "noteFallSpeedMultiplier": 1.1,
   "duration": 186.297,
   "windows": {
     "perfect": 0.07,

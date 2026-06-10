@@ -6,7 +6,7 @@
 
 - 把 React/Vite Web 版作为主要可玩版本持续迭代。
 - 保持音乐、谱面、判定、渲染和音频播放对齐。
-- 用本地谱面编辑器快速手改中立谱面；`shared/charts/ditto.editable.chart.json` 是唯一 source-of-truth，多端 JS adapter 由它同步生成。
+- 用本地谱面编辑器快速手改中立谱面；`shared/charts/*.editable.chart.json` 是谱面 source-of-truth，多端 JS adapter 由它同步生成。
 - 保留小程序版本作为历史参考，不再把它当作默认维护目标。
 - 将 `web-parkour` 作为旁线跑酷玩法原型，只有明确提到跑酷方向时再进入。
 
@@ -14,7 +14,7 @@
 
 - `web`：当前主项目，React/Vite Web 版节奏小游戏，也是默认发布和迭代目标。
 - `miniprogram`：早期微信小程序版本，已经不是当前发布主线；一般只作为历史参考。
-- `tools/chart-editor`：本地可视化谱面编辑器，用来调整 Ditto 谱面。
+- `tools/chart-editor`：本地可视化谱面编辑器，用来按歌曲和难度调整谱面。
 - `web-parkour`：React/Vite 跑酷玩法原型，是旁线项目。
 - `scripts`：资源生成脚本和预览辅助脚本。
 - `docs`：设计说明、审阅页面和项目文档。
@@ -122,11 +122,10 @@ Web 应用入口：
 
 谱面 source 和消费 adapter：
 
-- [shared/charts/ditto.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.json)：唯一 source-of-truth，保存中立时间数据。
-- [shared/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.js)：由 JSON 生成的 ESM adapter，供 Web、web-parkour 等 JS 运行时消费。
-- [web/src/game/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/ditto.editable.chart.js)：Web 端兼容消费文件 / 同步产物。
-- [web/public/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/public/assets/charts/ditto.editable.chart.js)：静态资源消费文件 / 同步产物。
-- [miniprogram/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/assets/charts/ditto.editable.chart.js)：历史小程序端 CommonJS adapter / 同步产物。
+- [shared/charts](/Users/yaohermione/Desktop/rhythm game/shared/charts)：谱面 source-of-truth 和共享 ESM adapter。
+- [web/src/game](/Users/yaohermione/Desktop/rhythm game/web/src/game)：Web 端谱面兼容消费文件 / 同步产物。
+- [web/public/assets/charts](/Users/yaohermione/Desktop/rhythm game/web/public/assets/charts)：静态资源消费文件 / 同步产物。
+- [miniprogram/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/assets/charts/ditto.editable.chart.js)：历史小程序端 Ditto CommonJS adapter / 同步产物。
 
 ## 谱面编辑器
 
@@ -144,18 +143,26 @@ http://127.0.0.1:4317
 
 谱面是中立时间数据，不归属于 Web、web-parkour 或小程序中的任何一个端。
 
-编辑器会读取并保存唯一 source-of-truth：
+编辑器可通过顶部下拉框选择歌曲和难度。当前可编辑谱面 source-of-truth：
 
 - [shared/charts/ditto.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.json)
+- [shared/charts/supershy.easy.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/supershy.easy.editable.chart.json)
+- [shared/charts/supershy.normal.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/supershy.normal.editable.chart.json)
 
-保存时会从 JSON 同步生成各端消费 adapter / 同步产物：
+保存时会从当前选中的 JSON 同步生成对应消费 adapter / 同步产物：
 
 - [shared/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.js)
 - [web/src/game/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/ditto.editable.chart.js)
 - [web/public/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/public/assets/charts/ditto.editable.chart.js)
 - [miniprogram/assets/charts/ditto.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/miniprogram/assets/charts/ditto.editable.chart.js)
+- [shared/charts/supershy.easy.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/shared/charts/supershy.easy.editable.chart.js)
+- [shared/charts/supershy.normal.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/shared/charts/supershy.normal.editable.chart.js)
+- [web/src/game/supershy.easy.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/supershy.easy.editable.chart.js)
+- [web/src/game/supershy.normal.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/src/game/supershy.normal.editable.chart.js)
+- [web/public/assets/charts/supershy.easy.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/public/assets/charts/supershy.easy.editable.chart.js)
+- [web/public/assets/charts/supershy.normal.editable.chart.js](/Users/yaohermione/Desktop/rhythm game/web/public/assets/charts/supershy.normal.editable.chart.js)
 
-这些 JS 文件都是消费 adapter，不是主数据；如果它们和 JSON 不一致，以 [shared/charts/ditto.editable.chart.json](/Users/yaohermione/Desktop/rhythm game/shared/charts/ditto.editable.chart.json) 为准重新生成。
+这些 JS 文件都是消费 adapter，不是主数据；如果它们和 JSON 不一致，以对应的 `shared/charts/*.editable.chart.json` 为准重新生成。
 
 每次保存会自动留备份到：
 
@@ -180,6 +187,7 @@ tools/chart-editor/backups
 ### Chart
 
 - Ditto rhythm chart reference: osu! taiko `Futsuu` difficulty by [Dayzeek](https://osu.ppy.sh/users/5009970), from [NewJeans - Ditto](https://osu.ppy.sh/beatmapsets/2283439#taiko/4869686).
+- Super Shy rhythm chart references: osu!mania `[4K] anatha's Easy` difficulty by [anatharax](https://osu.ppy.sh/users/14390680), from [NewJeans - Super Shy](https://osu.ppy.sh/beatmapsets/2266555#mania/4997461); osu!mania `[4K] Normal` difficulty by [Robeats](https://osu.ppy.sh/users/19446399), from [NewJeans - Super Shy](https://osu.ppy.sh/beatmapsets/2266555#mania/4827617).
 - Chart adaptation, timing edits, and game integration: this project.
 
 ### UI References

@@ -40,6 +40,7 @@ const DEBUG_SUPPORT_SCREEN_KEY = "debugScreen";
 const DEBUG_SUPPORT_SCREEN_VALUE = "support";
 const DEBUG_SUPPORT_THEME_KEY = "debugStartTheme";
 const DEBUG_SUPPORT_QR_LOADING_KEY = "debugSupportQrLoading";
+const DEBUG_BATTLE_SCENE_KEY = "debugBattleScene";
 
 function getLoadingShimmerDebugPreviewMode() {
   if (!import.meta.env.DEV || typeof window === "undefined") {
@@ -72,6 +73,14 @@ function getSupportScreenDebugMode() {
   }
 
   return new URLSearchParams(window.location.search).get(DEBUG_SUPPORT_SCREEN_KEY) === DEBUG_SUPPORT_SCREEN_VALUE;
+}
+
+function getBattleSceneDebugMode() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get(DEBUG_BATTLE_SCENE_KEY) === "1";
 }
 
 function getSupportQrLoadingDebugMode() {
@@ -567,11 +576,14 @@ export default function App() {
   const debugLoadingMode = getLoadingShimmerDebugPreviewMode();
   const debugEndingMode = getEndingOverlayDebugPreviewMode();
   const debugResultVoicesMode = getResultVoiceDebugPreviewMode();
+  const debugBattleSceneMode = getBattleSceneDebugMode();
   const supportScreenDebugMode = getSupportScreenDebugMode();
   const supportQrLoadingDebugMode = getSupportQrLoadingDebugMode();
   const audioDebugEnabled = getAudioDebugEnabled();
   const audioDebugPanelEnabled = getAudioDebugPanelEnabled();
-  const [screen, setScreen] = useState(() => (supportScreenDebugMode ? "support" : "start"));
+  const [screen, setScreen] = useState(() =>
+    debugBattleSceneMode ? "game" : supportScreenDebugMode ? "support" : "start"
+  );
   const [startTheme, setThemeState] = useState(() => getStartTheme(getStartThemeDebugOverride()));
   const [selectedSong, setSelectedSong] = useState(() => getDefaultSong());
   const [resultSummary, setResultSummary] = useState(null);
@@ -588,7 +600,11 @@ export default function App() {
   const audioDebugEntryIdRef = useRef(0);
   const song = selectedSong || getDefaultSong();
   useVisualViewportCssVars();
-  useAmbientBgm(getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode));
+  useAmbientBgm(
+    debugBattleSceneMode
+      ? "off"
+      : getAmbientBgmArea(screen, debugLoadingMode, debugEndingMode, debugResultVoicesMode)
+  );
   useResultVoice(screen, resultVoiceReadyPlayId || null);
 
   useEffect(() => {
@@ -629,7 +645,12 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (debugLoadingMode || debugEndingMode || debugResultVoicesMode) return;
+    if (
+      debugLoadingMode ||
+      debugEndingMode ||
+      debugResultVoicesMode ||
+      debugBattleSceneMode
+    ) return;
 
     const pageViewKey =
       screen === "game"
@@ -642,6 +663,7 @@ export default function App() {
     trackPageView(screen, getSongAnalyticsParams(song, startTheme));
   }, [
     debugEndingMode,
+    debugBattleSceneMode,
     debugLoadingMode,
     debugResultVoicesMode,
     gameRunId,
@@ -652,7 +674,12 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (debugLoadingMode || debugEndingMode || debugResultVoicesMode) return;
+    if (
+      debugLoadingMode ||
+      debugEndingMode ||
+      debugResultVoicesMode ||
+      debugBattleSceneMode
+    ) return;
     if (screen !== "result" || !resultSummary || !resultVoicePlayId) return;
 
     const resultFinishKey = `${resultVoicePlayId}:${resultSummary.completedAt || ""}`;
@@ -666,6 +693,7 @@ export default function App() {
     });
   }, [
     debugEndingMode,
+    debugBattleSceneMode,
     debugLoadingMode,
     debugResultVoicesMode,
     resultSummary,
@@ -843,7 +871,8 @@ export default function App() {
               song={song}
               startTheme={startTheme}
               inputMode={gameInputMode}
-              showIntroSoundToast={showGameSoundToastForRun}
+              sceneOnly={debugBattleSceneMode}
+              showIntroSoundToast={!debugBattleSceneMode && showGameSoundToastForRun}
               onIntroSoundToastShown={handleGameSoundToastShown}
               onFinish={handleFinish}
               onHome={handleHome}

@@ -98,6 +98,7 @@ export function buildResultSummary(song, state, startTheme) {
     songId: song.id,
     songTitle: song.title,
     songSubtitle: song.subtitle || "",
+    songDifficultyLabel: song.difficultyLabel || "",
     songCoverImageSrc: song.coverImageSrc || "",
     statusLabel: getResultStatus(state),
     rank: rankConfig.rank,

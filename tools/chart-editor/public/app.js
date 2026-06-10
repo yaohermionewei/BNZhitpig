@@ -1,19 +1,30 @@
-const HOLD_TICK_INTERVAL = 0.2;
 // Keep the song a bit lower in the editor so hit cues are easier to judge by ear.
 const EDITOR_MUSIC_VOLUME = 0.28;
 const EDITOR_SFX_VOLUME = 1;
+const HOLD_SUSTAIN_VOLUME = 0.095;
 const HOLD_NOTE_HEAD_SIZE = 30;
 const HOLD_NOTE_HEAD_RADIUS = HOLD_NOTE_HEAD_SIZE / 2;
 const EMPTY_SELECTION_TEXT = "先点一个 note，或者双击时间线加一个。";
 const DRAG_THRESHOLD_PX = 6;
+const DEFAULT_TIMELINE_ZOOM = 120;
+const MIN_TIMELINE_ZOOM = 60;
+const MAX_TIMELINE_ZOOM = 280;
+const TIMELINE_START_PADDING_PX = 88;
+const DEFAULT_NOTE_FALL_SPEED_MULTIPLIER = 1.1;
+const MIN_NOTE_FALL_SPEED_MULTIPLIER = 0.5;
+const MAX_NOTE_FALL_SPEED_MULTIPLIER = 1.3;
+const LAST_SELECTED_CHART_STORAGE_KEY = "rhythm-chart-editor:last-selected-chart-id";
+const TIMELINE_ZOOM_STORAGE_KEY = "rhythm-chart-editor:timeline-zoom";
 
 const state = {
+  chartCatalog: [],
+  selectedChartId: null,
   chart: null,
   notes: [],
   nextNoteId: 1,
   selectedId: null,
   selectedIds: [],
-  pxPerSecond: 120,
+  pxPerSecond: DEFAULT_TIMELINE_ZOOM,
   followPlayhead: true,
   dirty: false,
   saveStatus: "加载中...",
@@ -23,6 +34,7 @@ const state = {
   lastCueChartTime: 0,
   sfxPlayers: [],
   sfxPlayerIndex: 0,
+  holdPreview: null,
   history: [],
   historyIndex: -1,
   savedHistoryIndex: -1,
@@ -38,7 +50,9 @@ const dom = {
   addRightAtPlayhead: document.querySelector("#addRightAtPlayhead"),
   addTapAtPlayhead: document.querySelector("#addTapAtPlayhead"),
   chartMeta: document.querySelector("#chartMeta"),
+  chartTitle: document.querySelector("#chartTitle"),
   deleteButton: document.querySelector("#deleteButton"),
+  difficultySelect: document.querySelector("#difficultySelect"),
   duplicateButton: document.querySelector("#duplicateButton"),
   emptyState: document.querySelector("#emptyState"),
   followToggle: document.querySelector("#followToggle"),
@@ -61,7 +75,11 @@ const dom = {
   seekRange: document.querySelector("#seekRange"),
   seekToSelection: document.querySelector("#seekToSelection"),
   selectedSummary: document.querySelector("#selectedSummary"),
+  fallSpeedInput: document.querySelector("#fallSpeedInput"),
+  fallSpeedRange: document.querySelector("#fallSpeedRange"),
+  fallSpeedValue: document.querySelector("#fallSpeedValue"),
   snapSelectionToPlayhead: document.querySelector("#snapSelectionToPlayhead"),
+  songSelect: document.querySelector("#songSelect"),
   stopButton: document.querySelector("#stopButton"),
   timelineContent: document.querySelector("#timelineContent"),
   timelineScroll: document.querySelector("#timelineScroll"),
@@ -102,6 +120,22 @@ function createSfxPlayer(src, volume = 0.5) {
 
 function roundTime(value) {
   return Number(Number(value).toFixed(3));
+}
+
+function normalizeNoteFallSpeedMultiplier(value, fallback = DEFAULT_NOTE_FALL_SPEED_MULTIPLIER) {
+  const numericValue = Number(value);
+  const numericFallback = Number(fallback);
+  const safeFallback = Number.isFinite(numericFallback)
+    ? numericFallback
+    : DEFAULT_NOTE_FALL_SPEED_MULTIPLIER;
+  const nextValue = Number.isFinite(numericValue) ? numericValue : safeFallback;
+
+  return Number(
+    Math.max(
+      MIN_NOTE_FALL_SPEED_MULTIPLIER,
+      Math.min(MAX_NOTE_FALL_SPEED_MULTIPLIER, nextValue)
+    ).toFixed(2)
+  );
 }
 
 function chartTimeToAudioTime(chartTime) {
@@ -211,6 +245,141 @@ function getNoteSelectionKey(note) {
   return `${getEditorNoteType(note)}:${note.time.toFixed(3)}:${getNoteEndTime(note).toFixed(3)}`;
 }
 
+function getSelectedChartEntry() {
+  return state.chartCatalog.find((entry) => entry.id === state.selectedChartId) || null;
+}
+
+function loadStoredChartId() {
+  try {
+    return window.localStorage.getItem(LAST_SELECTED_CHART_STORAGE_KEY);
+  } catch (error) {
+    return null;
+  }
+}
+
+function persistSelectedChartId(chartId) {
+  if (!chartId) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(LAST_SELECTED_CHART_STORAGE_KEY, chartId);
+  } catch (error) {
+    // Ignore storage failures so the editor still works in restricted contexts.
+  }
+}
+
+function sanitizeTimelineZoom(value) {
+  const numericValue = Number(value);
+  if (
+    !Number.isFinite(numericValue) ||
+    numericValue < MIN_TIMELINE_ZOOM ||
+    numericValue > MAX_TIMELINE_ZOOM
+  ) {
+    return DEFAULT_TIMELINE_ZOOM;
+  }
+
+  return numericValue;
+}
+
+function loadStoredTimelineZoom() {
+  try {
+    const rawValue = window.localStorage.getItem(TIMELINE_ZOOM_STORAGE_KEY);
+    if (rawValue === null) {
+      return DEFAULT_TIMELINE_ZOOM;
+    }
+
+    const zoomValue = sanitizeTimelineZoom(rawValue);
+    if (String(zoomValue) !== rawValue) {
+      window.localStorage.setItem(TIMELINE_ZOOM_STORAGE_KEY, String(zoomValue));
+    }
+    return zoomValue;
+  } catch (error) {
+    return DEFAULT_TIMELINE_ZOOM;
+  }
+}
+
+function persistTimelineZoom(zoomValue) {
+  const safeZoomValue = sanitizeTimelineZoom(zoomValue);
+
+  try {
+    window.localStorage.setItem(TIMELINE_ZOOM_STORAGE_KEY, String(safeZoomValue));
+  } catch (error) {
+    // Ignore storage failures so the editor still works in restricted contexts.
+  }
+
+  return safeZoomValue;
+}
+
+function getSongEntries() {
+  const seen = new Set();
+  return state.chartCatalog.filter((entry) => {
+    if (seen.has(entry.songId)) {
+      return false;
+    }
+    seen.add(entry.songId);
+    return true;
+  });
+}
+
+function getDifficultyEntries(songId) {
+  return state.chartCatalog.filter((entry) => entry.songId === songId);
+}
+
+function findChartEntry(chartId) {
+  return state.chartCatalog.find((entry) => entry.id === chartId) || null;
+}
+
+function renderChartPicker() {
+  const selectedEntry = getSelectedChartEntry();
+  const songEntries = getSongEntries();
+  const selectedSongId = selectedEntry?.songId || songEntries[0]?.songId || "";
+  const difficultyEntries = getDifficultyEntries(selectedSongId);
+
+  dom.songSelect.innerHTML = songEntries
+    .map(
+      (entry) =>
+        `<option value="${entry.songId}" ${
+          entry.songId === selectedSongId ? "selected" : ""
+        }>${entry.songTitle}</option>`
+    )
+    .join("");
+  dom.songSelect.disabled = songEntries.length <= 1;
+
+  dom.difficultySelect.innerHTML = difficultyEntries
+    .map(
+      (entry) =>
+        `<option value="${entry.id}" ${
+          entry.id === state.selectedChartId ? "selected" : ""
+        }>${entry.difficultyLabel}</option>`
+    )
+    .join("");
+  dom.difficultySelect.disabled = difficultyEntries.length <= 1;
+
+  if (dom.chartTitle) {
+    dom.chartTitle.textContent = selectedEntry?.editorTitle || "谱面编辑器";
+  }
+}
+
+async function switchChart(chartId) {
+  const nextEntry = findChartEntry(chartId);
+  if (!nextEntry || nextEntry.id === state.selectedChartId) {
+    renderChartPicker();
+    return;
+  }
+
+  if (state.dirty && !window.confirm("当前谱面还没保存，确定切换吗？")) {
+    renderChartPicker();
+    return;
+  }
+
+  dom.audio.pause();
+  state.selectedChartId = nextEntry.id;
+  persistSelectedChartId(nextEntry.id);
+  renderChartPicker();
+  await loadChart(nextEntry.id);
+}
+
 function applyNoteTypeValue(note, noteType) {
   if (noteType === EDITOR_NOTE_TYPES.HOLD) {
     note.kind = "hold";
@@ -258,6 +427,133 @@ function ensureSfxPlayers() {
   state.sfxPlayerIndex = 0;
 }
 
+function ensureHoldPreview() {
+  if (state.holdPreview) {
+    return state.holdPreview;
+  }
+
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    return null;
+  }
+
+  const context = new AudioContextClass();
+  const output = context.createGain();
+  const filter = context.createBiquadFilter();
+  const tone = context.createOscillator();
+  const subTone = context.createOscillator();
+  const subGain = context.createGain();
+  const lfo = context.createOscillator();
+  const lfoGain = context.createGain();
+
+  output.gain.value = 0;
+  filter.type = "lowpass";
+  filter.frequency.value = 980;
+  filter.Q.value = 0.42;
+
+  tone.type = "triangle";
+  tone.frequency.value = 329.63;
+
+  subTone.type = "sine";
+  subTone.frequency.value = 164.81;
+  subGain.gain.value = 0.48;
+
+  lfo.type = "sine";
+  lfo.frequency.value = 3.2;
+  lfoGain.gain.value = 0.45;
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(tone.frequency);
+  tone.connect(filter);
+  subTone.connect(subGain);
+  subGain.connect(filter);
+  filter.connect(output);
+  output.connect(context.destination);
+
+  tone.start();
+  subTone.start();
+  lfo.start();
+
+  state.holdPreview = {
+    context,
+    output,
+    active: false,
+  };
+
+  return state.holdPreview;
+}
+
+async function resumeHoldPreview() {
+  const holdPreview = ensureHoldPreview();
+  if (!holdPreview) {
+    return;
+  }
+
+  if (holdPreview.context.state === "suspended") {
+    try {
+      await holdPreview.context.resume();
+    } catch (error) {
+      console.error("Hold preview resume error", error);
+    }
+  }
+}
+
+function startHoldCue() {
+  const holdPreview = ensureHoldPreview();
+  if (!holdPreview) {
+    return;
+  }
+
+  if (holdPreview.context.state === "suspended") {
+    holdPreview.context.resume().catch(() => {});
+  }
+
+  if (holdPreview.active) {
+    return;
+  }
+
+  holdPreview.active = true;
+  const now = holdPreview.context.currentTime;
+  const currentGain = holdPreview.output.gain.value;
+  holdPreview.output.gain.cancelScheduledValues(now);
+  holdPreview.output.gain.setValueAtTime(currentGain, now);
+  holdPreview.output.gain.linearRampToValueAtTime(HOLD_SUSTAIN_VOLUME, now + 0.025);
+}
+
+function stopHoldCue() {
+  const holdPreview = state.holdPreview;
+  if (!holdPreview) {
+    return;
+  }
+
+  if (!holdPreview.active && holdPreview.output.gain.value <= 0.0001) {
+    return;
+  }
+
+  holdPreview.active = false;
+  const now = holdPreview.context.currentTime;
+  const currentGain = holdPreview.output.gain.value;
+  holdPreview.output.gain.cancelScheduledValues(now);
+  holdPreview.output.gain.setValueAtTime(currentGain, now);
+  holdPreview.output.gain.linearRampToValueAtTime(0, now + 0.07);
+}
+
+function updateHoldCue(chartTime) {
+  const epsilon = 0.001;
+  const hasActiveHold = state.notes.some(
+    (note) =>
+      note.kind === "hold" &&
+      note.time <= chartTime + epsilon &&
+      note.endTime > chartTime + epsilon
+  );
+
+  if (hasActiveHold) {
+    startHoldCue();
+  } else {
+    stopHoldCue();
+  }
+}
+
 function resetCueTracking(chartTime = state.playheadTime || 0) {
   state.lastCueChartTime = chartTime;
 }
@@ -285,26 +581,16 @@ function playCrossedNoteCues(previousTime, currentTime) {
 
   const epsilon = 0.001;
   state.notes.forEach((note) => {
-    if (note.time > previousTime + epsilon && note.time <= currentTime + epsilon) {
+    if (
+      note.kind !== "hold" &&
+      note.time > previousTime + epsilon &&
+      note.time <= currentTime + epsilon
+    ) {
       playHitCue();
     }
-
-    if (note.kind === "hold") {
-      for (
-        let cueTime = note.time + HOLD_TICK_INTERVAL;
-        cueTime < note.endTime - epsilon;
-        cueTime += HOLD_TICK_INTERVAL
-      ) {
-        if (cueTime > previousTime + epsilon && cueTime <= currentTime + epsilon) {
-          playHitCue();
-        }
-      }
-
-      if (note.endTime > previousTime + epsilon && note.endTime <= currentTime + epsilon) {
-        playHitCue();
-      }
-    }
   });
+
+  updateHoldCue(currentTime);
 }
 
 function setSaveStatus(message, isMuted = false) {
@@ -324,7 +610,7 @@ function clearDirty(message = "已保存") {
 
 function getTimeFromClientX(clientX) {
   const rect = dom.trackLayer.getBoundingClientRect();
-  const x = clientX - rect.left;
+  const x = clientX - rect.left - TIMELINE_START_PADDING_PX;
   const time = x / state.pxPerSecond;
   return roundTime(Math.max(0, Math.min(getTimelineDuration(), time)));
 }
@@ -382,6 +668,10 @@ function getSelectionHitRect(noteElement) {
   };
 }
 
+function chartTimeToTimelineX(chartTime) {
+  return TIMELINE_START_PADDING_PX + chartTime * state.pxPerSecond;
+}
+
 function getNotesInsideSelection(selectionRect) {
   return Array.from(dom.notesLayer.querySelectorAll(".note"))
     .filter((element) => rectsIntersect(getSelectionHitRect(element), selectionRect))
@@ -433,8 +723,27 @@ function cloneLocalNote(note) {
   };
 }
 
+function getCurrentNoteFallSpeedMultiplier() {
+  return normalizeNoteFallSpeedMultiplier(state.chart?.noteFallSpeedMultiplier);
+}
+
+function setChartFallSpeedMultiplier(value, options = {}) {
+  if (!state.chart) {
+    return;
+  }
+
+  const nextValue = normalizeNoteFallSpeedMultiplier(value, getCurrentNoteFallSpeedMultiplier());
+  state.chart.noteFallSpeedMultiplier = nextValue;
+  renderFallSpeedControl();
+
+  if (!options.silent) {
+    pushHistory();
+  }
+}
+
 function createHistorySnapshot() {
   return {
+    noteFallSpeedMultiplier: getCurrentNoteFallSpeedMultiplier(),
     notes: state.notes.map((note) => cloneLocalNote(note)),
     selectedId: state.selectedId,
     selectedIds: getSelectedNoteIds(),
@@ -511,6 +820,11 @@ function pushHistory() {
 }
 
 function applyHistorySnapshot(snapshot) {
+  if (state.chart && snapshot.noteFallSpeedMultiplier !== undefined) {
+    state.chart.noteFallSpeedMultiplier = normalizeNoteFallSpeedMultiplier(
+      snapshot.noteFallSpeedMultiplier
+    );
+  }
   state.notes = snapshot.notes.map((note) => cloneLocalNote(note));
   state.selectedId = snapshot.selectedId;
   state.selectedIds = Array.isArray(snapshot.selectedIds) ? [...snapshot.selectedIds] : [];
@@ -611,10 +925,22 @@ function renderMeta() {
   }
 
   const holdCount = state.notes.filter((note) => note.kind === "hold").length;
+  const fallSpeed = getCurrentNoteFallSpeedMultiplier();
   const dirtyTag = state.dirty ? " · 未保存" : "";
   dom.chartMeta.textContent = `${state.chart.title} · ${state.notes.length} notes · ${holdCount} holds · 偏移 ${(
     state.chart.audioStartTime || 0
-  ).toFixed(3)}s${dirtyTag}`;
+  ).toFixed(3)}s · 下落 ${fallSpeed.toFixed(2)}x${dirtyTag}`;
+}
+
+function renderFallSpeedControl() {
+  if (!dom.fallSpeedRange || !dom.fallSpeedInput || !dom.fallSpeedValue) {
+    return;
+  }
+
+  const fallSpeed = getCurrentNoteFallSpeedMultiplier();
+  dom.fallSpeedRange.value = fallSpeed.toFixed(2);
+  dom.fallSpeedInput.value = fallSpeed.toFixed(2);
+  dom.fallSpeedValue.textContent = `${fallSpeed.toFixed(2)}x`;
 }
 
 function renderPlaybackTime() {
@@ -626,14 +952,14 @@ function renderPlaybackTime() {
 
 function renderRuler() {
   const duration = getTimelineDuration();
-  const width = Math.max(1200, duration * state.pxPerSecond + 80);
+  const width = Math.max(1200, chartTimeToTimelineX(duration) + 80);
   dom.timelineContent.style.width = `${width}px`;
 
   const seconds = Math.ceil(duration);
   let html = "";
 
   for (let second = 0; second <= seconds; second += 1) {
-    const left = second * state.pxPerSecond;
+    const left = chartTimeToTimelineX(second);
     const isMajor = second % 5 === 0;
     html += `<div class="ruler-tick ${isMajor ? "ruler-tick-major" : "ruler-tick-minor"}" style="left:${left}px"></div>`;
     if (isMajor || second === 0) {
@@ -645,20 +971,20 @@ function renderRuler() {
 }
 
 function createNoteElement(note, noteOrder) {
-  const x = note.time * state.pxPerSecond;
+  const x = chartTimeToTimelineX(note.time);
   const wrapper = document.createElement("div");
   wrapper.className = `note ${isNoteSelected(note._id) ? "note-selected" : ""}`;
   wrapper.dataset.noteId = String(note._id);
 
   if (note.kind === "hold") {
     wrapper.style.left = `${x}px`;
-    wrapper.style.transform = `translate(-${HOLD_NOTE_HEAD_RADIUS}px, -50%)`;
+    wrapper.style.transform = "translateY(-50%)";
 
     const body = document.createElement("div");
     body.className = "note-hold";
     body.style.width = `${Math.max(
       HOLD_NOTE_HEAD_SIZE,
-      (note.endTime - note.time) * state.pxPerSecond + HOLD_NOTE_HEAD_RADIUS
+      (note.endTime - note.time) * state.pxPerSecond
     )}px`;
     wrapper.appendChild(body);
 
@@ -710,7 +1036,7 @@ function renderNotes() {
 }
 
 function renderPlayhead() {
-  const left = getChartTime() * state.pxPerSecond;
+  const left = chartTimeToTimelineX(getChartTime());
   dom.playhead.style.left = `${left}px`;
 
   if (state.followPlayhead && !state.drag && !dom.audio.paused) {
@@ -723,6 +1049,7 @@ function renderPlayhead() {
 function renderAll() {
   renderRuler();
   renderNotes();
+  renderFallSpeedControl();
   renderPlaybackTime();
   renderPlayhead();
 }
@@ -746,6 +1073,12 @@ function seekToChartTime(chartTime) {
     }
   } catch (error) {
     state.pendingAudioTime = audioTime;
+  }
+
+  if (dom.audio.paused) {
+    stopHoldCue();
+  } else {
+    updateHoldCue(bounded);
   }
 
   renderPlaybackTime();
@@ -1005,6 +1338,7 @@ async function playFromCurrentPlayhead() {
   const startChartTime = roundTime(Math.max(0, state.playheadTime || 0));
   seekToChartTime(startChartTime);
   resetCueTracking(startChartTime);
+  await resumeHoldPreview();
 
   try {
     const result = dom.audio.play();
@@ -1039,7 +1373,8 @@ function buildPayloadChart() {
 async function saveChart() {
   try {
     setSaveStatus("保存中...", true);
-    const response = await fetch("/api/chart", {
+    const chartId = state.selectedChartId || "";
+    const response = await fetch(`/api/chart?chartId=${encodeURIComponent(chartId)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1076,6 +1411,7 @@ function hydrateChart(chart) {
   state.playheadTime = 0;
   state.pendingAudioTime = chartTimeToAudioTime(0);
   resetCueTracking(0);
+  stopHoldCue();
   state.notes = chart.notes.map((note) => createLocalNote(note));
   state.selectedId = null;
   state.selectedIds = [];
@@ -1111,14 +1447,40 @@ function hydrateChart(chart) {
 
 async function loadChart() {
   try {
-    const response = await fetch("/api/chart");
+    const chartId = state.selectedChartId || "";
+    const response = await fetch(`/api/chart?chartId=${encodeURIComponent(chartId)}`);
     const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "加载失败");
+    }
+    state.selectedChartId = payload.chartId || state.selectedChartId;
+    persistSelectedChartId(state.selectedChartId);
+    renderChartPicker();
     hydrateChart(payload.chart);
     clearDirty("谱面已载入");
   } catch (error) {
     console.error(error);
     setSaveStatus(`加载失败: ${error.message}`, false);
   }
+}
+
+async function loadChartCatalog() {
+  const response = await fetch("/api/charts");
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload.error || "谱面列表加载失败");
+  }
+
+  state.chartCatalog = Array.isArray(payload.charts) ? payload.charts : [];
+  const storedChartId = loadStoredChartId();
+  state.selectedChartId =
+    findChartEntry(storedChartId)?.id ||
+    findChartEntry(payload.defaultChartId)?.id ||
+    state.chartCatalog[0]?.id ||
+    null;
+  persistSelectedChartId(state.selectedChartId);
+  renderChartPicker();
 }
 
 function handleNoteFormChange() {
@@ -1257,11 +1619,36 @@ function bindEvents() {
   dom.undoButton.addEventListener("click", undoHistory);
   dom.redoButton.addEventListener("click", redoHistory);
   dom.zoomRange.addEventListener("input", () => {
-    state.pxPerSecond = Number(dom.zoomRange.value);
+    state.pxPerSecond = persistTimelineZoom(dom.zoomRange.value);
+    dom.zoomRange.value = String(state.pxPerSecond);
     renderAll();
   });
   dom.followToggle.addEventListener("change", () => {
     state.followPlayhead = dom.followToggle.checked;
+  });
+
+  dom.fallSpeedRange?.addEventListener("input", () => {
+    setChartFallSpeedMultiplier(dom.fallSpeedRange.value);
+  });
+
+  dom.fallSpeedInput?.addEventListener("change", () => {
+    setChartFallSpeedMultiplier(dom.fallSpeedInput.value);
+  });
+
+  dom.songSelect.addEventListener("change", () => {
+    const nextSongId = dom.songSelect.value;
+    const selectedEntry = getSelectedChartEntry();
+    const nextEntry =
+      getDifficultyEntries(nextSongId).find((entry) => entry.difficultyId === selectedEntry?.difficultyId) ||
+      getDifficultyEntries(nextSongId)[0];
+
+    if (nextEntry) {
+      switchChart(nextEntry.id);
+    }
+  });
+
+  dom.difficultySelect.addEventListener("change", () => {
+    switchChart(dom.difficultySelect.value);
   });
 
   dom.addTapAtPlayhead.addEventListener("click", () => {
@@ -1387,24 +1774,47 @@ function bindEvents() {
   dom.audio.addEventListener("ended", updatePlayToggle);
   dom.audio.addEventListener("loadedmetadata", syncPendingAudioTime);
   dom.audio.addEventListener("canplay", syncPendingAudioTime);
+  dom.audio.addEventListener("error", () => {
+    const src = state.chart?.audioSrc || dom.audio.getAttribute("src") || "当前音频";
+    setSaveStatus(`音频未找到或无法播放: ${src}`, false);
+    updatePlayToggle();
+  });
   dom.audio.addEventListener("seeked", () => {
     state.playheadTime = audioTimeToChartTime(dom.audio.currentTime || 0);
     resetCueTracking(state.playheadTime);
+    if (dom.audio.paused) {
+      stopHoldCue();
+    } else {
+      updateHoldCue(state.playheadTime);
+    }
   });
   dom.audio.addEventListener("pause", () => {
     state.playheadTime = audioTimeToChartTime(dom.audio.currentTime || 0);
     resetCueTracking(state.playheadTime);
+    stopHoldCue();
     updatePlayToggle();
   });
   dom.audio.addEventListener("play", () => {
     resetCueTracking(state.playheadTime);
+    updateHoldCue(state.playheadTime);
     updatePlayToggle();
   });
 }
 
 async function init() {
+  state.pxPerSecond = loadStoredTimelineZoom();
+  if (dom.zoomRange) {
+    dom.zoomRange.value = String(state.pxPerSecond);
+  }
+
   bindEvents();
-  await loadChart();
+  try {
+    await loadChartCatalog();
+    await loadChart();
+  } catch (error) {
+    console.error(error);
+    setSaveStatus(`加载失败: ${error.message}`, false);
+  }
   updatePlayToggle();
   animationFrame();
 }

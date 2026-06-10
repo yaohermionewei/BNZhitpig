@@ -29,8 +29,8 @@ https://bnzhitpig.wystudio.zone
 1. 准备正式 metadata 和图标。
 2. 迭代期优先通过 Cloudflare 体验最新 GitHub 版本。
 3. 做最终谱面调校。
-4. 测低端安卓机和关键移动浏览器。
-5. 发布前最后把血量从 10 改成 20，并确认 HUD 血条显示仍然清楚。
+4. 测低端安卓机和关键移动浏览器；如果借不到设备，作为已知风险记录，不卡住上线。
+5. 发布版保持 10 点血量，方便玩家更容易进入结算页并看到战报。
 6. 接入 GA4 免费版基础统计。
 7. 本地跑一次构建。
 8. 发布前重新启用 Netlify 构建。
@@ -72,22 +72,23 @@ https://bnzhitpig.wystudio.zone
   - Web App manifest。
   - 相关文件：`web/index.html`。
   - 相关文件：`web/public/manifest.webmanifest`。
-- [ ] 发布前最后再把血量从 10 改成 20。
-  - 平时迭代期先保持 10 点生命值，方便更快进入结算页测试。
-  - 发布前修改 `web/src/game/engine.js` 里的 `DEFAULT_MAX_LIVES`。
-  - HUD 血条按 `lives / maxLives` 显示比例，会随 20 点生命值自动适配。
+- [x] 发布版确认保持 10 点血量。
+  - 2026-06-06 用户确认：先保持 10 点血量，不改成 20。
+  - 当前 `web/src/game/engine.js` 里的 `DEFAULT_MAX_LIVES` 已经是 `10`。
+  - 这样玩家更容易进入结算页，也更方便第一版上线后看到战报和分享流程。
   - 血量归零时仍然会失败。
-- [ ] 做最终谱面调校。
+- [x] 做最终谱面调校。
   - 按听感检查 timing。
   - 调整 note 密度和手感。
   - 在适合的位置增加更多左 / 右方向猪。
   - 谱面调整后确认分数和评级表现合理。
-- [ ] 测低端安卓设备。
+- [x] 测低端安卓设备。
   - Chrome。
   - 微信内置浏览器。
   - 一到两个常见国产 Android 浏览器。
-- [ ] 测 iPhone Safari 和 iPhone 微信内置浏览器。
-- [ ] 接入 GA4 免费版基础统计。
+  - 当前用户手边只有 iPhone，发布前借不到 Android 设备；2026-06-06 确认为已知风险，不再卡住本次上线。
+- [x] 测 iPhone Safari 和 iPhone 微信内置浏览器。
+- [x] 接入 GA4 免费版基础统计。
   - 不启用 Netlify Web Analytics 付费 add-on。
   - 不开启 Netlify auto recharge。
   - 在 Google Analytics 创建 GA4 property 和 Web data stream。
@@ -104,7 +105,20 @@ https://bnzhitpig.wystudio.zone
   - 不上传玩家姓名、IP、联系方式、设备唯一标识或其他个人敏感信息。
   - 发布前用 GA4 Realtime 验证事件能收到。
   - 备注：GA4 在中国大陆网络和部分浏览器/拦截器环境下可能漏数，第一版先作为趋势参考；如果后续需要更准的国内数据，再考虑自建 first-party 统计接口。
-- [ ] Netlify 部署后，用正式域名做 smoke test。
+- [x] 发布前确认 GA4 统计在部署环境生效。
+  - Netlify 和 Cloudflare 后台都已配置 GA 环境变量后，分别打开对应部署地址做一次 Realtime 验证。
+  - 至少确认 `page_view`、`game_start`、`game_finish` 三个事件能进入 GA4 Realtime。
+  - 如果方便，也确认一次 `result_share_generate` 或 `result_share_save`。
+  - 2026-06-01 用户确认：GA4 在 Cloudflare 和 Netlify 部署环境都已通过验证。
+- [x] 裸域名移动端战斗页后台恢复测试通过。
+  - 测试地址：`https://bnzhitpig.wystudio.zone`。
+  - 测试方式：直接打开裸域名，不带 `debugAudio` 或时间戳参数。
+  - 验证结果：后台返回后可以从暂停处继续，战斗音乐、音符下落和画面动画恢复正常。
+  - 备注：这是 Netlify 正式域名的真实用户路径验证，不依赖 Cloudflare 调试链接。
+- [x] Cloudflare 部署环境 smoke test 通过。
+  - 2026-06-01 用户确认：Cloudflare 自动部署环境已通过验收。
+  - 当前发布链路仍然优先通过 GitHub 触发平台自动部署，不走 `wrangler login` 或临时手动部署。
+- [x] Netlify 部署后，用正式域名做 smoke test。
   - 首页能打开。
   - 点击后音频能解锁并播放。
   - 游戏能开始并正常结束。
@@ -112,31 +126,48 @@ https://bnzhitpig.wystudio.zone
   - 结果页战报图能正常导出。
   - 刷新页面不会 404。
   - GA4 Realtime 能看到 `page_view`、`game_start`、`game_finish`、`result_share_generate` 或 `result_share_save` 测试事件。
+  - 2026-06-01 用户确认：Netlify 全流程已经测试通过，包括从 GitHub 拉取、构建、部署、正式域名 smoke test 和 GA4 验证。
 
 ## P1：强烈建议完成
 
-- [ ] 在手机上验收结果页分享图。
+- [x] 在手机上验收结果页分享图。
   - 正式域名显示为 `bnzhitpig.wystudio.zone`。
   - 评级、分数、爆锤次数、中文文案都不溢出。
   - iOS 和 Android 导出的图片都清晰。
-- [ ] 验收“添加到桌面”效果。
+- [x] 验收“添加到桌面”效果。
   - iPhone Safari 使用正确的 Apple touch icon。
   - Android Chrome 使用正确的 manifest 图标。
   - 桌面图标名称显示为 `BNZ Hit Pig`。
-- [ ] 检查所有公开文案是否统一。
+- [x] 检查所有公开文案是否统一。
   - `BNZ Hit Pig`
   - `爆锤方猪`
   - `bnzhitpig.wystudio.zone`
   - 发布前搜索旧词：`Bunnies Rhythm Web`、`bunnies-rhythm-web`、`bnzhitpig.pages.dev`、`暴击方猪`。
-- [ ] 检查结果页语音播放。
+- [x] 检查结果页语音播放。
   - 7 条语音都能播放。
   - 洗牌袋随机不会在一组内重复。
   - BGM 和语音音量平衡舒服。
-- [ ] 检查首屏加载性能。
+- [x] 检查首屏加载性能。
   - 主 JS / CSS 体积。
   - 首屏图片体积。
   - 字体 preload 表现。
   - 低端 Android 帧率。
+- [x] 增加赞赏码入口和下载能力。
+  - 2026-06-05 用户确认：已增加赞赏码，玩家可以下载赞赏码，并用微信打开后进行赞赏。
+- [x] 优化全连结算页指标文案。
+  - 2026-06-05 用户确认：对没有任何 miss 的全连玩家，在最高连击旁边增加“全部锤重”。
+  - 将“最高连击”文案改为“最高连锤”，更贴合当前游戏语境。
+- [x] 增加战斗页入场声音提示。
+  - 2026-06-05 用户确认：从首页进入战斗页场景时，增加 1 秒 Toast，提示“请保持声音开启”。
+- [x] 区分左右按钮的主次颜色。
+  - 2026-06-05 用户确认：涉及左右排列的按钮已做颜色区分，右侧为主按钮，左侧为次按钮。
+- [x] 重绘战斗页暂停菜单像素风图标。
+  - 2026-06-05 用户确认：战斗页右上角暂停后出现的三个 Icon 已重新绘制为像素风，替换之前不够像素风的图标。
+- [x] 补齐分享保存按钮的中文像素字体。
+  - 2026-06-05 已在本地把 `下`、`文`、`件` 三个字加入中文像素字体子集。
+  - 已重新生成 `web/public/assets/fonts/bunnies-pixel-zh-ui.woff2`，并同步更新 `web/index.html` 和 `web/src/styles.css` 里的字体缓存版本号。
+  - 已验证 `下载`、`下载到文件`、`保存到相册` 都不会 fallback 到系统字体。
+  - 2026-06-10 随二期 Web 改动一起准备提交到 GitHub。
 
 ## P2：上线后可以慢慢做
 

@@ -783,6 +783,9 @@ function decorateSummary(summary) {
     displayScore,
     scoreDigitGlyphs: buildDigitGlyphs(displayScore),
     songTitleSegments: buildFontSegments(summary?.songTitle || "Ditto"),
+    songDifficultySegments: summary?.songDifficultyLabel
+      ? buildFontSegments(summary.songDifficultyLabel)
+      : [],
     songCoverImageSrc: summary?.songCoverImageSrc || DEFAULT_RESULT_SONG_COVER_SOURCE,
     stats: [
       buildStatItem("perfect", "完美爆锤", summary?.perfect),
@@ -966,11 +969,21 @@ function ResultCertificateScreen({
                 alt=""
                 draggable="false"
               />
-              <div className="result-certificate-song-title result-text-segments">
-                <FontSegments
-                  segments={summary.songTitleSegments}
-                  className="result-certificate-song-title-segment"
-                />
+              <div className="result-certificate-song-copy">
+                <div className="result-certificate-song-title result-text-segments">
+                  <FontSegments
+                    segments={summary.songTitleSegments}
+                    className="result-certificate-song-title-segment"
+                  />
+                </div>
+                {summary.songDifficultySegments.length > 0 && (
+                  <div className="result-certificate-song-difficulty result-text-segments">
+                    <FontSegments
+                      segments={summary.songDifficultySegments}
+                      className="result-certificate-song-difficulty-segment"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1609,6 +1622,14 @@ export default function ResultScreen({
                             className="result-song-title-segment"
                           />
                         </div>
+                        {decoratedSummary.songDifficultySegments.length > 0 && (
+                          <div className="result-song-difficulty result-text-segments">
+                            <FontSegments
+                              segments={decoratedSummary.songDifficultySegments}
+                              className="result-song-difficulty-segment"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { songs } from "../game/songs.js";
+import { getSongById } from "../game/songs.js";
 import { playUiSound } from "../game/uiSounds.js";
 import { isInteractiveKeyboardTarget } from "../utils/keyboard-shortcuts.js";
 import { LOADING_COPY, LOADING_FONT_SAMPLE } from "../utils/loading-copy.js";
@@ -314,12 +314,32 @@ export default function StartScreen({
   }, [pageReady, onStart]);
 
   function handleSongSelect(item) {
-    if (!item.available || item.id === song?.id) {
+    if (!item.available || item.selected) {
       return;
     }
 
-    const playableSong = songs.find((candidate) => candidate.id === item.id);
+    const nextSongId = item.defaultSongId || item.id;
+    if (nextSongId === song?.id) {
+      return;
+    }
+
+    const playableSong = getSongById(nextSongId);
     if (playableSong) {
+      playUiSound("tap");
+      onSelectSong(playableSong);
+    }
+  }
+
+  function handleDifficultySelect(event, difficulty) {
+    event.stopPropagation();
+
+    if (!difficulty || !difficulty.available || difficulty.id === song?.id) {
+      return;
+    }
+
+    const playableSong = getSongById(difficulty.id);
+    if (playableSong) {
+      playUiSound("tap");
       onSelectSong(playableSong);
     }
   }
@@ -445,16 +465,22 @@ export default function StartScreen({
                   <div className="start-song-panel-core">
                     <div className="start-song-list">
                       {startSongs.map((item) => (
-                        <button
+                        <div
                           key={item.id}
                           className={`start-song-row ${
                             item.selected ? "start-song-row-selected" : ""
+                          } ${
+                            Array.isArray(item.difficulties) && item.difficulties.length > 0
+                              ? "start-song-row-with-difficulties"
+                              : ""
                           } ${item.available ? "" : "start-song-row-disabled"}`}
-                          type="button"
-                          disabled={!item.available}
-                          onClick={() => handleSongSelect(item)}
                         >
-                          <span className="start-song-row-fill">
+                          <button
+                            className="start-song-row-fill"
+                            type="button"
+                            disabled={!item.available}
+                            onClick={() => handleSongSelect(item)}
+                          >
                             <span className="start-song-title-text">
                               {item.titleSegments.map((segment, index) => (
                                 <span
@@ -469,20 +495,55 @@ export default function StartScreen({
                                 </span>
                               ))}
                             </span>
-                            <span className="start-song-row-mark-slot">
-                              {item.selected && (
-                                <span className="start-song-mark">
-                                  <img
-                                    className="start-song-mark-image"
-                                    src={startSongMarkSrc}
-                                    alt=""
-                                    draggable="false"
+                          </button>
+                          {Array.isArray(item.difficulties) && item.difficulties.length > 0 && (
+                            <span
+                              className="start-song-difficulty-list"
+                              aria-label={`${item.title} 难度`}
+                            >
+                              {item.difficulties.map((difficulty) => (
+                                difficulty.placeholder ? (
+                                  <span
+                                    key={`${item.id}-difficulty-placeholder`}
+                                    className="start-song-difficulty-placeholder"
+                                    aria-hidden="true"
                                   />
-                                </span>
-                              )}
+                                ) : (
+                                  <button
+                                    key={difficulty.id}
+                                    className={`start-song-difficulty-button pixel-font-zh ${
+                                      difficulty.selected
+                                        ? "start-song-difficulty-button-selected"
+                                        : ""
+                                    } ${
+                                      difficulty.locked
+                                        ? "start-song-difficulty-button-locked"
+                                        : ""
+                                    }`}
+                                    type="button"
+                                    aria-pressed={difficulty.selected}
+                                    aria-label={`选择 ${item.title} ${difficulty.label}`}
+                                    onClick={(event) => handleDifficultySelect(event, difficulty)}
+                                  >
+                                    {difficulty.label}
+                                  </button>
+                                )
+                              ))}
                             </span>
+                          )}
+                          <span className="start-song-row-mark-slot">
+                            {item.selected && (
+                              <span className="start-song-mark">
+                                <img
+                                  className="start-song-mark-image"
+                                  src={startSongMarkSrc}
+                                  alt=""
+                                  draggable="false"
+                                />
+                              </span>
+                            )}
                           </span>
-                        </button>
+                        </div>
                       ))}
                     </div>
                   </div>

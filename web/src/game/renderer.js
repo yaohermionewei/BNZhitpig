@@ -65,7 +65,9 @@ const RABBIT_IDLE_PIXEL_BOB_PATTERN = Object.freeze([0, -1, -2, -1, 0, 1, 0, 0])
 const RABBIT_IDLE_PIXEL_BOB_SPEED = 5.4;
 const RABBIT_IDLE_PIXEL_BOB_PHASE = 0.7;
 const NOTE_ENTRY_Y = 183;
-const NOTE_FALL_SPEED_MULTIPLIER = 1.1;
+const DEFAULT_NOTE_FALL_SPEED_MULTIPLIER = 1.1;
+const MIN_NOTE_FALL_SPEED_MULTIPLIER = 0.5;
+const MAX_NOTE_FALL_SPEED_MULTIPLIER = 1.3;
 const STAGE_CARPET_TOP = 205;
 const LANE_HIT_FLASH_CALIBRATION_BASE_WIDTH = 402;
 const LANE_HIT_FLASH_CALIBRATION_BASE_HEIGHT = 782;
@@ -231,6 +233,15 @@ const HUD_SONG_COVER_SIZE = 44;
 const HUD_SONG_COVER_GAP = 8;
 const HUD_SONG_TITLE_FONT_SIZE = 19;
 const HUD_SONG_TITLE_TRACKING = 0.2;
+const HUD_SONG_DIFFICULTY_FONT_SIZE = 10;
+const HUD_SONG_DIFFICULTY_TRACKING = 0.2;
+const HUD_SONG_DIFFICULTY_PAD_X = 5;
+const HUD_SONG_DIFFICULTY_GAP = 4;
+const HUD_SONG_DIFFICULTY_LABEL_HEIGHT = 16;
+const HUD_SONG_DIFFICULTY_EDGE_COLOR = "#f5d99d";
+const HUD_SONG_DIFFICULTY_FACE_COLOR = "rgba(245, 217, 157, 0.96)";
+const HUD_SONG_DIFFICULTY_TEXT_COLOR = "rgba(88, 47, 40, 0.86)";
+const HUD_SONG_DIFFICULTY_TEXT_SHADOW_COLOR = "rgba(255, 244, 225, 0.36)";
 const HUD_TOP_Y = 25;
 const HUD_SCORE_PAUSE_GAP = 14;
 const HUD_SCORE_RIGHT_SAFE_GAP = 12;
@@ -720,6 +731,18 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function getNoteFallSpeedMultiplier(chart) {
+  const multiplier = Number(chart?.noteFallSpeedMultiplier);
+  if (
+    !Number.isFinite(multiplier) ||
+    multiplier < MIN_NOTE_FALL_SPEED_MULTIPLIER ||
+    multiplier > MAX_NOTE_FALL_SPEED_MULTIPLIER
+  ) {
+    return DEFAULT_NOTE_FALL_SPEED_MULTIPLIER;
+  }
+  return multiplier;
+}
+
 function lerp(start, end, amount) {
   return start + (end - start) * amount;
 }
@@ -1051,6 +1074,41 @@ function drawCleanTrackedText(ctx, text, x, y, options = {}) {
   });
 
   ctx.restore();
+}
+
+function drawVisuallyCenteredTrackedText(ctx, text, centerX, centerY, options = {}) {
+  const content = String(text || "");
+  if (!content) {
+    return;
+  }
+
+  const fontSize = options.fontSize || 8;
+  const fontFamily = options.fontFamily || "sans-serif";
+  const fontWeight = options.fontWeight || "400";
+
+  ctx.save();
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  ctx.textBaseline = "top";
+  const metrics = ctx.measureText(content);
+  ctx.restore();
+
+  const ascent = Number(metrics.actualBoundingBoxAscent);
+  const descent = Number(metrics.actualBoundingBoxDescent);
+  if (!Number.isFinite(ascent) || !Number.isFinite(descent) || ascent + descent <= 0) {
+    drawCleanTrackedText(ctx, content, centerX, centerY, {
+      ...options,
+      align: "center",
+      valign: "middle",
+    });
+    return;
+  }
+
+  const topBaselineY = centerY - (descent - ascent) / 2;
+  drawCleanTrackedText(ctx, content, centerX, topBaselineY, {
+    ...options,
+    align: "center",
+    valign: "top",
+  });
 }
 
 function drawSegmentedTrackedText(ctx, segments, x, y, options = {}) {
@@ -3125,7 +3183,7 @@ function getSceneTransition(introProgress = 1) {
   };
 }
 
-function getLaneMetrics(viewport, introProgress = 1) {
+function getLaneMetrics(viewport, introProgress = 1, chart = null) {
   const transition = getSceneTransition(introProgress);
   const centerX = viewport.width / 2;
   const bottomWidth = Math.min(viewport.width * lerp(0.44, 0.48, transition.cameraProgress), 248);
@@ -3148,7 +3206,9 @@ function getLaneMetrics(viewport, introProgress = 1) {
     noteEntryY: NOTE_ENTRY_Y,
     targetY,
     pixelsPerSecond:
-      viewport.height * lerp(0.34, 0.42, transition.cameraProgress) * NOTE_FALL_SPEED_MULTIPLIER,
+      viewport.height *
+      lerp(0.34, 0.42, transition.cameraProgress) *
+      getNoteFallSpeedMultiplier(chart),
     cameraProgress: transition.cameraProgress,
     rabbitTurnProgress: transition.rabbitTurnProgress,
     introAmount: transition.introAmount,
@@ -5634,12 +5694,35 @@ function drawSongInfoHud(ctx, viewport, uiState = {}, hudLayout = null) {
   const coverTop = topLayout.topY;
   const titleLeft = coverLeft + coverSize + HUD_SONG_COVER_GAP;
   const titleMaxWidth = Math.max(24, viewport.width * 0.46 - titleLeft);
+  const difficultyLabel = String(uiState.songDifficultyLabel || "").trim();
+  const hasDifficultyLabel = difficultyLabel.length > 0;
   const songTitle = fitTextToWidth(ctx, uiState.songTitle || "Ditto", titleMaxWidth, {
     fontSize: HUD_SONG_TITLE_FONT_SIZE,
     fontFamily: PIXEL_FONT_EN_FAMILY,
     fontWeight: HUD_LABEL_FONT_WEIGHT,
     tracking: HUD_SONG_TITLE_TRACKING,
   });
+  const difficultyTextWidth = hasDifficultyLabel
+    ? getTrackedTextWidth(ctx, difficultyLabel, {
+        fontSize: HUD_SONG_DIFFICULTY_FONT_SIZE,
+        fontFamily: ENDING_OVERLAY_ZH_FONT_FAMILY,
+        fontWeight: HUD_LABEL_FONT_WEIGHT,
+        tracking: HUD_SONG_DIFFICULTY_TRACKING,
+      })
+    : 0;
+  const difficultyLabelWidth = Math.max(
+    34,
+    snapToGrid(difficultyTextWidth + HUD_SONG_DIFFICULTY_PAD_X * 2, 1)
+  );
+  const copyHeight = hasDifficultyLabel
+    ? HUD_SONG_TITLE_FONT_SIZE + HUD_SONG_DIFFICULTY_GAP + HUD_SONG_DIFFICULTY_LABEL_HEIGHT
+    : HUD_SONG_TITLE_FONT_SIZE;
+  const copyTop = snapToGrid(coverTop + coverSize / 2 - copyHeight / 2, 1);
+  const titleTop = copyTop;
+  const difficultyTop = snapToGrid(
+    titleTop + HUD_SONG_TITLE_FONT_SIZE + HUD_SONG_DIFFICULTY_GAP,
+    1
+  );
 
   ctx.save();
   drawPixelCoverFrame(ctx, coverLeft, coverTop, coverSize, coverSize);
@@ -5648,9 +5731,9 @@ function drawSongInfoHud(ctx, viewport, uiState = {}, hudLayout = null) {
     ctx.fillRect(coverLeft, coverTop, coverSize, coverSize);
   }
 
-  drawCleanTrackedText(ctx, songTitle, titleLeft, coverTop + coverSize / 2, {
+  drawCleanTrackedText(ctx, songTitle, titleLeft, titleTop, {
     align: "left",
-    valign: "middle",
+    valign: "top",
     fontSize: HUD_SONG_TITLE_FONT_SIZE,
     fontFamily: PIXEL_FONT_EN_FAMILY,
     fontWeight: HUD_LABEL_FONT_WEIGHT,
@@ -5661,6 +5744,37 @@ function drawSongInfoHud(ctx, viewport, uiState = {}, hudLayout = null) {
     tracking: HUD_SONG_TITLE_TRACKING,
     paddingX: HUD_LABEL_GLYPH_PADDING_X,
   });
+
+  if (hasDifficultyLabel) {
+    const labelLeft = snapToGrid(titleLeft, 1);
+    const labelTop = snapToGrid(difficultyTop, 1);
+    const labelWidth = snapToGrid(difficultyLabelWidth, 1);
+    const labelHeight = HUD_SONG_DIFFICULTY_LABEL_HEIGHT;
+
+    ctx.fillStyle = HUD_SONG_DIFFICULTY_EDGE_COLOR;
+    drawPixelCutRect(ctx, labelLeft, labelTop, labelWidth, labelHeight, 2, 1);
+    ctx.fill();
+    ctx.fillStyle = HUD_SONG_DIFFICULTY_FACE_COLOR;
+    drawPixelCutRect(ctx, labelLeft + 1, labelTop + 1, labelWidth - 2, labelHeight - 2, 2, 1);
+    ctx.fill();
+
+    drawVisuallyCenteredTrackedText(
+      ctx,
+      difficultyLabel,
+      labelLeft + labelWidth / 2,
+      labelTop + labelHeight / 2,
+      {
+        fontSize: HUD_SONG_DIFFICULTY_FONT_SIZE,
+        fontFamily: ENDING_OVERLAY_ZH_FONT_FAMILY,
+        fontWeight: HUD_LABEL_FONT_WEIGHT,
+        color: HUD_SONG_DIFFICULTY_TEXT_COLOR,
+        shadowColor: HUD_SONG_DIFFICULTY_TEXT_SHADOW_COLOR,
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        tracking: HUD_SONG_DIFFICULTY_TRACKING,
+      }
+    );
+  }
   ctx.restore();
 }
 
@@ -7156,7 +7270,7 @@ function drawEndingOverlay(ctx, viewport, state, options = {}) {
 }
 
 function renderFrame(ctx, viewport, state, uiState = {}) {
-  const lane = getLaneMetrics(viewport, uiState.introProgress);
+  const lane = getLaneMetrics(viewport, uiState.introProgress, state.chart);
   const sceneTime =
     typeof uiState.sceneTime === "number" ? uiState.sceneTime : state.currentTime;
   const magicVisualTime =
@@ -7183,6 +7297,13 @@ function renderFrame(ctx, viewport, state, uiState = {}) {
     if (PORTAL_MAGIC_STAR_PALETTES[startTheme]) {
       drawPortalMagicStars(ctx, viewport, sceneTime, sceneBackground, startTheme);
     }
+  }
+  if (uiState.sceneOnly) {
+    drawImpactZone(ctx, viewport, lane, sceneBackground, sceneTime, magicVisualTime);
+    if (!uiState.gameOverOverlayActive) {
+      drawHud(ctx, viewport, state, uiState, lane);
+    }
+    return;
   }
   drawLane(ctx, viewport, lane, state.effects, uiState.characterSprites, {
     showLaneBase,

@@ -1,0 +1,3124 @@
+export default {
+  "version": 1,
+  "title": "Super Shy [Normal]",
+  "bpmHint": 150,
+  "audioSrc": "/assets/audio/super-shy.mp3",
+  "audioStartTime": 9,
+  "noteFallSpeedMultiplier": 0.78,
+  "duration": 147.512,
+  "windows": {
+    "perfect": 0.07,
+    "good": 0.12,
+    "miss": 0.16
+  },
+  "notes": [
+    {
+      "time": 3.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 3.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 4.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 4.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 4.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 4.912
+    },
+    {
+      "time": 5.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 5.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 5.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 5.812
+    },
+    {
+      "time": 5.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 6.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 6.412
+    },
+    {
+      "time": 6.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 6.812
+    },
+    {
+      "time": 6.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 7.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 7.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 7.612
+    },
+    {
+      "time": 7.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 8.112
+    },
+    {
+      "time": 8.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 8.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 8.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 9.012
+    },
+    {
+      "time": 9.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 9.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 9.612
+    },
+    {
+      "time": 9.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 10.012
+    },
+    {
+      "time": 10.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 10.412
+    },
+    {
+      "time": 10.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 10.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 10.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 11.312
+    },
+    {
+      "time": 11.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 11.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 11.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 12.212
+    },
+    {
+      "time": 12.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 12.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 12.812
+    },
+    {
+      "time": 12.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 13.212
+    },
+    {
+      "time": 13.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 13.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 13.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 14.012
+    },
+    {
+      "time": 14.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 14.412
+    },
+    {
+      "time": 14.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 14.812
+    },
+    {
+      "time": 14.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 15.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 15.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 15.612
+    },
+    {
+      "time": 15.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 16.012
+    },
+    {
+      "time": 16.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 16.412
+    },
+    {
+      "time": 16.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 16.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 17.212
+    },
+    {
+      "time": 17.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 17.712
+    },
+    {
+      "time": 17.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 18.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 18.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 18.612
+    },
+    {
+      "time": 18.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 18.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 19.212
+    },
+    {
+      "time": 19.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 19.612
+    },
+    {
+      "time": 19.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 19.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 20.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 20.412
+    },
+    {
+      "time": 20.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 20.912
+    },
+    {
+      "time": 21.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 21.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 21.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 21.812
+    },
+    {
+      "time": 21.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 22.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 22.412
+    },
+    {
+      "time": 22.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 22.812
+    },
+    {
+      "time": 22.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 23.212
+    },
+    {
+      "time": 23.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 23.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 23.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 24.112
+    },
+    {
+      "time": 24.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 24.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 24.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 25.012
+    },
+    {
+      "time": 25.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 25.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 25.612
+    },
+    {
+      "time": 25.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 26.012
+    },
+    {
+      "time": 26.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 26.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 26.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 26.812
+    },
+    {
+      "time": 26.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 27.212
+    },
+    {
+      "time": 27.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 27.612
+    },
+    {
+      "time": 27.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 27.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 28.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 28.412
+    },
+    {
+      "time": 28.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 28.812
+    },
+    {
+      "time": 28.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 29.212
+    },
+    {
+      "time": 29.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 29.612
+    },
+    {
+      "time": 29.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 30.012,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 30.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 30.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 30.612,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 30.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 30.812,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 30.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 31.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 31.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 31.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 32.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 32.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 32.412,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 32.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 32.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 33.012,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 33.178,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 33.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 33.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 33.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 34.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 34.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 34.612,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 34.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 34.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 35.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 35.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 35.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 35.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 36.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 36.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 37.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 37.212,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 37.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 37.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 38.012,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 38.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 38.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 38.812,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 38.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 39.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 39.612,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 39.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 40.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 40.412,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 40.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 41.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 42.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 42.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 42.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 42.812
+    },
+    {
+      "time": 42.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 43.212
+    },
+    {
+      "time": 43.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 43.612
+    },
+    {
+      "time": 43.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 43.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 44.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 44.412
+    },
+    {
+      "time": 44.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 44.812
+    },
+    {
+      "time": 44.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 45.212
+    },
+    {
+      "time": 45.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 45.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 45.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 46.012
+    },
+    {
+      "time": 46.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 46.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 46.812,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 46.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 47.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 47.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 47.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 48.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 48.412,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 48.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 48.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 48.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 49.212
+    },
+    {
+      "time": 49.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 49.612
+    },
+    {
+      "time": 49.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 50.012
+    },
+    {
+      "time": 50.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 50.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 50.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 50.812
+    },
+    {
+      "time": 50.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 51.212
+    },
+    {
+      "time": 51.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 51.612
+    },
+    {
+      "time": 51.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 51.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 52.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 52.412
+    },
+    {
+      "time": 52.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 52.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 53.212,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 53.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 53.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 53.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 54.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 54.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 54.812,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 54.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 55.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 55.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 55.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 55.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 56.112
+    },
+    {
+      "time": 56.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 56.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 56.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 57.012
+    },
+    {
+      "time": 57.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 57.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 57.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 57.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 57.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 58.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 58.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 58.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 58.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 58.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 59.312
+    },
+    {
+      "time": 59.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 59.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 59.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 60.212
+    },
+    {
+      "time": 60.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 60.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 60.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 60.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 61.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 61.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 61.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 61.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 61.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 62.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 62.512
+    },
+    {
+      "time": 62.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 62.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 63.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 63.412
+    },
+    {
+      "time": 63.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 63.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 63.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 64.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 64.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 64.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 64.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 64.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 65.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 65.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 65.612
+    },
+    {
+      "time": 65.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 66.112
+    },
+    {
+      "time": 66.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 66.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 66.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 67.212
+    },
+    {
+      "time": 67.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 67.612
+    },
+    {
+      "time": 67.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 67.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 68.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 68.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 68.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 68.912
+    },
+    {
+      "time": 69.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 69.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 69.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 69.812
+    },
+    {
+      "time": 69.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 70.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 70.412
+    },
+    {
+      "time": 70.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 70.812
+    },
+    {
+      "time": 70.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 71.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 71.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 71.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 71.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 72.112
+    },
+    {
+      "time": 72.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 72.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 72.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 73.012
+    },
+    {
+      "time": 73.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 73.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 73.612
+    },
+    {
+      "time": 73.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 74.012
+    },
+    {
+      "time": 74.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 74.412
+    },
+    {
+      "time": 74.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 74.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 74.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 75.312
+    },
+    {
+      "time": 75.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 75.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 75.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 76.212
+    },
+    {
+      "time": 76.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 76.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 76.812
+    },
+    {
+      "time": 76.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 77.212
+    },
+    {
+      "time": 77.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 77.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 77.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 78.012
+    },
+    {
+      "time": 78.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 78.412
+    },
+    {
+      "time": 78.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 78.812
+    },
+    {
+      "time": 78.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 79.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 79.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 79.612
+    },
+    {
+      "time": 79.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 80.012
+    },
+    {
+      "time": 80.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 80.412
+    },
+    {
+      "time": 80.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 80.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 81.212
+    },
+    {
+      "time": 81.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 81.612
+    },
+    {
+      "time": 81.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 82.012
+    },
+    {
+      "time": 82.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 82.412
+    },
+    {
+      "time": 82.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 82.812
+    },
+    {
+      "time": 82.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 83.212
+    },
+    {
+      "time": 83.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 83.612
+    },
+    {
+      "time": 83.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 83.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 84.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 84.412
+    },
+    {
+      "time": 84.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 84.912
+    },
+    {
+      "time": 85.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 85.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 85.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 85.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 86.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 86.512
+    },
+    {
+      "time": 86.612,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 86.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 87.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 87.612
+    },
+    {
+      "time": 87.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 88.012
+    },
+    {
+      "time": 88.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 88.412
+    },
+    {
+      "time": 88.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 88.812
+    },
+    {
+      "time": 88.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 89.212
+    },
+    {
+      "time": 89.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 89.612
+    },
+    {
+      "time": 89.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 90.012
+    },
+    {
+      "time": 90.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 90.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 90.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 90.812
+    },
+    {
+      "time": 90.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 91.312
+    },
+    {
+      "time": 91.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 91.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 91.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 92.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 92.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 92.812,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 93.012,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 93.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 93.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 93.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 93.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 93.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 94.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 94.512
+    },
+    {
+      "time": 94.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 94.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 95.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 95.412
+    },
+    {
+      "time": 95.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 95.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 96.012
+    },
+    {
+      "time": 96.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 96.412
+    },
+    {
+      "time": 96.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 96.812
+    },
+    {
+      "time": 96.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 97.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 97.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 97.712
+    },
+    {
+      "time": 97.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 98.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 98.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 98.612
+    },
+    {
+      "time": 98.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 98.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 99.212
+    },
+    {
+      "time": 99.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 99.612
+    },
+    {
+      "time": 99.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 100.012
+    },
+    {
+      "time": 100.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 100.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 100.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 100.912
+    },
+    {
+      "time": 101.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 101.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 101.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 101.812
+    },
+    {
+      "time": 101.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 102.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 102.412
+    },
+    {
+      "time": 102.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 102.812
+    },
+    {
+      "time": 102.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 103.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 103.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 103.612
+    },
+    {
+      "time": 103.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 104.012
+    },
+    {
+      "time": 104.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 104.412
+    },
+    {
+      "time": 104.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 104.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 104.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 105.212
+    },
+    {
+      "time": 105.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 105.612
+    },
+    {
+      "time": 105.712,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 106.012
+    },
+    {
+      "time": 106.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 106.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 106.812
+    },
+    {
+      "time": 106.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 107.212
+    },
+    {
+      "time": 107.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 107.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 107.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 107.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 108.212
+    },
+    {
+      "time": 108.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 108.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 108.812
+    },
+    {
+      "time": 108.912,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 109.212
+    },
+    {
+      "time": 109.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 109.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 109.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 110.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 110.412
+    },
+    {
+      "time": 110.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 110.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 110.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 111.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 111.412
+    },
+    {
+      "time": 111.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 111.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 112.012
+    },
+    {
+      "time": 112.112,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 112.412
+    },
+    {
+      "time": 112.512,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 112.812
+    },
+    {
+      "time": 112.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 113.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 113.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 113.612
+    },
+    {
+      "time": 113.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 113.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 114.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 114.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 114.612
+    },
+    {
+      "time": 114.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 114.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 115.212
+    },
+    {
+      "time": 115.312,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 115.612
+    },
+    {
+      "time": 115.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 115.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 116.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 116.412
+    },
+    {
+      "time": 116.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 116.812
+    },
+    {
+      "time": 116.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 117.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 117.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 117.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 117.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 117.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 118.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 118.412
+    },
+    {
+      "time": 118.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 118.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 118.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 119.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 119.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 119.612
+    },
+    {
+      "time": 119.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 120.012
+    },
+    {
+      "time": 120.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 120.412
+    },
+    {
+      "time": 120.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 120.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 120.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 121.212
+    },
+    {
+      "time": 121.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 121.612
+    },
+    {
+      "time": 121.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 122.012
+    },
+    {
+      "time": 122.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 122.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 122.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 122.812
+    },
+    {
+      "time": 122.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 123.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 123.612,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 123.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 123.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 124.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 124.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 124.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 125.212,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 125.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 125.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 125.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 126.012
+    },
+    {
+      "time": 126.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 126.412
+    },
+    {
+      "time": 126.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 126.812
+    },
+    {
+      "time": 126.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 127.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 127.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 127.612
+    },
+    {
+      "time": 127.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 128.012
+    },
+    {
+      "time": 128.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 128.412
+    },
+    {
+      "time": 128.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 128.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 128.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 129.212
+    },
+    {
+      "time": 129.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 129.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 130.012,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 130.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 130.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 130.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 130.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 131.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 131.612,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 131.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 131.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 132.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 132.412
+    },
+    {
+      "time": 132.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 132.812
+    },
+    {
+      "time": 132.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 133.212
+    },
+    {
+      "time": 133.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 133.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 133.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 134.012
+    },
+    {
+      "time": 134.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 134.412
+    },
+    {
+      "time": 134.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 134.812
+    },
+    {
+      "time": 134.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 135.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 135.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 135.612
+    },
+    {
+      "time": 135.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 136.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 136.412,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 136.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 136.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 136.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 137.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 137.712,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 138.012,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 138.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 138.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 138.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 138.812
+    },
+    {
+      "time": 138.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 139.212
+    },
+    {
+      "time": 139.312,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 139.612
+    },
+    {
+      "time": 139.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 139.912,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 140.112,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 140.412
+    },
+    {
+      "time": 140.512,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 140.812
+    },
+    {
+      "time": 140.912,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 141.212
+    },
+    {
+      "time": 141.312,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 141.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 141.712,
+      "size": 1.08,
+      "accent": true,
+      "kind": "hold",
+      "endTime": 142.012
+    },
+    {
+      "time": 142.112,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 142.512,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 142.812,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 142.912,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 143.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 143.312,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 143.712,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 144.112,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 144.412,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 144.512,
+      "size": 1.08,
+      "accent": true
+    },
+    {
+      "time": 144.712,
+      "size": 0.94,
+      "accent": false
+    }
+  ],
+  "meta": {
+    "songId": "supershy",
+    "difficultyId": "normal",
+    "difficultyLabel": "困难",
+    "authoring": "osu-mania-import-v1",
+    "noteCount": 478,
+    "updatedAt": "2026-06-07T16:09:19.982Z"
+  },
+  "holdDebugMarkers": [
+    {
+      "time": 4.512,
+      "endTime": 4.912,
+      "label": ""
+    },
+    {
+      "time": 7.712,
+      "endTime": 8.112,
+      "label": ""
+    },
+    {
+      "time": 10.912,
+      "endTime": 11.312,
+      "label": ""
+    },
+    {
+      "time": 17.312,
+      "endTime": 17.712,
+      "label": ""
+    },
+    {
+      "time": 20.512,
+      "endTime": 20.912,
+      "label": ""
+    },
+    {
+      "time": 23.712,
+      "endTime": 24.112,
+      "label": ""
+    },
+    {
+      "time": 42.512,
+      "endTime": 42.812,
+      "label": ""
+    },
+    {
+      "time": 42.912,
+      "endTime": 43.212,
+      "label": ""
+    },
+    {
+      "time": 43.312,
+      "endTime": 43.612,
+      "label": ""
+    },
+    {
+      "time": 44.112,
+      "endTime": 44.412,
+      "label": ""
+    },
+    {
+      "time": 44.512,
+      "endTime": 44.812,
+      "label": ""
+    },
+    {
+      "time": 44.912,
+      "endTime": 45.212,
+      "label": ""
+    },
+    {
+      "time": 45.712,
+      "endTime": 46.012,
+      "label": ""
+    },
+    {
+      "time": 48.912,
+      "endTime": 49.212,
+      "label": ""
+    },
+    {
+      "time": 49.312,
+      "endTime": 49.612,
+      "label": ""
+    },
+    {
+      "time": 49.712,
+      "endTime": 50.012,
+      "label": ""
+    },
+    {
+      "time": 50.512,
+      "endTime": 50.812,
+      "label": ""
+    },
+    {
+      "time": 50.912,
+      "endTime": 51.212,
+      "label": ""
+    },
+    {
+      "time": 51.312,
+      "endTime": 51.612,
+      "label": ""
+    },
+    {
+      "time": 52.112,
+      "endTime": 52.412,
+      "label": ""
+    },
+    {
+      "time": 55.712,
+      "endTime": 56.112,
+      "label": ""
+    },
+    {
+      "time": 56.712,
+      "endTime": 57.012,
+      "label": ""
+    },
+    {
+      "time": 58.912,
+      "endTime": 59.312,
+      "label": ""
+    },
+    {
+      "time": 59.912,
+      "endTime": 60.212,
+      "label": ""
+    },
+    {
+      "time": 62.112,
+      "endTime": 62.512,
+      "label": ""
+    },
+    {
+      "time": 63.112,
+      "endTime": 63.412,
+      "label": ""
+    },
+    {
+      "time": 65.312,
+      "endTime": 65.612,
+      "label": ""
+    },
+    {
+      "time": 65.712,
+      "endTime": 66.112,
+      "label": ""
+    },
+    {
+      "time": 66.912,
+      "endTime": 67.212,
+      "label": ""
+    },
+    {
+      "time": 67.312,
+      "endTime": 67.612,
+      "label": ""
+    },
+    {
+      "time": 68.512,
+      "endTime": 68.912,
+      "label": ""
+    },
+    {
+      "time": 71.712,
+      "endTime": 72.112,
+      "label": ""
+    },
+    {
+      "time": 74.912,
+      "endTime": 75.312,
+      "label": ""
+    },
+    {
+      "time": 84.112,
+      "endTime": 84.412,
+      "label": ""
+    },
+    {
+      "time": 84.512,
+      "endTime": 84.912,
+      "label": ""
+    },
+    {
+      "time": 90.512,
+      "endTime": 90.812,
+      "label": ""
+    },
+    {
+      "time": 90.912,
+      "endTime": 91.312,
+      "label": ""
+    },
+    {
+      "time": 94.112,
+      "endTime": 94.512,
+      "label": ""
+    },
+    {
+      "time": 95.112,
+      "endTime": 95.412,
+      "label": ""
+    },
+    {
+      "time": 97.312,
+      "endTime": 97.712,
+      "label": ""
+    },
+    {
+      "time": 100.512,
+      "endTime": 100.912,
+      "label": ""
+    },
+    {
+      "time": 106.912,
+      "endTime": 107.212,
+      "label": ""
+    },
+    {
+      "time": 110.112,
+      "endTime": 110.412,
+      "label": ""
+    },
+    {
+      "time": 113.312,
+      "endTime": 113.612,
+      "label": ""
+    },
+    {
+      "time": 116.512,
+      "endTime": 116.812,
+      "label": ""
+    },
+    {
+      "time": 118.112,
+      "endTime": 118.412,
+      "label": ""
+    },
+    {
+      "time": 119.312,
+      "endTime": 119.612,
+      "label": ""
+    },
+    {
+      "time": 119.712,
+      "endTime": 120.012,
+      "label": ""
+    },
+    {
+      "time": 120.112,
+      "endTime": 120.412,
+      "label": ""
+    },
+    {
+      "time": 120.912,
+      "endTime": 121.212,
+      "label": ""
+    },
+    {
+      "time": 121.312,
+      "endTime": 121.612,
+      "label": ""
+    },
+    {
+      "time": 121.712,
+      "endTime": 122.012,
+      "label": ""
+    },
+    {
+      "time": 122.512,
+      "endTime": 122.812,
+      "label": ""
+    },
+    {
+      "time": 125.712,
+      "endTime": 126.012,
+      "label": ""
+    },
+    {
+      "time": 126.112,
+      "endTime": 126.412,
+      "label": ""
+    },
+    {
+      "time": 126.512,
+      "endTime": 126.812,
+      "label": ""
+    },
+    {
+      "time": 127.312,
+      "endTime": 127.612,
+      "label": ""
+    },
+    {
+      "time": 127.712,
+      "endTime": 128.012,
+      "label": ""
+    },
+    {
+      "time": 128.112,
+      "endTime": 128.412,
+      "label": ""
+    },
+    {
+      "time": 128.912,
+      "endTime": 129.212,
+      "label": ""
+    },
+    {
+      "time": 132.112,
+      "endTime": 132.412,
+      "label": ""
+    },
+    {
+      "time": 132.512,
+      "endTime": 132.812,
+      "label": ""
+    },
+    {
+      "time": 132.912,
+      "endTime": 133.212,
+      "label": ""
+    },
+    {
+      "time": 133.712,
+      "endTime": 134.012,
+      "label": ""
+    },
+    {
+      "time": 134.112,
+      "endTime": 134.412,
+      "label": ""
+    },
+    {
+      "time": 134.512,
+      "endTime": 134.812,
+      "label": ""
+    },
+    {
+      "time": 135.312,
+      "endTime": 135.612,
+      "label": ""
+    },
+    {
+      "time": 138.512,
+      "endTime": 138.812,
+      "label": ""
+    },
+    {
+      "time": 138.912,
+      "endTime": 139.212,
+      "label": ""
+    },
+    {
+      "time": 139.312,
+      "endTime": 139.612,
+      "label": ""
+    },
+    {
+      "time": 140.112,
+      "endTime": 140.412,
+      "label": ""
+    },
+    {
+      "time": 140.512,
+      "endTime": 140.812,
+      "label": ""
+    },
+    {
+      "time": 140.912,
+      "endTime": 141.212,
+      "label": ""
+    },
+    {
+      "time": 141.712,
+      "endTime": 142.012,
+      "label": ""
+    }
+  ]
+};
