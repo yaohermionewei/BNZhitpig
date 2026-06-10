@@ -1,4 +1,3 @@
-import { toCanvas } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DEFAULT_RESULT_SONG_COVER_SOURCE,
@@ -39,6 +38,20 @@ const EMPTY_SHARE_PREVIEW = Object.freeze({
   blob: null,
   fileName: "",
 });
+
+let htmlToImagePromise = null;
+
+async function loadHtmlToImageToCanvas() {
+  if (!htmlToImagePromise) {
+    htmlToImagePromise = import("html-to-image")
+      .then((module) => module.toCanvas)
+      .catch((error) => {
+        htmlToImagePromise = null;
+        throw error;
+      });
+  }
+  return htmlToImagePromise;
+}
 
 const RANK_TONE_BY_RANK = Object.freeze({
   SSS: "prism",
@@ -1342,6 +1355,7 @@ export default function ResultScreen({
       const pixelRatio = getShareExportPixelRatio();
       const { width, height } = getShareExportCssSize();
       exportClone = await createResultExportClone(certificatePageRef.current, width, height);
+      const toCanvas = await loadHtmlToImageToCanvas();
       const foregroundCanvas = await toCanvas(exportClone.clone, {
         cacheBust: true,
         pixelRatio,

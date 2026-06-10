@@ -3,9 +3,6 @@ import { getDefaultSong } from "./game/songs.js";
 import { getStartTheme, setStartTheme, START_THEMES } from "./utils/start-theme.js";
 import StageShell from "./screens/StageShell.jsx";
 import StartScreen from "./screens/StartScreen.jsx";
-import GameScreen from "./screens/GameScreen.jsx";
-import ResultScreen from "./screens/ResultScreen.jsx";
-import SupportScreen from "./screens/SupportScreen.jsx";
 import {
   AUDIO_DEBUG_EVENT_NAME,
   getSharedAudioContextState,
@@ -19,6 +16,27 @@ import {
 import { LOADING_COPY } from "./utils/loading-copy.js";
 import { trackEvent, trackPageView } from "./utils/analytics.js";
 import { setBunniesMediaSessionMetadata } from "./game/mediaSession.js";
+
+function createLazyModuleLoader(importModule) {
+  let modulePromise = null;
+  return function loadModule() {
+    if (!modulePromise) {
+      modulePromise = importModule().catch((error) => {
+        modulePromise = null;
+        throw error;
+      });
+    }
+    return modulePromise;
+  };
+}
+
+const loadGameScreen = createLazyModuleLoader(() => import("./screens/GameScreen.jsx"));
+const loadResultScreen = createLazyModuleLoader(() => import("./screens/ResultScreen.jsx"));
+const loadSupportScreen = createLazyModuleLoader(() => import("./screens/SupportScreen.jsx"));
+
+const GameScreen = lazy(loadGameScreen);
+const ResultScreen = lazy(loadResultScreen);
+const SupportScreen = lazy(loadSupportScreen);
 
 const LoadingShimmerDebugPreview = import.meta.env.DEV
   ? lazy(() => import("./screens/LoadingShimmerDebugPreview.jsx"))
@@ -40,6 +58,39 @@ const DEBUG_SUPPORT_SCREEN_KEY = "debugScreen";
 const DEBUG_SUPPORT_SCREEN_VALUE = "support";
 const DEBUG_SUPPORT_THEME_KEY = "debugStartTheme";
 const DEBUG_SUPPORT_QR_LOADING_KEY = "debugSupportQrLoading";
+
+function preloadModule(loadModule, label) {
+  loadModule().catch((error) => {
+    console.warn(`Failed to preload ${label}`, error);
+  });
+}
+
+function scheduleIdlePreload(loadModule, label, timeout = 2500) {
+  if (typeof window === "undefined") return undefined;
+  let cancelled = false;
+
+  function runPreload() {
+    if (!cancelled) preloadModule(loadModule, label);
+  }
+
+  if (typeof window.requestIdleCallback === "function") {
+    const idleId = window.requestIdleCallback(runPreload, { timeout });
+    return () => {
+      cancelled = true;
+      window.cancelIdleCallback?.(idleId);
+    };
+  }
+
+  const timerId = window.setTimeout(runPreload, Math.min(timeout, 900));
+  return () => {
+    cancelled = true;
+    window.clearTimeout(timerId);
+  };
+}
+
+function ScreenFallback({ theme }) {
+  return <div className={`screen screen-${theme}`} />;
+}
 
 function getLoadingShimmerDebugPreviewMode() {
   if (!import.meta.env.DEV || typeof window === "undefined") {
@@ -596,6 +647,32 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (
+      debugLoadingMode ||
+      debugEndingMode ||
+      debugResultVoicesMode ||
+      screen !== "start"
+    ) {
+      return undefined;
+    }
+
+    return scheduleIdlePreload(loadGameScreen, "game screen");
+  }, [debugEndingMode, debugLoadingMode, debugResultVoicesMode, screen]);
+
+  useEffect(() => {
+    if (
+      debugLoadingMode ||
+      debugEndingMode ||
+      debugResultVoicesMode ||
+      screen !== "game"
+    ) {
+      return undefined;
+    }
+
+    return scheduleIdlePreload(loadResultScreen, "result screen", 1800);
+  }, [debugEndingMode, debugLoadingMode, debugResultVoicesMode, screen]);
+
+  useEffect(() => {
     if (!audioDebugPanelEnabled || typeof window === "undefined") return undefined;
 
     function handleAudioDebugEvent(event) {
@@ -720,6 +797,7 @@ export default function App() {
   );
 
   const handleStart = useCallback((options = {}) => {
+    preloadModule(loadGameScreen, "game screen");
     setGameInputMode(normalizeGameInputMode(options?.inputMode));
     trackEvent("game_start", getSongAnalyticsParams(song, startTheme));
     handlePrimeBattleAudio(options?.audioSource || "start");
@@ -732,11 +810,13 @@ export default function App() {
   }, [handlePrimeBattleAudio, hasShownGameSoundToast, song, startTheme]);
 
   const handleSupportOpen = useCallback(() => {
+    preloadModule(loadSupportScreen, "support screen");
     trackEvent("support_open", getSongAnalyticsParams(song, startTheme));
     setScreen("support");
   }, [song, startTheme]);
 
   const handleFinish = useCallback((summary) => {
+    preloadModule(loadResultScreen, "result screen");
     setResultSummary(summary);
     setResultVoiceReadyPlayId(0);
     setResultVoicePlayId((id) => id + 1);
@@ -744,6 +824,7 @@ export default function App() {
   }, []);
 
   const handleReplay = useCallback(() => {
+    preloadModule(loadGameScreen, "game screen");
     trackEvent("game_replay", getSongAnalyticsParams(song, startTheme));
     handlePrimeBattleAudio("result-replay");
     setResultSummary(null);
@@ -805,15 +886,15 @@ export default function App() {
   return (
     <StageShell theme={startTheme}>
       {debugResultVoicesMode && ResultVoiceDebugPreview ? (
-        <Suspense fallback={<div className="screen" />}>
+        <Suspense fallback={<ScreenFallback theme={startTheme} />}>
           <ResultVoiceDebugPreview startTheme={startTheme} />
         </Suspense>
       ) : debugEndingMode && EndingOverlayDebugPreview ? (
-        <Suspense fallback={<div className="screen" />}>
+        <Suspense fallback={<ScreenFallback theme={startTheme} />}>
           <EndingOverlayDebugPreview startTheme={startTheme} />
         </Suspense>
       ) : debugLoadingMode && LoadingShimmerDebugPreview ? (
-        <Suspense fallback={<div className="screen" />}>
+        <Suspense fallback={<ScreenFallback theme={startTheme} />}>
           <LoadingShimmerDebugPreview />
         </Suspense>
       ) : (
@@ -831,36 +912,42 @@ export default function App() {
             />
           )}
           {screen === "support" && (
-            <SupportScreen
-              startTheme={startTheme}
-              onBack={handleSupportBack}
-              forceQrLoading={supportQrLoadingDebugMode}
-            />
+            <Suspense fallback={<ScreenFallback theme={startTheme} />}>
+              <SupportScreen
+                startTheme={startTheme}
+                onBack={handleSupportBack}
+                forceQrLoading={supportQrLoadingDebugMode}
+              />
+            </Suspense>
           )}
           {screen === "game" && (
-            <GameScreen
-              key={`${song.id}-${startTheme}-${gameRunId}`}
-              song={song}
-              startTheme={startTheme}
-              inputMode={gameInputMode}
-              showIntroSoundToast={showGameSoundToastForRun}
-              onIntroSoundToastShown={handleGameSoundToastShown}
-              onFinish={handleFinish}
-              onHome={handleHome}
-            />
+            <Suspense fallback={<ScreenFallback theme={startTheme} />}>
+              <GameScreen
+                key={`${song.id}-${startTheme}-${gameRunId}`}
+                song={song}
+                startTheme={startTheme}
+                inputMode={gameInputMode}
+                showIntroSoundToast={showGameSoundToastForRun}
+                onIntroSoundToastShown={handleGameSoundToastShown}
+                onFinish={handleFinish}
+                onHome={handleHome}
+              />
+            </Suspense>
           )}
           {screen === "result" && (
-            <ResultScreen
-              summary={resultSummary}
-              startTheme={startTheme}
-              resultVoicePlayId={resultVoicePlayId}
-              onResultReadyForVoice={handleResultReadyForVoice}
-              onReplay={handleReplay}
-              onHome={handleHome}
-              onShareGenerate={handleShareGenerate}
-              onShareSaveClick={handleShareSaveClick}
-              onShareSave={handleShareSave}
-            />
+            <Suspense fallback={<ScreenFallback theme={startTheme} />}>
+              <ResultScreen
+                summary={resultSummary}
+                startTheme={startTheme}
+                resultVoicePlayId={resultVoicePlayId}
+                onResultReadyForVoice={handleResultReadyForVoice}
+                onReplay={handleReplay}
+                onHome={handleHome}
+                onShareGenerate={handleShareGenerate}
+                onShareSaveClick={handleShareSaveClick}
+                onShareSave={handleShareSave}
+              />
+            </Suspense>
           )}
         </>
       )}
