@@ -18,11 +18,6 @@ module.exports = {
       "accent": true
     },
     {
-      "time": 4.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 4.512,
       "size": 0.94,
       "accent": false,
@@ -35,11 +30,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 5.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 5.512,
       "size": 0.94,
       "accent": false,
@@ -47,55 +37,34 @@ module.exports = {
       "endTime": 5.812
     },
     {
-      "time": 5.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 6.112,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 6.412
+      "accent": false
     },
     {
       "time": 6.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 6.812
-    },
-    {
-      "time": 6.912,
-      "size": 0.94,
       "accent": false
     },
     {
-      "time": 7.112,
+      "time": 6.955,
       "size": 0.94,
       "accent": false
     },
     {
       "time": 7.312,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 7.612
+      "accent": true
     },
     {
-      "time": 7.712,
+      "time": 7.734,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 8.112
+      "endTime": 8.016
     },
     {
       "time": 8.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 8.512,
       "size": 0.94,
       "accent": false
     },
@@ -107,40 +76,24 @@ module.exports = {
       "endTime": 9.012
     },
     {
-      "time": 9.112,
+      "time": 9.31,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 9.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 9.612
-    },
-    {
       "time": 9.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 10.012
+      "accent": false
     },
     {
       "time": 10.112,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 10.412
+      "accent": false
     },
     {
       "time": 10.512,
       "size": 1.08,
       "accent": true
-    },
-    {
-      "time": 10.712,
-      "size": 0.94,
-      "accent": false
     },
     {
       "time": 10.912,
@@ -155,11 +108,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 11.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 11.912,
       "size": 0.94,
       "accent": false,
@@ -167,31 +115,17 @@ module.exports = {
       "endTime": 12.212
     },
     {
-      "time": 12.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 12.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 12.812
+      "accent": false
     },
     {
       "time": 12.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 13.212
-    },
-    {
-      "time": 13.312,
-      "size": 0.94,
       "accent": false
     },
     {
-      "time": 13.512,
+      "time": 13.312,
       "size": 0.94,
       "accent": false
     },
@@ -217,12 +151,7 @@ module.exports = {
       "endTime": 14.812
     },
     {
-      "time": 14.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 15.112,
+      "time": 14.98,
       "size": 0.94,
       "accent": false
     },
@@ -248,16 +177,14 @@ module.exports = {
       "endTime": 16.412
     },
     {
-      "time": 16.512,
+      "time": 16.559,
       "size": 0.94,
       "accent": false
     },
     {
       "time": 16.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 17.212
+      "accent": false
     },
     {
       "time": 17.312,
@@ -272,21 +199,11 @@ module.exports = {
       "accent": true
     },
     {
-      "time": 18.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 18.312,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
       "endTime": 18.612
-    },
-    {
-      "time": 18.712,
-      "size": 0.94,
-      "accent": false
     },
     {
       "time": 18.912,
@@ -303,12 +220,7 @@ module.exports = {
       "endTime": 19.612
     },
     {
-      "time": 19.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 19.912,
+      "time": 19.768,
       "size": 0.94,
       "accent": false
     },
@@ -344,40 +256,24 @@ module.exports = {
       "endTime": 21.812
     },
     {
-      "time": 21.912,
+      "time": 22.112,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 22.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 22.412
-    },
-    {
       "time": 22.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 22.812
+      "accent": false
     },
     {
       "time": 22.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 23.212
+      "accent": false
     },
     {
       "time": 23.312,
       "size": 1.08,
       "accent": true
-    },
-    {
-      "time": 23.512,
-      "size": 0.94,
-      "accent": false
     },
     {
       "time": 23.712,
@@ -387,12 +283,7 @@ module.exports = {
       "endTime": 24.112
     },
     {
-      "time": 24.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 24.512,
+      "time": 24.338,
       "size": 0.94,
       "accent": false
     },
@@ -402,11 +293,6 @@ module.exports = {
       "accent": false,
       "kind": "hold",
       "endTime": 25.012
-    },
-    {
-      "time": 25.112,
-      "size": 0.94,
-      "accent": false
     },
     {
       "time": 25.312,
@@ -423,12 +309,7 @@ module.exports = {
       "endTime": 26.012
     },
     {
-      "time": 26.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 26.312,
+      "time": 26.163,
       "size": 0.94,
       "accent": false
     },
@@ -459,11 +340,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 27.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 28.112,
       "size": 1.08,
       "accent": true,
@@ -483,13 +359,6 @@ module.exports = {
       "accent": false,
       "kind": "hold",
       "endTime": 29.212
-    },
-    {
-      "time": 29.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 29.612
     },
     {
       "time": 29.712,
@@ -564,27 +433,38 @@ module.exports = {
     {
       "time": 34.512,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 34.712,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 34.912,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 35.112,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 35.312,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
+    },
+    {
+      "time": 35.516,
+      "size": 0.94,
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 35.712,
@@ -592,14 +472,10 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 36.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 36.512,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 36.912,
@@ -609,7 +485,8 @@ module.exports = {
     {
       "time": 37.312,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 37.712,
@@ -619,7 +496,8 @@ module.exports = {
     {
       "time": 38.112,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 38.512,
@@ -629,7 +507,8 @@ module.exports = {
     {
       "time": 38.912,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 39.312,
@@ -639,7 +518,8 @@ module.exports = {
     {
       "time": 39.712,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 40.112,
@@ -649,7 +529,8 @@ module.exports = {
     {
       "time": 40.512,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 40.912,
@@ -659,19 +540,13 @@ module.exports = {
     {
       "time": 41.312,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 41.712,
       "size": 0.94,
       "accent": false
-    },
-    {
-      "time": 42.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 42.412
     },
     {
       "time": 42.512,
@@ -869,11 +744,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 55.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 55.712,
       "size": 0.94,
       "accent": false,
@@ -886,21 +756,11 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 56.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 56.712,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
       "endTime": 57.012
-    },
-    {
-      "time": 57.112,
-      "size": 0.94,
-      "accent": false
     },
     {
       "time": 57.312,
@@ -922,17 +782,7 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 58.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 58.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 58.712,
       "size": 0.94,
       "accent": false
     },
@@ -945,11 +795,6 @@ module.exports = {
     },
     {
       "time": 59.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 59.712,
       "size": 0.94,
       "accent": false
     },
@@ -992,11 +837,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 61.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 62.112,
       "size": 0.94,
       "accent": false,
@@ -1005,11 +845,6 @@ module.exports = {
     },
     {
       "time": 62.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 62.912,
       "size": 0.94,
       "accent": false
     },
@@ -1104,11 +939,6 @@ module.exports = {
       "accent": true
     },
     {
-      "time": 68.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 68.512,
       "size": 0.94,
       "accent": false,
@@ -1117,11 +947,6 @@ module.exports = {
     },
     {
       "time": 69.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 69.312,
       "size": 0.94,
       "accent": false
     },
@@ -1157,17 +982,7 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 71.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 71.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 71.512,
       "size": 0.94,
       "accent": false
     },
@@ -1180,11 +995,6 @@ module.exports = {
     },
     {
       "time": 72.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 72.512,
       "size": 0.94,
       "accent": false
     },
@@ -1227,11 +1037,6 @@ module.exports = {
       "accent": true
     },
     {
-      "time": 74.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 74.912,
       "size": 0.94,
       "accent": false,
@@ -1240,11 +1045,6 @@ module.exports = {
     },
     {
       "time": 75.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 75.712,
       "size": 0.94,
       "accent": false
     },
@@ -1280,11 +1080,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 77.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 77.712,
       "size": 1.08,
       "accent": true,
@@ -1307,11 +1102,6 @@ module.exports = {
     },
     {
       "time": 78.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 79.112,
       "size": 0.94,
       "accent": false
     },
@@ -1396,11 +1186,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 83.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 84.112,
       "size": 0.94,
       "accent": false,
@@ -1416,11 +1201,6 @@ module.exports = {
     },
     {
       "time": 85.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 85.312,
       "size": 0.94,
       "accent": false
     },
@@ -1501,11 +1281,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 90.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 90.512,
       "size": 0.94,
       "accent": false,
@@ -1521,11 +1296,6 @@ module.exports = {
     },
     {
       "time": 91.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 91.712,
       "size": 0.94,
       "accent": false
     },
@@ -1547,22 +1317,7 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 93.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 93.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 93.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 93.912,
       "size": 0.94,
       "accent": false
     },
@@ -1576,16 +1331,14 @@ module.exports = {
     {
       "time": 94.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 95.012
+      "accent": false
     },
     {
-      "time": 95.112,
+      "time": 95.043,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 95.412
+      "endTime": 95.347
     },
     {
       "time": 95.512,
@@ -1619,11 +1372,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 97.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 97.312,
       "size": 0.94,
       "accent": false,
@@ -1632,11 +1380,6 @@ module.exports = {
     },
     {
       "time": 97.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 98.112,
       "size": 0.94,
       "accent": false
     },
@@ -1679,11 +1422,6 @@ module.exports = {
       "accent": true
     },
     {
-      "time": 100.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 100.512,
       "size": 0.94,
       "accent": false,
@@ -1692,11 +1430,6 @@ module.exports = {
     },
     {
       "time": 101.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 101.312,
       "size": 0.94,
       "accent": false
     },
@@ -1732,11 +1465,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 103.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 103.312,
       "size": 1.08,
       "accent": true,
@@ -1759,11 +1487,6 @@ module.exports = {
     },
     {
       "time": 104.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 104.712,
       "size": 0.94,
       "accent": false
     },
@@ -1811,11 +1534,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 107.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 107.712,
       "size": 0.94,
       "accent": false
@@ -1857,11 +1575,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 109.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 110.112,
       "size": 1.08,
       "accent": true,
@@ -1869,17 +1582,7 @@ module.exports = {
       "endTime": 110.412
     },
     {
-      "time": 110.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 110.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 110.912,
       "size": 0.94,
       "accent": false
     },
@@ -1922,11 +1625,6 @@ module.exports = {
       "accent": true
     },
     {
-      "time": 113.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 113.312,
       "size": 0.94,
       "accent": false,
@@ -1934,17 +1632,7 @@ module.exports = {
       "endTime": 113.612
     },
     {
-      "time": 113.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 113.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 114.112,
       "size": 0.94,
       "accent": false
     },
@@ -1956,7 +1644,7 @@ module.exports = {
       "endTime": 114.612
     },
     {
-      "time": 114.712,
+      "time": 114.71,
       "size": 0.94,
       "accent": false
     },
@@ -1976,11 +1664,6 @@ module.exports = {
     },
     {
       "time": 115.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 115.912,
       "size": 0.94,
       "accent": false
     },
@@ -2011,11 +1694,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 117.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 117.712,
       "size": 0.94,
       "accent": false,
@@ -2038,11 +1716,6 @@ module.exports = {
     },
     {
       "time": 118.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 119.112,
       "size": 0.94,
       "accent": false
     },
@@ -2212,11 +1885,6 @@ module.exports = {
       "accent": false
     },
     {
-      "time": 130.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 130.912,
       "size": 0.94,
       "accent": false,
@@ -2238,72 +1906,55 @@ module.exports = {
       "endTime": 132.012
     },
     {
-      "time": 132.112,
+      "time": 132.113,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 132.412
+      "accent": false
     },
     {
       "time": 132.512,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 132.812
+      "accent": true
     },
     {
       "time": 132.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 133.212
+      "accent": false
     },
     {
       "time": 133.312,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 133.612
+      "accent": true
     },
     {
       "time": 133.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 134.012
+      "accent": false
     },
     {
       "time": 134.112,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 134.412
+      "accent": true
     },
     {
       "time": 134.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 134.812
+      "accent": false
     },
     {
       "time": 134.912,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 135.212
+      "accent": true
     },
     {
       "time": 135.312,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 135.612
+      "accent": false
     },
     {
       "time": 135.712,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 136.112,
@@ -2313,7 +1964,8 @@ module.exports = {
     {
       "time": 136.512,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 136.912,
@@ -2323,7 +1975,8 @@ module.exports = {
     {
       "time": 137.312,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 137.712,
@@ -2333,7 +1986,8 @@ module.exports = {
     {
       "time": 138.112,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "right"
     },
     {
       "time": 138.512,
@@ -2443,9 +2097,9 @@ module.exports = {
     "songId": "supershy",
     "difficultyId": "easy",
     "difficultyLabel": "普通",
-    "authoring": "osu-mania-import-v1",
-    "noteCount": 410,
-    "updatedAt": "2026-06-07T09:00:39.752Z"
+    "noteCount": 347,
+    "authoring": "chart-editor-v1",
+    "updatedAt": "2026-06-11T08:53:22.447Z"
   },
   "holdDebugMarkers": [
     {
@@ -2459,43 +2113,13 @@ module.exports = {
       "label": ""
     },
     {
-      "time": 6.112,
-      "endTime": 6.412,
-      "label": ""
-    },
-    {
-      "time": 6.512,
-      "endTime": 6.812,
-      "label": ""
-    },
-    {
-      "time": 7.312,
-      "endTime": 7.612,
-      "label": ""
-    },
-    {
-      "time": 7.712,
-      "endTime": 8.112,
+      "time": 7.734,
+      "endTime": 8.016,
       "label": ""
     },
     {
       "time": 8.712,
       "endTime": 9.012,
-      "label": ""
-    },
-    {
-      "time": 9.312,
-      "endTime": 9.612,
-      "label": ""
-    },
-    {
-      "time": 9.712,
-      "endTime": 10.012,
-      "label": ""
-    },
-    {
-      "time": 10.112,
-      "endTime": 10.412,
       "label": ""
     },
     {
@@ -2506,16 +2130,6 @@ module.exports = {
     {
       "time": 11.912,
       "endTime": 12.212,
-      "label": ""
-    },
-    {
-      "time": 12.512,
-      "endTime": 12.812,
-      "label": ""
-    },
-    {
-      "time": 12.912,
-      "endTime": 13.212,
       "label": ""
     },
     {
@@ -2546,11 +2160,6 @@ module.exports = {
     {
       "time": 16.112,
       "endTime": 16.412,
-      "label": ""
-    },
-    {
-      "time": 16.912,
-      "endTime": 17.212,
       "label": ""
     },
     {
@@ -2586,21 +2195,6 @@ module.exports = {
     {
       "time": 21.512,
       "endTime": 21.812,
-      "label": ""
-    },
-    {
-      "time": 22.112,
-      "endTime": 22.412,
-      "label": ""
-    },
-    {
-      "time": 22.512,
-      "endTime": 22.812,
-      "label": ""
-    },
-    {
-      "time": 22.912,
-      "endTime": 23.212,
       "label": ""
     },
     {
@@ -2651,16 +2245,6 @@ module.exports = {
     {
       "time": 28.912,
       "endTime": 29.212,
-      "label": ""
-    },
-    {
-      "time": 29.312,
-      "endTime": 29.612,
-      "label": ""
-    },
-    {
-      "time": 42.112,
-      "endTime": 42.412,
       "label": ""
     },
     {
@@ -3039,13 +2623,8 @@ module.exports = {
       "label": ""
     },
     {
-      "time": 94.712,
-      "endTime": 95.012,
-      "label": ""
-    },
-    {
-      "time": 95.112,
-      "endTime": 95.412,
+      "time": 95.043,
+      "endTime": 95.347,
       "label": ""
     },
     {
@@ -3296,51 +2875,6 @@ module.exports = {
     {
       "time": 131.712,
       "endTime": 132.012,
-      "label": ""
-    },
-    {
-      "time": 132.112,
-      "endTime": 132.412,
-      "label": ""
-    },
-    {
-      "time": 132.512,
-      "endTime": 132.812,
-      "label": ""
-    },
-    {
-      "time": 132.912,
-      "endTime": 133.212,
-      "label": ""
-    },
-    {
-      "time": 133.312,
-      "endTime": 133.612,
-      "label": ""
-    },
-    {
-      "time": 133.712,
-      "endTime": 134.012,
-      "label": ""
-    },
-    {
-      "time": 134.112,
-      "endTime": 134.412,
-      "label": ""
-    },
-    {
-      "time": 134.512,
-      "endTime": 134.812,
-      "label": ""
-    },
-    {
-      "time": 134.912,
-      "endTime": 135.212,
-      "label": ""
-    },
-    {
-      "time": 135.312,
-      "endTime": 135.612,
       "label": ""
     },
     {
