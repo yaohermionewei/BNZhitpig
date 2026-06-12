@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { GameRunner } from "../game/GameRunner.js";
+import {
+  HIT_IMPACT_SOUND_OPTIONS,
+  ORIGINAL_HIT_SFX_ID,
+} from "../game/hitImpactSounds.js";
 import { LOADING_COPY } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
@@ -15,6 +19,10 @@ export default function GameScreen({
   onHome,
   showIntroSoundToast = false,
   onIntroSoundToastShown,
+  hitSfxLabEnabled = false,
+  hitImpactSoundId = ORIGINAL_HIT_SFX_ID,
+  onHitImpactSoundChange,
+  disableLifeFailure = false,
 }) {
   const canvasRef = useRef(null);
   const runnerRef = useRef(null);
@@ -49,6 +57,9 @@ export default function GameScreen({
       startTheme,
       inputMode,
       sceneOnly,
+      hitImpactSoundId,
+      preloadHitImpactSoundSamples: hitSfxLabEnabled,
+      disableLifeFailure,
       onFinish: (summary) => {
         onFinishRef.current?.({ ...summary, completedAt: Date.now() });
       },
@@ -79,7 +90,11 @@ export default function GameScreen({
       runner.dispose();
       runnerRef.current = null;
     };
-  }, [song, startTheme, inputMode, sceneOnly]);
+  }, [song, startTheme, inputMode, sceneOnly, hitSfxLabEnabled, disableLifeFailure]);
+
+  useEffect(() => {
+    runnerRef.current?.setHitImpactSoundId(hitImpactSoundId);
+  }, [hitImpactSoundId]);
 
   useEffect(() => {
     if (!showIntroSoundToast || hasShownSoundToastRef.current || loading || error) {
@@ -115,6 +130,12 @@ export default function GameScreen({
           <span className="result-share-preview-toast-text">{SOUND_TOAST_COPY}</span>
         </div>
       )}
+      {hitSfxLabEnabled && !loading && !error && (
+        <HitSfxLabOverlay
+          selectedId={hitImpactSoundId}
+          onChange={onHitImpactSoundChange}
+        />
+      )}
       {showLoadingOverlay && (
         <MagicLoadingOverlay
           theme={startTheme}
@@ -124,5 +145,64 @@ export default function GameScreen({
       )}
       {error && <div className="error-overlay">{error}</div>}
     </div>
+  );
+}
+
+function HitSfxLabOverlay({ selectedId, onChange }) {
+  const selectedIndex = Math.max(
+    0,
+    HIT_IMPACT_SOUND_OPTIONS.findIndex((option) => option.id === selectedId)
+  );
+  const selectedOption = HIT_IMPACT_SOUND_OPTIONS[selectedIndex] || HIT_IMPACT_SOUND_OPTIONS[0];
+
+  function selectByIndex(nextIndex) {
+    const safeIndex =
+      (nextIndex + HIT_IMPACT_SOUND_OPTIONS.length) % HIT_IMPACT_SOUND_OPTIONS.length;
+    onChange?.(HIT_IMPACT_SOUND_OPTIONS[safeIndex].id);
+  }
+
+  return (
+    <aside className="hit-sfx-lab-panel" aria-label="命中音效实验台">
+      <div className="hit-sfx-lab-title-row">
+        <div>
+          <div className="hit-sfx-lab-kicker pixel-font-en">Hit SFX Lab</div>
+          <div className="hit-sfx-lab-title pixel-font-zh">歌里切音效</div>
+        </div>
+        <div className="hit-sfx-lab-badge pixel-font-zh">不死模式</div>
+      </div>
+      <label className="hit-sfx-lab-select-wrap pixel-font-zh">
+        <span>命中音色</span>
+        <select
+          className="hit-sfx-lab-select"
+          value={selectedOption.id}
+          onChange={(event) => onChange?.(event.target.value)}
+        >
+          {HIT_IMPACT_SOUND_OPTIONS.map((option, index) => (
+            <option key={option.id} value={option.id}>
+              {option.displayCode || String(index + 1).padStart(2, "0")} {option.title}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="hit-sfx-lab-stepper">
+        <button
+          className="hit-sfx-lab-button pixel-font-zh"
+          type="button"
+          onClick={() => selectByIndex(selectedIndex - 1)}
+        >
+          上一个
+        </button>
+        <button
+          className="hit-sfx-lab-button pixel-font-zh"
+          type="button"
+          onClick={() => selectByIndex(selectedIndex + 1)}
+        >
+          下一个
+        </button>
+      </div>
+      <p className="hit-sfx-lab-description pixel-font-zh">
+        {selectedOption.description}
+      </p>
+    </aside>
   );
 }

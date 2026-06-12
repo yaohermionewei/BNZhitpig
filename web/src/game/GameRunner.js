@@ -8,6 +8,16 @@ import {
 } from "./engine.js";
 import { renderFrame, getControlRects } from "./renderer.js";
 import { AudioControllerWeb, emitAudioDebug } from "./AudioControllerWeb.js";
+import {
+  ORIGINAL_HIT_SFX_ID,
+  getHybridHitImpactMix,
+  getSampledHitImpactSound,
+  getSampledHitImpactSources,
+  isHybridHitImpactSound,
+  isSampledHitImpactSound,
+  isSyntheticHitImpactSound,
+  playSyntheticHitImpact,
+} from "./hitImpactSounds.js";
 import { playUiSound, playVictoryFanfare } from "./uiSounds.js";
 import {
   EFFECT_AUDIO_POOL_SIZES,
@@ -40,6 +50,7 @@ const CROWD_TURN_DURATION_RANGE = Object.freeze([0.1, 0.16]);
 const GAME_OVER_EFFECT_SOURCE = "/assets/audio/miss.wav";
 const NOTE_HIT_EFFECT_VOLUME = 3.6;
 const NOTE_MISS_EFFECT_VOLUME = 1.8;
+const DEBUG_SYNTHETIC_HIT_EFFECT_VOLUME = 20;
 const CRITICAL_FONT_LOAD_TIMEOUT_MS = 1200;
 const PREPARE_RESOURCE_TIMEOUT_MS = 12000;
 const TUTORIAL_BATTLE_START_COUNT_STORAGE_KEY = "bunniesTutorialBattleStartCountV1";
@@ -214,6 +225,9 @@ export class GameRunner {
     startTheme,
     inputMode = "touch",
     sceneOnly = false,
+    hitImpactSoundId = ORIGINAL_HIT_SFX_ID,
+    preloadHitImpactSoundSamples = false,
+    disableLifeFailure = false,
     onFinish,
     onHome,
     onLoadingChange,
@@ -224,6 +238,9 @@ export class GameRunner {
     this.startTheme = normalizeStartTheme(startTheme);
     this.inputMode = normalizeInputMode(inputMode);
     this.sceneOnly = !!sceneOnly;
+    this.hitImpactSoundId = hitImpactSoundId || ORIGINAL_HIT_SFX_ID;
+    this.preloadHitImpactSoundSamples = !!preloadHitImpactSoundSamples;
+    this.disableLifeFailure = !!disableLifeFailure;
     this.onFinish = onFinish;
     this.onHome = onHome;
     this.onLoadingChange = onLoadingChange;
@@ -268,6 +285,8 @@ export class GameRunner {
     this.handleResumeEvent = this.handleResumeEvent.bind(this);
     this.handleWindowBlur = this.handleWindowBlur.bind(this);
     this.handleWindowFocus = this.handleWindowFocus.bind(this);
+    this.handleAudioEnded = this.handleAudioEnded.bind(this);
+    this.audio.onEnded(this.handleAudioEnded);
   }
 
   async prepare() {
@@ -299,7 +318,10 @@ export class GameRunner {
       Promise.all([
         waitForCriticalPixelFonts(),
         this.audio.preloadChart(this.song.chart),
-        this.audio.preloadEffects(Object.keys(EFFECT_AUDIO_POOL_SIZES)),
+        this.audio.preloadEffects([
+          ...Object.keys(EFFECT_AUDIO_POOL_SIZES),
+          ...(this.preloadHitImpactSoundSamples ? getSampledHitImpactSources() : []),
+        ]),
         loadImage(this.song.coverImageSrc).then((image) => {
           this.songCoverImage = image;
         }),
@@ -578,6 +600,74 @@ export class GameRunner {
     return this.resultAssetsPromise;
   }
 
+  setHitImpactSoundId(hitImpactSoundId) {
+    this.hitImpactSoundId = hitImpactSoundId || ORIGINAL_HIT_SFX_ID;
+  }
+
+  getAudioEndedChartTime() {
+    const bufferDuration = Number(this.audio?.buffer?.duration);
+    const audioStartTime = Number(this.song?.chart?.audioStartTime) || 0;
+    if (!Number.isFinite(bufferDuration) || bufferDuration <= 0) {
+      return Math.max(0, Number(this.state?.currentTime) || 0);
+    }
+    return Math.max(0, bufferDuration - audioStartTime);
+  }
+
+  getLatestNoteJudgementDeadline() {
+    const notes = Array.isArray(this.state?.notes) ? this.state.notes : [];
+    const missWindow = Number(this.state?.chart?.windows?.miss) || 0;
+    const goodWindow = Number(this.state?.chart?.windows?.good) || 0;
+    return notes.reduce((latestDeadline, note) => {
+      const startTime = Number(note?.time) || 0;
+      if (note?.kind === "hold") {
+        const endTime = Number(note?.endTime) || startTime;
+        return Math.max(latestDeadline, startTime + missWindow, endTime + goodWindow);
+      }
+      return Math.max(latestDeadline, startTime + missWindow);
+    }, 0);
+  }
+
+  handleAudioEnded() {
+    if (
+      this.sceneOnly ||
+      this.disposed ||
+      this.resultPending ||
+      !this.started ||
+      this.introActive
+    ) {
+      return;
+    }
+
+    const wasEnded = !!this.state?.ended;
+    const safeCompletionTime = Math.max(
+      this.getAudioEndedChartTime(),
+      this.getLatestNoteJudgementDeadline() + 0.001
+    );
+    updateGameState(this.state, safeCompletionTime, 0);
+    this.applyDebugLifeGuard();
+
+    if (this.state.notes.every((note) => note.judged)) {
+      this.state.ended = true;
+      if (!wasEnded) {
+        this.finishRunIfNeeded();
+      }
+    } else {
+      console.warn("Audio ended before all notes were judged.", {
+        safeCompletionTime,
+        remainingNotes: this.state.notes.filter((note) => !note.judged).map((note) => note.id),
+      });
+    }
+  }
+
+  applyDebugLifeGuard() {
+    if (!this.disableLifeFailure || !this.state) return;
+    this.state.lives = this.state.maxLives || this.state.lives || 10;
+    if (this.state.failed) {
+      this.state.failed = false;
+      this.state.ended = false;
+    }
+  }
+
   async update(dt) {
     if (!this.started || this.isPaused) return;
     if (this.sceneOnly) return;
@@ -611,6 +701,7 @@ export class GameRunner {
     } else if (!this.failureSequence.active) {
       const currentTime = this.audio.getCurrentChartTime();
       updateGameState(this.state, currentTime, dt);
+      this.applyDebugLifeGuard();
       this.updateCrowdMotion(currentTime);
       this.updateRabbitWandAnimation(dt);
       this.flushAudioCues();
@@ -854,7 +945,29 @@ export class GameRunner {
     this.state.audioCues.length = 0;
     cues.forEach((cue) => {
       if (cue === "hit") {
-        this.audio.playEffect("/assets/audio/hit.wav", { volume: NOTE_HIT_EFFECT_VOLUME });
+        if (isSampledHitImpactSound(this.hitImpactSoundId)) {
+          const sound = getSampledHitImpactSound(this.hitImpactSoundId);
+          this.audio.playEffect(sound.src, {
+            volume: sound.volume,
+            playbackRate: sound.playbackRate,
+          });
+        } else if (isSyntheticHitImpactSound(this.hitImpactSoundId)) {
+          if (isHybridHitImpactSound(this.hitImpactSoundId)) {
+            const mix = getHybridHitImpactMix(this.hitImpactSoundId);
+            this.audio.playEffect("/assets/audio/hit.wav", {
+              volume: NOTE_HIT_EFFECT_VOLUME * (mix?.originalVolumeScale ?? 0.6),
+            });
+            playSyntheticHitImpact(this.hitImpactSoundId, {
+              volume: mix?.syntheticVolume ?? DEBUG_SYNTHETIC_HIT_EFFECT_VOLUME,
+            });
+            return;
+          }
+          playSyntheticHitImpact(this.hitImpactSoundId, {
+            volume: DEBUG_SYNTHETIC_HIT_EFFECT_VOLUME,
+          });
+        } else {
+          this.audio.playEffect("/assets/audio/hit.wav", { volume: NOTE_HIT_EFFECT_VOLUME });
+        }
       }
       if (cue === "miss") {
         this.audio.playEffect("/assets/audio/miss.wav", { volume: NOTE_MISS_EFFECT_VOLUME });
@@ -1214,6 +1327,7 @@ export class GameRunner {
   }
 
   finishRunIfNeeded() {
+    this.applyDebugLifeGuard();
     if (this.started && this.state?.ended) {
       if (this.state.failed) {
         if (!this.failureSequence.active) this.startFailureSequence();

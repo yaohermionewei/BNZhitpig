@@ -7,6 +7,11 @@ import GameScreen from "./screens/GameScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
 import SupportScreen from "./screens/SupportScreen.jsx";
 import {
+  DEFAULT_HIT_SFX_LAB_ID,
+  HIT_IMPACT_SOUND_OPTIONS,
+  ORIGINAL_HIT_SFX_ID,
+} from "./game/hitImpactSounds.js";
+import {
   AUDIO_DEBUG_EVENT_NAME,
   getSharedAudioContextState,
   primeAudioForUserGesture,
@@ -41,6 +46,7 @@ const DEBUG_SUPPORT_SCREEN_VALUE = "support";
 const DEBUG_SUPPORT_THEME_KEY = "debugStartTheme";
 const DEBUG_SUPPORT_QR_LOADING_KEY = "debugSupportQrLoading";
 const DEBUG_BATTLE_SCENE_KEY = "debugBattleScene";
+const DEBUG_HIT_SFX_LAB_KEY = "debugHitSfxLab";
 
 function getLoadingShimmerDebugPreviewMode() {
   if (!import.meta.env.DEV || typeof window === "undefined") {
@@ -81,6 +87,29 @@ function getBattleSceneDebugMode() {
   }
 
   return new URLSearchParams(window.location.search).get(DEBUG_BATTLE_SCENE_KEY) === "1";
+}
+
+function getHitSfxLabDebugMode() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get(DEBUG_HIT_SFX_LAB_KEY) === "1";
+}
+
+function getInitialHitImpactSoundId() {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return ORIGINAL_HIT_SFX_ID;
+  }
+
+  const requestedId = new URLSearchParams(window.location.search).get("hitSfx");
+  if (HIT_IMPACT_SOUND_OPTIONS.some((option) => option.id === requestedId)) {
+    return requestedId;
+  }
+
+  return getHitSfxLabDebugMode()
+    ? DEFAULT_HIT_SFX_LAB_ID
+    : ORIGINAL_HIT_SFX_ID;
 }
 
 function getSupportQrLoadingDebugMode() {
@@ -577,6 +606,7 @@ export default function App() {
   const debugEndingMode = getEndingOverlayDebugPreviewMode();
   const debugResultVoicesMode = getResultVoiceDebugPreviewMode();
   const debugBattleSceneMode = getBattleSceneDebugMode();
+  const debugHitSfxLabMode = getHitSfxLabDebugMode();
   const supportScreenDebugMode = getSupportScreenDebugMode();
   const supportQrLoadingDebugMode = getSupportQrLoadingDebugMode();
   const audioDebugEnabled = getAudioDebugEnabled();
@@ -593,6 +623,7 @@ export default function App() {
   const [resultVoiceReadyPlayId, setResultVoiceReadyPlayId] = useState(0);
   const [hasShownGameSoundToast, setHasShownGameSoundToast] = useState(false);
   const [showGameSoundToastForRun, setShowGameSoundToastForRun] = useState(false);
+  const [hitImpactSoundId, setHitImpactSoundId] = useState(() => getInitialHitImpactSoundId());
   const [startLoadingText, setStartLoadingText] = useState(LOADING_COPY.enterWorld);
   const [audioDebugEntries, setAudioDebugEntries] = useState([]);
   const pageViewKeyRef = useRef("");
@@ -649,7 +680,8 @@ export default function App() {
       debugLoadingMode ||
       debugEndingMode ||
       debugResultVoicesMode ||
-      debugBattleSceneMode
+      debugBattleSceneMode ||
+      debugHitSfxLabMode
     ) return;
 
     const pageViewKey =
@@ -664,6 +696,7 @@ export default function App() {
   }, [
     debugEndingMode,
     debugBattleSceneMode,
+    debugHitSfxLabMode,
     debugLoadingMode,
     debugResultVoicesMode,
     gameRunId,
@@ -678,7 +711,8 @@ export default function App() {
       debugLoadingMode ||
       debugEndingMode ||
       debugResultVoicesMode ||
-      debugBattleSceneMode
+      debugBattleSceneMode ||
+      debugHitSfxLabMode
     ) return;
     if (screen !== "result" || !resultSummary || !resultVoicePlayId) return;
 
@@ -694,6 +728,7 @@ export default function App() {
   }, [
     debugEndingMode,
     debugBattleSceneMode,
+    debugHitSfxLabMode,
     debugLoadingMode,
     debugResultVoicesMode,
     resultSummary,
@@ -874,6 +909,10 @@ export default function App() {
               sceneOnly={debugBattleSceneMode}
               showIntroSoundToast={!debugBattleSceneMode && showGameSoundToastForRun}
               onIntroSoundToastShown={handleGameSoundToastShown}
+              hitSfxLabEnabled={debugHitSfxLabMode}
+              hitImpactSoundId={debugHitSfxLabMode ? hitImpactSoundId : ORIGINAL_HIT_SFX_ID}
+              onHitImpactSoundChange={setHitImpactSoundId}
+              disableLifeFailure={debugHitSfxLabMode}
               onFinish={handleFinish}
               onHome={handleHome}
             />
