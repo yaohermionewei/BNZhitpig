@@ -50,6 +50,8 @@ const KEYBOARD_DIRECTION_BY_CODE = Object.freeze({
   ArrowLeft: "left",
   ArrowRight: "right",
 });
+const NATIVE_TOUCH_PREVENT_OPTIONS = Object.freeze({ passive: false, capture: true });
+const NATIVE_CAPTURE_PREVENT_OPTIONS = Object.freeze({ capture: true });
 
 function normalizeInputMode(inputMode) {
   return inputMode === "keyboard" ? "keyboard" : "touch";
@@ -256,6 +258,7 @@ export class GameRunner {
     this.handlePointerDown = this.handlePointerDown.bind(this);
     this.handlePointerMove = this.handlePointerMove.bind(this);
     this.handlePointerUp = this.handlePointerUp.bind(this);
+    this.handleNativeTouchDefault = this.handleNativeTouchDefault.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
@@ -366,6 +369,41 @@ export class GameRunner {
   }
 
   installEvents() {
+    this.canvas.addEventListener(
+      "touchstart",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.addEventListener(
+      "touchmove",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.addEventListener(
+      "touchend",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.addEventListener(
+      "touchcancel",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.addEventListener(
+      "contextmenu",
+      this.handleNativeTouchDefault,
+      NATIVE_CAPTURE_PREVENT_OPTIONS
+    );
+    this.canvas.addEventListener(
+      "selectstart",
+      this.handleNativeTouchDefault,
+      NATIVE_CAPTURE_PREVENT_OPTIONS
+    );
+    this.canvas.addEventListener(
+      "dragstart",
+      this.handleNativeTouchDefault,
+      NATIVE_CAPTURE_PREVENT_OPTIONS
+    );
     this.canvas.addEventListener("pointerdown", this.handlePointerDown, { passive: false });
     this.canvas.addEventListener("pointermove", this.handlePointerMove, { passive: false });
     this.canvas.addEventListener("pointerup", this.handlePointerUp, { passive: false });
@@ -943,6 +981,12 @@ export class GameRunner {
     this.releaseKeyboardHold(event.code);
   }
 
+  handleNativeTouchDefault(event) {
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+  }
+
   handlePointerDown(event) {
     event.preventDefault();
     this.canvas.setPointerCapture?.(event.pointerId);
@@ -1210,6 +1254,41 @@ export class GameRunner {
     this.stopLoop();
     this.audio.destroy();
     this.removeLifecycleEvents();
+    this.canvas.removeEventListener(
+      "touchstart",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.removeEventListener(
+      "touchmove",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.removeEventListener(
+      "touchend",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.removeEventListener(
+      "touchcancel",
+      this.handleNativeTouchDefault,
+      NATIVE_TOUCH_PREVENT_OPTIONS
+    );
+    this.canvas.removeEventListener(
+      "contextmenu",
+      this.handleNativeTouchDefault,
+      NATIVE_CAPTURE_PREVENT_OPTIONS
+    );
+    this.canvas.removeEventListener(
+      "selectstart",
+      this.handleNativeTouchDefault,
+      NATIVE_CAPTURE_PREVENT_OPTIONS
+    );
+    this.canvas.removeEventListener(
+      "dragstart",
+      this.handleNativeTouchDefault,
+      NATIVE_CAPTURE_PREVENT_OPTIONS
+    );
     this.canvas.removeEventListener("pointerdown", this.handlePointerDown);
     this.canvas.removeEventListener("pointermove", this.handlePointerMove);
     this.canvas.removeEventListener("pointerup", this.handlePointerUp);

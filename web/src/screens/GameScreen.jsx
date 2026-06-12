@@ -105,7 +105,7 @@ export default function GameScreen({
 
   return (
     <div className={`screen game-screen screen-${startTheme}`}>
-      <canvas ref={canvasRef} className="game-canvas" />
+      <canvas ref={canvasRef} className="game-canvas" draggable={false} />
       {!sceneOnly && soundToastVisible && (
         <div
           className="game-sound-toast result-share-preview-toast result-fixed-text-zh pixel-font-zh"
