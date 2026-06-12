@@ -8,6 +8,7 @@ import ResultScreen from "./screens/ResultScreen.jsx";
 import SupportScreen from "./screens/SupportScreen.jsx";
 import {
   DEFAULT_HIT_SFX_LAB_ID,
+  DEFAULT_HIT_IMPACT_SOUND_ID,
   HIT_IMPACT_SOUND_OPTIONS,
   ORIGINAL_HIT_SFX_ID,
 } from "./game/hitImpactSounds.js";
@@ -910,7 +911,9 @@ export default function App() {
               showIntroSoundToast={!debugBattleSceneMode && showGameSoundToastForRun}
               onIntroSoundToastShown={handleGameSoundToastShown}
               hitSfxLabEnabled={debugHitSfxLabMode}
-              hitImpactSoundId={debugHitSfxLabMode ? hitImpactSoundId : ORIGINAL_HIT_SFX_ID}
+              hitImpactSoundId={
+                debugHitSfxLabMode ? hitImpactSoundId : DEFAULT_HIT_IMPACT_SOUND_ID
+              }
               onHitImpactSoundChange={setHitImpactSoundId}
               disableLifeFailure={debugHitSfxLabMode}
               onFinish={handleFinish}

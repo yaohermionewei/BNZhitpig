@@ -9,7 +9,7 @@ import {
 import { renderFrame, getControlRects } from "./renderer.js";
 import { AudioControllerWeb, emitAudioDebug } from "./AudioControllerWeb.js";
 import {
-  ORIGINAL_HIT_SFX_ID,
+  DEFAULT_HIT_IMPACT_SOUND_ID,
   getHybridHitImpactMix,
   getSampledHitImpactSound,
   getSampledHitImpactSources,
@@ -225,7 +225,7 @@ export class GameRunner {
     startTheme,
     inputMode = "touch",
     sceneOnly = false,
-    hitImpactSoundId = ORIGINAL_HIT_SFX_ID,
+    hitImpactSoundId = DEFAULT_HIT_IMPACT_SOUND_ID,
     preloadHitImpactSoundSamples = false,
     disableLifeFailure = false,
     onFinish,
@@ -238,7 +238,7 @@ export class GameRunner {
     this.startTheme = normalizeStartTheme(startTheme);
     this.inputMode = normalizeInputMode(inputMode);
     this.sceneOnly = !!sceneOnly;
-    this.hitImpactSoundId = hitImpactSoundId || ORIGINAL_HIT_SFX_ID;
+    this.hitImpactSoundId = hitImpactSoundId || DEFAULT_HIT_IMPACT_SOUND_ID;
     this.preloadHitImpactSoundSamples = !!preloadHitImpactSoundSamples;
     this.disableLifeFailure = !!disableLifeFailure;
     this.onFinish = onFinish;
@@ -320,7 +320,7 @@ export class GameRunner {
         this.audio.preloadChart(this.song.chart),
         this.audio.preloadEffects([
           ...Object.keys(EFFECT_AUDIO_POOL_SIZES),
-          ...(this.preloadHitImpactSoundSamples ? getSampledHitImpactSources() : []),
+          ...this.getActiveHitImpactEffectSources(),
         ]),
         loadImage(this.song.coverImageSrc).then((image) => {
           this.songCoverImage = image;
@@ -601,7 +601,19 @@ export class GameRunner {
   }
 
   setHitImpactSoundId(hitImpactSoundId) {
-    this.hitImpactSoundId = hitImpactSoundId || ORIGINAL_HIT_SFX_ID;
+    this.hitImpactSoundId = hitImpactSoundId || DEFAULT_HIT_IMPACT_SOUND_ID;
+  }
+
+  getActiveHitImpactEffectSources() {
+    const sources = [];
+    const activeSound = getSampledHitImpactSound(this.hitImpactSoundId);
+    if (activeSound?.src) {
+      sources.push(activeSound.src);
+    }
+    if (this.preloadHitImpactSoundSamples) {
+      sources.push(...getSampledHitImpactSources());
+    }
+    return Array.from(new Set(sources));
   }
 
   getAudioEndedChartTime() {

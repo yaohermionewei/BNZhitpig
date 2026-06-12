@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { GameRunner } from "../game/GameRunner.js";
 import {
+  DEFAULT_HIT_IMPACT_SOUND_ID,
   HIT_IMPACT_SOUND_OPTIONS,
-  ORIGINAL_HIT_SFX_ID,
 } from "../game/hitImpactSounds.js";
 import { LOADING_COPY } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
@@ -20,7 +20,7 @@ export default function GameScreen({
   showIntroSoundToast = false,
   onIntroSoundToastShown,
   hitSfxLabEnabled = false,
-  hitImpactSoundId = ORIGINAL_HIT_SFX_ID,
+  hitImpactSoundId = DEFAULT_HIT_IMPACT_SOUND_ID,
   onHitImpactSoundChange,
   disableLifeFailure = false,
 }) {
