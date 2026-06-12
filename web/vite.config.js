@@ -7,6 +7,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes("/node_modules/phaser")) {
+            return "phaser-vendor";
+          }
           if (id.includes("/node_modules/react") || id.includes("/node_modules/scheduler")) {
             return "react-vendor";
           }

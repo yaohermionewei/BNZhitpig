@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { GameRunner } from "../game/GameRunner.js";
+import { createPhaserGame } from "../game-phaser/createPhaserGame.js";
 import { LOADING_COPY } from "../utils/loading-copy.js";
 import MagicLoadingOverlay from "./MagicLoadingOverlay.jsx";
 
 const SOUND_TOAST_COPY = "保持声音开启";
 const SOUND_TOAST_DURATION_MS = 1000;
+
+function getPhaserDebugEnabled() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("debugPhaser") === "1";
+}
 
 export default function GameScreen({
   song,
@@ -15,8 +20,8 @@ export default function GameScreen({
   showIntroSoundToast = false,
   onIntroSoundToastShown,
 }) {
-  const canvasRef = useRef(null);
-  const runnerRef = useRef(null);
+  const containerRef = useRef(null);
+  const gameRef = useRef(null);
   const onFinishRef = useRef(onFinish);
   const onHomeRef = useRef(onHome);
   const onIntroSoundToastShownRef = useRef(onIntroSoundToastShown);
@@ -24,6 +29,8 @@ export default function GameScreen({
   const hasShownSoundToastRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadingStage, setLoadingStage] = useState("");
+  const [debugPhaserEnabled] = useState(getPhaserDebugEnabled);
   const [soundToastVisible, setSoundToastVisible] = useState(false);
 
   useEffect(() => {
@@ -39,11 +46,11 @@ export default function GameScreen({
   }, [onIntroSoundToastShown]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
+    const parent = containerRef.current;
+    if (!parent) return undefined;
     let cancelled = false;
-    const runner = new GameRunner({
-      canvas,
+    const gameHandle = createPhaserGame({
+      parent,
       song,
       startTheme,
       inputMode,
@@ -52,24 +59,21 @@ export default function GameScreen({
       },
       onHome: () => onHomeRef.current?.(),
       onLoadingChange: setLoading,
-    });
-    runnerRef.current = runner;
-    runner
-      .prepare()
-      .then(() => {
-        if (!cancelled) runner.start();
-      })
-      .catch((prepareError) => {
+      onLoadingStage: setLoadingStage,
+      onError: (prepareError) => {
+        if (cancelled) return;
         console.error(prepareError);
         setError("加载失败，刷新重试");
         setLoading(false);
-      });
+      },
+    });
+    gameRef.current = gameHandle;
 
     return () => {
       cancelled = true;
       window.clearTimeout(soundToastTimerRef.current);
-      runner.dispose();
-      runnerRef.current = null;
+      gameHandle.destroy();
+      gameRef.current = null;
     };
   }, [song, startTheme, inputMode]);
 
@@ -95,7 +99,7 @@ export default function GameScreen({
 
   return (
     <div className={`screen game-screen screen-${startTheme}`}>
-      <canvas ref={canvasRef} className="game-canvas" />
+      <div ref={containerRef} className="phaser-game-container" />
       {soundToastVisible && (
         <div
           className="game-sound-toast result-share-preview-toast result-fixed-text-zh pixel-font-zh"
@@ -108,7 +112,11 @@ export default function GameScreen({
       {loading && (
         <MagicLoadingOverlay
           theme={startTheme}
-          text={LOADING_COPY.prepareAttack}
+          text={
+            debugPhaserEnabled && loadingStage
+              ? `${LOADING_COPY.prepareAttack} ${loadingStage}`
+              : LOADING_COPY.prepareAttack
+          }
           className="game-loading-overlay"
         />
       )}

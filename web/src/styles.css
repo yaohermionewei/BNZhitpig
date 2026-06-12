@@ -1537,6 +1537,24 @@ button {
   -webkit-user-select: none;
 }
 
+.phaser-game-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.phaser-game-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
 .audio-debug-panel {
   position: fixed;
   top: max(8px, env(safe-area-inset-top));
