@@ -1,8 +1,7 @@
 import { getAudioContext } from "./AudioControllerWeb.js";
 
 export const ORIGINAL_HIT_SFX_ID = "original";
-export const DEFAULT_HIT_IMPACT_SOUND_ID = "sample-freesound-847838-strong-punch";
-export const DEFAULT_HIT_SFX_LAB_ID = DEFAULT_HIT_IMPACT_SOUND_ID;
+export const DEFAULT_HIT_SFX_LAB_ID = "sample-freesound-847838-strong-punch";
 
 const SAMPLED_HIT_IMPACT_SOUNDS = Object.freeze({
   "sample-freesound-517744-punch": {
