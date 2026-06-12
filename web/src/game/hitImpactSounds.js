@@ -6,11 +6,11 @@ export const DEFAULT_HIT_SFX_LAB_ID = "sample-freesound-847838-strong-punch";
 const SAMPLED_HIT_IMPACT_SOUNDS = Object.freeze({
   "sample-freesound-517744-punch": {
     src: "/assets/audio/hit-lab/freesound-517744-punch-short.wav",
-    volume: 6,
+    volume: 4,
   },
   "sample-freesound-847838-strong-punch": {
     src: "/assets/audio/hit-lab/freesound-847838-strong-punch-short.wav",
-    volume: 2.2,
+    volume: 1.5,
   },
 });
 
@@ -20,12 +20,6 @@ export const HIT_IMPACT_SOUND_OPTIONS = Object.freeze([
     id: "original-plus-hyper-pixel",
     title: "原始+像素爆锤",
     description: "保留当前敲击，再叠像素爆锤的亮脆冲击。",
-  },
-  {
-    displayCode: "04",
-    id: "original-plus-air-burst",
-    title: "原始+空气爆破",
-    description: "保留当前敲击，再加一点压缩空气和短爆破。",
   },
   {
     displayCode: "20",
@@ -47,8 +41,8 @@ const HYBRID_HIT_IMPACT_SOUND_MIXES = Object.freeze({
     syntheticVolume: 18,
   },
   "original-plus-hyper-pixel": {
-    originalVolumeScale: 0.42,
-    syntheticVolume: 22,
+    originalVolumeScale: 0.62,
+    syntheticVolume: 17,
   },
   "original-plus-air-burst": {
     originalVolumeScale: 0.44,
