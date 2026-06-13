@@ -422,7 +422,7 @@ function ensureSfxPlayers() {
   }
 
   state.sfxPlayers = Array.from({ length: 10 }, () =>
-    createSfxPlayer("/assets/audio/hit.wav", EDITOR_SFX_VOLUME)
+    createSfxPlayer("/assets/audio/hit-lab/freesound-517744-punch-short.wav", EDITOR_SFX_VOLUME)
   );
   state.sfxPlayerIndex = 0;
 }

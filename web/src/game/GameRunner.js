@@ -9,6 +9,7 @@ import {
 import { renderFrame, getControlRects } from "./renderer.js";
 import { AudioControllerWeb, emitAudioDebug } from "./AudioControllerWeb.js";
 import {
+  DEFAULT_HIT_IMPACT_SOUND_ID,
   ORIGINAL_HIT_SFX_ID,
   getHybridHitImpactMix,
   getSampledHitImpactSound,
@@ -225,7 +226,7 @@ export class GameRunner {
     startTheme,
     inputMode = "touch",
     sceneOnly = false,
-    hitImpactSoundId = ORIGINAL_HIT_SFX_ID,
+    hitImpactSoundId = DEFAULT_HIT_IMPACT_SOUND_ID,
     preloadHitImpactSoundSamples = false,
     disableLifeFailure = false,
     onFinish,
@@ -238,7 +239,7 @@ export class GameRunner {
     this.startTheme = normalizeStartTheme(startTheme);
     this.inputMode = normalizeInputMode(inputMode);
     this.sceneOnly = !!sceneOnly;
-    this.hitImpactSoundId = hitImpactSoundId || ORIGINAL_HIT_SFX_ID;
+    this.hitImpactSoundId = hitImpactSoundId || DEFAULT_HIT_IMPACT_SOUND_ID;
     this.preloadHitImpactSoundSamples = !!preloadHitImpactSoundSamples;
     this.disableLifeFailure = !!disableLifeFailure;
     this.onFinish = onFinish;
@@ -601,7 +602,7 @@ export class GameRunner {
   }
 
   setHitImpactSoundId(hitImpactSoundId) {
-    this.hitImpactSoundId = hitImpactSoundId || ORIGINAL_HIT_SFX_ID;
+    this.hitImpactSoundId = hitImpactSoundId || DEFAULT_HIT_IMPACT_SOUND_ID;
   }
 
   getActiveHitImpactEffectSources() {
