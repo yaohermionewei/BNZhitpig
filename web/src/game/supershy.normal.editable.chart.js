@@ -5,6 +5,7 @@ export default {
   "audioSrc": "/assets/audio/super-shy.mp3",
   "audioStartTime": 9,
   "noteFallSpeedMultiplier": 0.78,
+  "musicVolume": 0.8,
   "duration": 147.512,
   "windows": {
     "perfect": 0.07,
@@ -13,24 +14,16 @@ export default {
   },
   "notes": [
     {
-      "time": 3.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 3.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 4.112,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 4.312,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 4.512,
@@ -42,12 +35,14 @@ export default {
     {
       "time": 5.112,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
-      "time": 5.312,
+      "time": 5.31,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 5.512,
@@ -57,47 +52,36 @@ export default {
       "endTime": 5.812
     },
     {
-      "time": 5.912,
+      "time": 6.121,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 6.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 6.412
-    },
-    {
-      "time": 6.512,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 6.812
-    },
-    {
-      "time": 6.912,
+      "time": 6.492,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 7.112,
+      "time": 6.84,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 7.312,
-      "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 7.612
+      "time": 7.241,
+      "size": 0.94,
+      "accent": false
     },
     {
-      "time": 7.712,
+      "time": 7.455,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 7.673,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 8.112
+      "endTime": 7.97
     },
     {
       "time": 8.312,
@@ -117,30 +101,19 @@ export default {
       "endTime": 9.012
     },
     {
-      "time": 9.112,
+      "time": 9.312,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 9.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 9.612
-    },
-    {
       "time": 9.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 10.012
+      "accent": false
     },
     {
       "time": 10.112,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 10.412
+      "accent": false
     },
     {
       "time": 10.512,
@@ -177,23 +150,14 @@ export default {
       "endTime": 12.212
     },
     {
-      "time": 12.312,
+      "time": 12.51,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 12.512,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 12.812
-    },
-    {
       "time": 12.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 13.212
+      "accent": false
     },
     {
       "time": 13.312,
@@ -208,23 +172,14 @@ export default {
     {
       "time": 13.712,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 14.012
+      "accent": true
     },
     {
-      "time": 14.112,
+      "time": 14.098,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 14.412
-    },
-    {
-      "time": 14.512,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 14.812
+      "endTime": 14.521
     },
     {
       "time": 14.912,
@@ -237,25 +192,16 @@ export default {
       "accent": false
     },
     {
-      "time": 15.312,
+      "time": 15.313,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 15.612
+      "accent": true
     },
     {
       "time": 15.712,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 16.012
-    },
-    {
-      "time": 16.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 16.412
+      "endTime": 16.166
     },
     {
       "time": 16.512,
@@ -266,8 +212,13 @@ export default {
       "time": 16.912,
       "size": 0.94,
       "accent": false,
-      "kind": "hold",
-      "endTime": 17.212
+      "direction": "left"
+    },
+    {
+      "time": 17.087,
+      "size": 0.94,
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 17.312,
@@ -279,12 +230,14 @@ export default {
     {
       "time": 17.912,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 18.112,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 18.312,
@@ -294,23 +247,14 @@ export default {
       "endTime": 18.612
     },
     {
-      "time": 18.712,
+      "time": 18.912,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 18.912,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 19.212
-    },
-    {
       "time": 19.312,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 19.612
+      "accent": false
     },
     {
       "time": 19.712,
@@ -318,16 +262,14 @@ export default {
       "accent": false
     },
     {
-      "time": 19.912,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 20.112,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 20.412
+      "accent": true
+    },
+    {
+      "time": 20.313,
+      "size": 0.94,
+      "accent": false
     },
     {
       "time": 20.512,
@@ -354,30 +296,19 @@ export default {
       "endTime": 21.812
     },
     {
-      "time": 21.912,
+      "time": 22.112,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 22.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 22.412
-    },
-    {
       "time": 22.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 22.812
+      "accent": false
     },
     {
       "time": 22.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 23.212
+      "accent": false
     },
     {
       "time": 23.312,
@@ -414,23 +345,14 @@ export default {
       "endTime": 25.012
     },
     {
-      "time": 25.112,
+      "time": 25.312,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 25.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 25.612
-    },
-    {
       "time": 25.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 26.012
+      "accent": false
     },
     {
       "time": 26.112,
@@ -443,25 +365,16 @@ export default {
       "accent": false
     },
     {
-      "time": 26.512,
+      "time": 26.537,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 26.812
+      "accent": true
     },
     {
       "time": 26.912,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 27.212
-    },
-    {
-      "time": 27.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 27.612
+      "endTime": 27.404
     },
     {
       "time": 27.712,
@@ -476,30 +389,14 @@ export default {
     {
       "time": 28.112,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 28.412
+      "accent": true
     },
     {
-      "time": 28.512,
+      "time": 28.51,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 28.812
-    },
-    {
-      "time": 28.912,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 29.212
-    },
-    {
-      "time": 29.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 29.612
+      "endTime": 29.066
     },
     {
       "time": 29.712,
@@ -512,7 +409,7 @@ export default {
       "accent": false
     },
     {
-      "time": 30.112,
+      "time": 30.137,
       "size": 0.94,
       "accent": false
     },
@@ -567,11 +464,6 @@ export default {
       "accent": false
     },
     {
-      "time": 32.412,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 32.512,
       "size": 0.94,
       "accent": false
@@ -614,42 +506,44 @@ export default {
     {
       "time": 34.512,
       "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 34.612,
-      "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 34.712,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 34.912,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 35.112,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 35.312,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 35.512,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 35.712,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 36.312,
@@ -667,11 +561,6 @@ export default {
       "accent": false
     },
     {
-      "time": 37.212,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 37.312,
       "size": 1.08,
       "accent": true
@@ -682,22 +571,12 @@ export default {
       "accent": false
     },
     {
-      "time": 38.012,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 38.112,
       "size": 1.08,
       "accent": true
     },
     {
       "time": 38.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 38.812,
       "size": 0.94,
       "accent": false
     },
@@ -761,26 +640,17 @@ export default {
     {
       "time": 42.912,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 43.212
+      "accent": true
     },
     {
       "time": 43.312,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 43.612
-    },
-    {
-      "time": 43.712,
-      "size": 1.08,
       "accent": true
     },
     {
-      "time": 43.912,
-      "size": 0.94,
-      "accent": false
+      "time": 43.764,
+      "size": 1.08,
+      "accent": true
     },
     {
       "time": 44.112,
@@ -792,26 +662,17 @@ export default {
     {
       "time": 44.512,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 44.812
+      "accent": true
     },
     {
       "time": 44.912,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 45.212
-    },
-    {
-      "time": 45.312,
-      "size": 1.08,
       "accent": true
     },
     {
-      "time": 45.512,
-      "size": 0.94,
-      "accent": false
+      "time": 45.366,
+      "size": 1.08,
+      "accent": true
     },
     {
       "time": 45.712,
@@ -822,8 +683,8 @@ export default {
     },
     {
       "time": 46.112,
-      "size": 1.08,
-      "accent": true
+      "size": 0.94,
+      "accent": false
     },
     {
       "time": 46.512,
@@ -885,26 +746,17 @@ export default {
     {
       "time": 49.312,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 49.612
+      "accent": true
     },
     {
       "time": 49.712,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 50.012
-    },
-    {
-      "time": 50.112,
-      "size": 1.08,
       "accent": true
     },
     {
-      "time": 50.312,
-      "size": 0.94,
-      "accent": false
+      "time": 50.176,
+      "size": 1.08,
+      "accent": true
     },
     {
       "time": 50.512,
@@ -916,24 +768,15 @@ export default {
     {
       "time": 50.912,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 51.212
+      "accent": true
     },
     {
       "time": 51.312,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 51.612
-    },
-    {
-      "time": 51.712,
-      "size": 1.08,
       "accent": true
     },
     {
-      "time": 51.912,
+      "time": 51.765,
       "size": 0.94,
       "accent": false
     },
@@ -942,12 +785,7 @@ export default {
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 52.412
-    },
-    {
-      "time": 52.512,
-      "size": 1.08,
-      "accent": true
+      "endTime": 52.534
     },
     {
       "time": 52.912,
@@ -1000,7 +838,7 @@ export default {
       "accent": false
     },
     {
-      "time": 55.312,
+      "time": 55.31,
       "size": 0.94,
       "accent": false
     },
@@ -1032,11 +870,6 @@ export default {
       "accent": false,
       "kind": "hold",
       "endTime": 57.012
-    },
-    {
-      "time": 57.112,
-      "size": 0.94,
-      "accent": false
     },
     {
       "time": 57.312,
@@ -1103,11 +936,6 @@ export default {
       "endTime": 60.212
     },
     {
-      "time": 60.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 60.512,
       "size": 0.94,
       "accent": false
@@ -1172,63 +1000,59 @@ export default {
       "endTime": 63.412
     },
     {
-      "time": 63.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 63.712,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 63.912,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 64.112,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 64.312,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 64.512,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 64.712,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 64.912,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 65.112,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 65.312,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 65.612
-    },
-    {
-      "time": 65.712,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 66.112
+      "endTime": 66.073
     },
     {
       "time": 66.512,
@@ -1245,19 +1069,7 @@ export default {
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 67.212
-    },
-    {
-      "time": 67.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 67.612
-    },
-    {
-      "time": 67.712,
-      "size": 0.94,
-      "accent": false
+      "endTime": 67.608
     },
     {
       "time": 67.912,
@@ -1267,12 +1079,14 @@ export default {
     {
       "time": 68.112,
       "size": 1.08,
-      "accent": true
+      "accent": true,
+      "direction": "left"
     },
     {
       "time": 68.312,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 68.512,
@@ -1284,12 +1098,14 @@ export default {
     {
       "time": 69.112,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
-      "time": 69.312,
+      "time": 69.311,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 69.512,
@@ -1299,26 +1115,17 @@ export default {
       "endTime": 69.812
     },
     {
-      "time": 69.912,
+      "time": 70.112,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 70.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 70.412
-    },
-    {
       "time": 70.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 70.812
+      "accent": false
     },
     {
-      "time": 70.912,
+      "time": 70.875,
       "size": 0.94,
       "accent": false
     },
@@ -1362,47 +1169,36 @@ export default {
       "endTime": 73.012
     },
     {
-      "time": 73.112,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 73.312,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 73.612
+      "accent": false
     },
     {
       "time": 73.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 74.012
+      "accent": false
     },
     {
       "time": 74.112,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 74.412
+      "accent": false
     },
     {
-      "time": 74.512,
-      "size": 1.08,
-      "accent": true
-    },
-    {
-      "time": 74.712,
+      "time": 74.461,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 74.912,
+      "time": 74.643,
+      "size": 0.94,
+      "accent": false
+    },
+    {
+      "time": 74.857,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 75.312
+      "endTime": 75.257
     },
     {
       "time": 75.512,
@@ -1422,90 +1218,48 @@ export default {
       "endTime": 76.212
     },
     {
-      "time": 76.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 76.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 76.812
+      "accent": false
     },
     {
       "time": 76.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 77.212
-    },
-    {
-      "time": 77.312,
-      "size": 0.94,
       "accent": false
     },
     {
-      "time": 77.512,
+      "time": 77.316,
       "size": 0.94,
       "accent": false
     },
     {
       "time": 77.712,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 78.012
+      "accent": true
     },
     {
       "time": 78.112,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 78.412
+      "endTime": 78.746
     },
     {
-      "time": 78.512,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 78.812
-    },
-    {
-      "time": 78.912,
+      "time": 79.215,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 79.112,
+      "time": 79.404,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 79.312,
+      "time": 79.636,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 79.612
-    },
-    {
-      "time": 79.712,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 80.012
-    },
-    {
-      "time": 80.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 80.412
-    },
-    {
-      "time": 80.512,
-      "size": 0.94,
-      "accent": false
+      "endTime": 80.379
     },
     {
       "time": 80.912,
@@ -1517,9 +1271,7 @@ export default {
     {
       "time": 81.312,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 81.612
+      "accent": false
     },
     {
       "time": 81.712,
@@ -1529,11 +1281,9 @@ export default {
       "endTime": 82.012
     },
     {
-      "time": 82.112,
+      "time": 82.111,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 82.412
+      "accent": false
     },
     {
       "time": 82.512,
@@ -1545,24 +1295,17 @@ export default {
     {
       "time": 82.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 83.212
-    },
-    {
-      "time": 83.312,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 83.612
-    },
-    {
-      "time": 83.712,
-      "size": 0.94,
       "accent": false
     },
     {
-      "time": 83.912,
+      "time": 83.313,
+      "size": 0.94,
+      "accent": false,
+      "kind": "hold",
+      "endTime": 83.613
+    },
+    {
+      "time": 83.712,
       "size": 0.94,
       "accent": false
     },
@@ -1571,14 +1314,7 @@ export default {
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 84.412
-    },
-    {
-      "time": 84.512,
-      "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 84.912
+      "endTime": 84.923
     },
     {
       "time": 85.112,
@@ -1608,11 +1344,6 @@ export default {
       "endTime": 86.512
     },
     {
-      "time": 86.612,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 86.912,
       "size": 0.94,
       "accent": false
@@ -1627,9 +1358,7 @@ export default {
     {
       "time": 87.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 88.012
+      "accent": false
     },
     {
       "time": 88.112,
@@ -1641,9 +1370,7 @@ export default {
     {
       "time": 88.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 88.812
+      "accent": false
     },
     {
       "time": 88.912,
@@ -1655,9 +1382,7 @@ export default {
     {
       "time": 89.312,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 89.612
+      "accent": false
     },
     {
       "time": 89.712,
@@ -1672,23 +1397,11 @@ export default {
       "accent": false
     },
     {
-      "time": 90.312,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 90.512,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 90.812
-    },
-    {
-      "time": 90.912,
-      "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 91.312
+      "endTime": 91.295
     },
     {
       "time": 91.512,
@@ -1743,12 +1456,14 @@ export default {
     {
       "time": 93.712,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 93.912,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 94.112,
@@ -1760,12 +1475,14 @@ export default {
     {
       "time": 94.712,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 94.912,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
       "time": 95.112,
@@ -1773,11 +1490,6 @@ export default {
       "accent": false,
       "kind": "hold",
       "endTime": 95.412
-    },
-    {
-      "time": 95.512,
-      "size": 0.94,
-      "accent": false
     },
     {
       "time": 95.712,
@@ -1789,16 +1501,12 @@ export default {
     {
       "time": 96.112,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 96.412
+      "accent": false
     },
     {
       "time": 96.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 96.812
+      "accent": false
     },
     {
       "time": 96.912,
@@ -1835,30 +1543,19 @@ export default {
       "endTime": 98.612
     },
     {
-      "time": 98.712,
+      "time": 98.912,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 98.912,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 99.212
-    },
-    {
       "time": 99.312,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 99.612
+      "accent": false
     },
     {
       "time": 99.712,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 100.012
+      "accent": false
     },
     {
       "time": 100.112,
@@ -1895,23 +1592,14 @@ export default {
       "endTime": 101.812
     },
     {
-      "time": 101.912,
+      "time": 102.112,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 102.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 102.412
-    },
-    {
       "time": 102.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 102.812
+      "accent": false
     },
     {
       "time": 102.912,
@@ -1926,114 +1614,79 @@ export default {
     {
       "time": 103.312,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 103.612
+      "accent": true
     },
     {
       "time": 103.712,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 104.012
+      "endTime": 104.456
     },
     {
-      "time": 104.112,
-      "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 104.412
-    },
-    {
-      "time": 104.512,
+      "time": 104.801,
       "size": 0.94,
       "accent": false
     },
     {
-      "time": 104.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 104.912,
+      "time": 105.001,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 105.212
+      "accent": true
     },
     {
       "time": 105.312,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 105.612
+      "endTime": 106.098
     },
     {
-      "time": 105.712,
+      "time": 106.407,
       "size": 0.94,
       "accent": false,
-      "kind": "hold",
-      "endTime": 106.012
+      "direction": "left"
     },
     {
-      "time": 106.112,
+      "time": 106.592,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
-      "time": 106.512,
+      "time": 106.776,
       "size": 1.08,
       "accent": true,
       "kind": "hold",
-      "endTime": 106.812
-    },
-    {
-      "time": 106.912,
-      "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 107.212
+      "endTime": 107.076
     },
     {
       "time": 107.312,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "left"
     },
     {
       "time": 107.512,
       "size": 0.94,
-      "accent": false
+      "accent": false,
+      "direction": "right"
     },
     {
-      "time": 107.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
-      "time": 107.912,
+      "time": 107.703,
       "size": 0.94,
       "accent": false,
       "kind": "hold",
-      "endTime": 108.212
-    },
-    {
-      "time": 108.312,
-      "size": 0.94,
-      "accent": false
+      "endTime": 108.084
     },
     {
       "time": 108.512,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 108.812
+      "accent": true
     },
     {
       "time": 108.912,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 109.212
+      "accent": false
     },
     {
       "time": 109.312,
@@ -2058,11 +1711,6 @@ export default {
       "endTime": 110.412
     },
     {
-      "time": 110.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 110.712,
       "size": 0.94,
       "accent": false
@@ -2080,30 +1728,19 @@ export default {
       "endTime": 111.412
     },
     {
-      "time": 111.512,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 111.712,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 112.012
+      "accent": true
     },
     {
       "time": 112.112,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 112.412
+      "accent": false
     },
     {
       "time": 112.512,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 112.812
+      "accent": false
     },
     {
       "time": 112.912,
@@ -2123,11 +1760,6 @@ export default {
       "endTime": 113.612
     },
     {
-      "time": 113.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 113.912,
       "size": 0.94,
       "accent": false
@@ -2145,23 +1777,14 @@ export default {
       "endTime": 114.612
     },
     {
-      "time": 114.712,
-      "size": 0.94,
-      "accent": false
-    },
-    {
       "time": 114.912,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 115.212
+      "accent": true
     },
     {
       "time": 115.312,
       "size": 0.94,
-      "accent": false,
-      "kind": "hold",
-      "endTime": 115.612
+      "accent": false
     },
     {
       "time": 115.712,
@@ -2176,9 +1799,7 @@ export default {
     {
       "time": 116.112,
       "size": 1.08,
-      "accent": true,
-      "kind": "hold",
-      "endTime": 116.412
+      "accent": true
     },
     {
       "time": 116.512,
@@ -2186,11 +1807,6 @@ export default {
       "accent": true,
       "kind": "hold",
       "endTime": 116.812
-    },
-    {
-      "time": 116.912,
-      "size": 1.08,
-      "accent": true
     },
     {
       "time": 117.112,
@@ -2223,11 +1839,6 @@ export default {
       "accent": true,
       "kind": "hold",
       "endTime": 118.412
-    },
-    {
-      "time": 118.512,
-      "size": 1.08,
-      "accent": true
     },
     {
       "time": 118.712,
@@ -2266,12 +1877,7 @@ export default {
       "endTime": 120.412
     },
     {
-      "time": 120.512,
-      "size": 1.08,
-      "accent": true
-    },
-    {
-      "time": 120.712,
+      "time": 120.525,
       "size": 0.94,
       "accent": false
     },
@@ -2314,9 +1920,9 @@ export default {
       "endTime": 122.812
     },
     {
-      "time": 122.912,
-      "size": 1.08,
-      "accent": true
+      "time": 122.946,
+      "size": 0.94,
+      "accent": false
     },
     {
       "time": 123.312,
@@ -2745,9 +2351,9 @@ export default {
     "songId": "supershy",
     "difficultyId": "normal",
     "difficultyLabel": "困难",
-    "authoring": "osu-mania-import-v1",
-    "noteCount": 478,
-    "updatedAt": "2026-06-07T16:09:19.982Z"
+    "noteCount": 422,
+    "authoring": "chart-editor-v1",
+    "updatedAt": "2026-06-14T15:26:01.781Z"
   },
   "holdDebugMarkers": [
     {
@@ -2756,8 +2362,18 @@ export default {
       "label": ""
     },
     {
-      "time": 7.712,
-      "endTime": 8.112,
+      "time": 5.512,
+      "endTime": 5.812,
+      "label": ""
+    },
+    {
+      "time": 7.673,
+      "endTime": 7.97,
+      "label": ""
+    },
+    {
+      "time": 8.712,
+      "endTime": 9.012,
       "label": ""
     },
     {
@@ -2766,8 +2382,28 @@ export default {
       "label": ""
     },
     {
+      "time": 11.912,
+      "endTime": 12.212,
+      "label": ""
+    },
+    {
+      "time": 14.098,
+      "endTime": 14.521,
+      "label": ""
+    },
+    {
+      "time": 15.712,
+      "endTime": 16.166,
+      "label": ""
+    },
+    {
       "time": 17.312,
       "endTime": 17.712,
+      "label": ""
+    },
+    {
+      "time": 18.312,
+      "endTime": 18.612,
       "label": ""
     },
     {
@@ -2776,8 +2412,28 @@ export default {
       "label": ""
     },
     {
+      "time": 21.512,
+      "endTime": 21.812,
+      "label": ""
+    },
+    {
       "time": 23.712,
       "endTime": 24.112,
+      "label": ""
+    },
+    {
+      "time": 24.712,
+      "endTime": 25.012,
+      "label": ""
+    },
+    {
+      "time": 26.912,
+      "endTime": 27.404,
+      "label": ""
+    },
+    {
+      "time": 28.51,
+      "endTime": 29.066,
       "label": ""
     },
     {
@@ -2786,28 +2442,8 @@ export default {
       "label": ""
     },
     {
-      "time": 42.912,
-      "endTime": 43.212,
-      "label": ""
-    },
-    {
-      "time": 43.312,
-      "endTime": 43.612,
-      "label": ""
-    },
-    {
       "time": 44.112,
       "endTime": 44.412,
-      "label": ""
-    },
-    {
-      "time": 44.512,
-      "endTime": 44.812,
-      "label": ""
-    },
-    {
-      "time": 44.912,
-      "endTime": 45.212,
       "label": ""
     },
     {
@@ -2821,33 +2457,13 @@ export default {
       "label": ""
     },
     {
-      "time": 49.312,
-      "endTime": 49.612,
-      "label": ""
-    },
-    {
-      "time": 49.712,
-      "endTime": 50.012,
-      "label": ""
-    },
-    {
       "time": 50.512,
       "endTime": 50.812,
       "label": ""
     },
     {
-      "time": 50.912,
-      "endTime": 51.212,
-      "label": ""
-    },
-    {
-      "time": 51.312,
-      "endTime": 51.612,
-      "label": ""
-    },
-    {
       "time": 52.112,
-      "endTime": 52.412,
+      "endTime": 52.534,
       "label": ""
     },
     {
@@ -2882,22 +2498,12 @@ export default {
     },
     {
       "time": 65.312,
-      "endTime": 65.612,
-      "label": ""
-    },
-    {
-      "time": 65.712,
-      "endTime": 66.112,
+      "endTime": 66.073,
       "label": ""
     },
     {
       "time": 66.912,
-      "endTime": 67.212,
-      "label": ""
-    },
-    {
-      "time": 67.312,
-      "endTime": 67.612,
+      "endTime": 67.608,
       "label": ""
     },
     {
@@ -2906,33 +2512,93 @@ export default {
       "label": ""
     },
     {
+      "time": 69.512,
+      "endTime": 69.812,
+      "label": ""
+    },
+    {
       "time": 71.712,
       "endTime": 72.112,
       "label": ""
     },
     {
-      "time": 74.912,
-      "endTime": 75.312,
+      "time": 72.712,
+      "endTime": 73.012,
+      "label": ""
+    },
+    {
+      "time": 74.857,
+      "endTime": 75.257,
+      "label": ""
+    },
+    {
+      "time": 75.912,
+      "endTime": 76.212,
+      "label": ""
+    },
+    {
+      "time": 78.112,
+      "endTime": 78.746,
+      "label": ""
+    },
+    {
+      "time": 79.636,
+      "endTime": 80.379,
+      "label": ""
+    },
+    {
+      "time": 80.912,
+      "endTime": 81.212,
+      "label": ""
+    },
+    {
+      "time": 81.712,
+      "endTime": 82.012,
+      "label": ""
+    },
+    {
+      "time": 82.512,
+      "endTime": 82.812,
+      "label": ""
+    },
+    {
+      "time": 83.313,
+      "endTime": 83.613,
       "label": ""
     },
     {
       "time": 84.112,
-      "endTime": 84.412,
+      "endTime": 84.923,
       "label": ""
     },
     {
-      "time": 84.512,
-      "endTime": 84.912,
+      "time": 86.112,
+      "endTime": 86.512,
+      "label": ""
+    },
+    {
+      "time": 87.312,
+      "endTime": 87.612,
+      "label": ""
+    },
+    {
+      "time": 88.112,
+      "endTime": 88.412,
+      "label": ""
+    },
+    {
+      "time": 88.912,
+      "endTime": 89.212,
+      "label": ""
+    },
+    {
+      "time": 89.712,
+      "endTime": 90.012,
       "label": ""
     },
     {
       "time": 90.512,
-      "endTime": 90.812,
-      "label": ""
-    },
-    {
-      "time": 90.912,
-      "endTime": 91.312,
+      "endTime": 91.295,
       "label": ""
     },
     {
@@ -2946,8 +2612,18 @@ export default {
       "label": ""
     },
     {
+      "time": 95.712,
+      "endTime": 96.012,
+      "label": ""
+    },
+    {
       "time": 97.312,
       "endTime": 97.712,
+      "label": ""
+    },
+    {
+      "time": 98.312,
+      "endTime": 98.612,
       "label": ""
     },
     {
@@ -2956,8 +2632,28 @@ export default {
       "label": ""
     },
     {
-      "time": 106.912,
-      "endTime": 107.212,
+      "time": 101.512,
+      "endTime": 101.812,
+      "label": ""
+    },
+    {
+      "time": 103.712,
+      "endTime": 104.456,
+      "label": ""
+    },
+    {
+      "time": 105.312,
+      "endTime": 106.098,
+      "label": ""
+    },
+    {
+      "time": 106.776,
+      "endTime": 107.076,
+      "label": ""
+    },
+    {
+      "time": 107.703,
+      "endTime": 108.084,
       "label": ""
     },
     {
@@ -2966,8 +2662,18 @@ export default {
       "label": ""
     },
     {
+      "time": 111.112,
+      "endTime": 111.412,
+      "label": ""
+    },
+    {
       "time": 113.312,
       "endTime": 113.612,
+      "label": ""
+    },
+    {
+      "time": 114.312,
+      "endTime": 114.612,
       "label": ""
     },
     {
