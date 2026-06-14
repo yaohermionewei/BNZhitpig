@@ -2301,6 +2301,7 @@ button {
   min-width: 0;
   line-height: 1;
   white-space: nowrap;
+  transform: translateY(1px);
 }
 
 .result-divider {
@@ -3120,6 +3121,7 @@ button {
   min-width: 0;
   line-height: 1;
   white-space: nowrap;
+  transform: translateY(1px);
 }
 
 .result-certificate-rank-image {
