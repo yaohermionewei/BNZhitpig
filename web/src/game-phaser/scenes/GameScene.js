@@ -10,14 +10,20 @@ import {
 import { AudioControllerWeb, loadAudioBuffer } from "../../game/AudioControllerWeb.js";
 import {
   EFFECT_AUDIO_POOL_SIZES,
-  getCharacterAssetSources,
+  loadCharacterSprites,
   loadImage,
   preloadResultAssets,
 } from "../../game/assets.js";
 import { buildResultSummary } from "../../game/result.js";
 import { playUiSound, playVictoryFanfare } from "../../game/uiSounds.js";
 import { setBunniesMediaSessionMetadata } from "../../game/mediaSession.js";
-import { normalizeStartTheme } from "../../utils/start-theme.js";
+import { getStartThemeLoadingColors, normalizeStartTheme } from "../../utils/start-theme.js";
+import { renderFrame as drawGameFrame, getControlRects } from "../../game/renderer.js";
+import {
+  RABBIT_WAND_SWING_VARIANT,
+  createCrowdMotionState,
+  createRabbitWandAnimationState,
+} from "../runnerState.js";
 
 const INTRO_DURATION = 0.82;
 const ENDING_SEQUENCE_DURATION = 1.5;
@@ -27,29 +33,14 @@ const DIRECTION_GESTURE_MIN_DISTANCE = 28;
 const DIRECTION_GESTURE_AXIS_RATIO = 1.15;
 const NOTE_HIT_EFFECT_VOLUME = 3.6;
 const NOTE_MISS_EFFECT_VOLUME = 1.8;
-const TEXTURE_LOAD_TIMEOUT_MS = 2500;
 const GAME_OVER_EFFECT_SOURCE = "/assets/audio/miss.wav";
-const PAUSE_MENU_BUTTON_LABELS = Object.freeze({
-  home: "HOME",
-  restart: "RETRY",
-  resume: "GO",
-});
+const FRAME_TEXTURE_KEY = "phaserGameFrame";
+const MAX_DEVICE_PIXEL_RATIO = 2;
 const KEYBOARD_TAP_CODES = Object.freeze(["Space", "KeyJ", "KeyK", "KeyF", "KeyD"]);
 const KEYBOARD_TAP_CODE_SET = new Set(KEYBOARD_TAP_CODES);
 const KEYBOARD_DIRECTION_BY_CODE = Object.freeze({
   ArrowLeft: "left",
   ArrowRight: "right",
-});
-
-const ASSET_KEYS = Object.freeze({
-  background: "sceneBackground",
-  rabbit: "rabbitBack",
-  rabbitHit: "rabbitBackHitSheet",
-  rabbitWand: "rabbitBackWandSwing2Sheet",
-  pig: "pigFront",
-  pigLaunch: "pigFrontLaunch",
-  pigLeft: "pigLeft",
-  pigRight: "pigRight",
 });
 
 function withTimeout(promise, timeoutMs, message) {
@@ -64,18 +55,6 @@ function withTimeout(promise, timeoutMs, message) {
 
 function normalizeInputMode(inputMode) {
   return inputMode === "keyboard" ? "keyboard" : "touch";
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function formatScore(score) {
-  return String(Math.max(0, Math.round(score))).padStart(5, "0");
-}
-
-function getNoteProgress(note, currentTime, travelTime) {
-  return clamp(1 - (note.time - currentTime) / travelTime, 0, 1.22);
 }
 
 function getBrowserSafeAssetSource(src) {
@@ -117,8 +96,18 @@ export class GameScene extends Phaser.Scene {
     this.pendingHoldPointerId = null;
     this.keyboardHoldCode = null;
     this.inputGesture = null;
-    this.layout = null;
+    // Visual state fed into the original canvas renderer via renderFrame.
+    this.characterSprites = {};
+    this.songCoverImage = null;
+    this.crowdMotion = null;
+    this.rabbitWandAnimation = null;
+    this.magicVisualTime = 0;
+    this.viewport = null;
     this.controlRects = null;
+    this.frameCanvas = null;
+    this.frameCtx = null;
+    this.frameTexture = null;
+    this.frameImage = null;
     this.lastJudgementResult = null;
     this.lastJudgementAt = -99;
     this.disposed = false;
@@ -175,9 +164,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   async prepareResources() {
-    this.options.onLoadingStage?.("prepare:textures");
-    await this.prepareTextures();
+    this.options.onLoadingStage?.("prepare:sprites");
+    // The canvas renderer (renderFrame) needs raw HTMLImage sprites, not Phaser
+    // textures. loadCharacterSprites returns the full bag (background, rabbit,
+    // pig variants, the five-sisters crowd, glasses, …) and is cached per theme.
+    const [sprites, coverImage] = await Promise.all([
+      loadCharacterSprites(this.startTheme),
+      loadImage(getBrowserSafeAssetSource(this.song.coverImageSrc)),
+    ]);
     if (this.disposed) return;
+    this.characterSprites = sprites || {};
+    this.songCoverImage = coverImage || null;
     this.options.onLoadingStage?.("prepare:audio-main");
     await withTimeout(
       this.audio.preloadChart(this.song.chart),
@@ -210,172 +207,50 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  async prepareTextures() {
-    const sources = getCharacterAssetSources(this.startTheme);
-    const textureKeys = Array.from(new Set(Object.values(ASSET_KEYS)));
-    await Promise.all(
-      textureKeys.map(async (key) => {
-        await this.prepareTexture(key, sources[key]);
-      })
-    );
-    if (!this.textures.exists("songCover")) {
-      await this.prepareTexture("songCover", this.song.coverImageSrc);
-    }
-  }
-
-  async prepareTexture(key, src) {
-    if (this.textures.exists(key)) return;
-    const safeSrc = getBrowserSafeAssetSource(src);
-    try {
-      const image = await withTimeout(
-        loadImage(safeSrc),
-        TEXTURE_LOAD_TIMEOUT_MS,
-        `Texture timed out: ${key}`
-      );
-      if (this.disposed) return;
-      if (image && !this.textures.exists(key)) {
-        this.textures.addImage(key, image);
-        return;
-      }
-    } catch (error) {
-      if (this.disposed) return;
-      console.warn("Using fallback texture", { key, src, error });
-    }
-    if (this.disposed) return;
-    this.createFallbackTexture(key);
-  }
-
-  createFallbackTexture(key) {
-    if (this.textures.exists(key)) return;
-    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
-    graphics.fillStyle(0xff7aa8, 1);
-    graphics.fillRect(0, 0, 64, 64);
-    graphics.lineStyle(4, 0xfff0c8, 1);
-    graphics.strokeRect(2, 2, 60, 60);
-    graphics.generateTexture(key, 64, 64);
-    graphics.destroy();
-  }
-
   createDisplay() {
     this.cameras.main.setBackgroundColor(this.startTheme === "light" ? "#f1c56d" : "#252435");
-    this.background = this.add.image(0, 0, ASSET_KEYS.background).setOrigin(0.5);
-    this.laneBase = this.add.rectangle(0, 0, 10, 10, 0x2b2430, 0.36);
-    this.hitLine = this.add.rectangle(0, 0, 10, 4, 0xfff0ad, 0.9);
-    this.rabbit = this.add.image(0, 0, ASSET_KEYS.rabbit).setOrigin(0.5, 1);
-    this.pig = this.add.image(0, 0, ASSET_KEYS.pig).setOrigin(0.5, 1);
-    this.noteLayer = this.add.container(0, 0);
-    this.effectLayer = this.add.container(0, 0);
-    this.noteSprites = new Map();
-    this.hud = {
-      score: this.add.text(0, 0, "00000", this.getHudTextStyle(24)),
-      combo: this.add.text(0, 0, "COMBO 0", this.getHudTextStyle(16)),
-      lives: this.add.text(0, 0, "LIFE 10/10", this.getHudTextStyle(16)),
-      judgement: this.add.text(0, 0, "准备开砸", this.getHudTextStyle(24)).setOrigin(0.5),
-      hint: this.add.text(0, 0, "", this.getHudTextStyle(13)).setOrigin(0.5),
-      pauseButton: this.add.text(0, 0, "II", this.getHudTextStyle(20)).setOrigin(0.5),
-      overlay: this.add.rectangle(0, 0, 10, 10, 0x111018, 0).setVisible(false),
-      overlayTitle: this.add.text(0, 0, "", this.getHudTextStyle(28)).setOrigin(0.5).setVisible(false),
-      overlaySub: this.add.text(0, 0, "", this.getHudTextStyle(15)).setOrigin(0.5).setVisible(false),
-      pauseHome: this.add.text(0, 0, PAUSE_MENU_BUTTON_LABELS.home, this.getHudTextStyle(14)).setOrigin(0.5).setVisible(false),
-      pauseRestart: this.add.text(0, 0, PAUSE_MENU_BUTTON_LABELS.restart, this.getHudTextStyle(14)).setOrigin(0.5).setVisible(false),
-      pauseResume: this.add.text(0, 0, PAUSE_MENU_BUTTON_LABELS.resume, this.getHudTextStyle(14)).setOrigin(0.5).setVisible(false),
-    };
-    this.hud.pauseButton.setInteractive({ useHandCursor: true });
-    this.hud.pauseButton.on("pointerdown", (pointer) => {
-      pointer.event?.preventDefault?.();
-      if (this.canPauseFromButton()) {
-        playUiSound("tap");
-        this.pauseGame("user");
-      }
-    });
+    // Route B: the original canvas renderer owns every pixel. We draw it into an
+    // offscreen canvas and blit that canvas into Phaser as a full-screen texture.
+    this.frameCanvas = document.createElement("canvas");
+    this.frameCanvas.width = 1;
+    this.frameCanvas.height = 1;
+    this.frameCtx = this.frameCanvas.getContext("2d", { alpha: false });
+    this.frameTexture = this.textures.addCanvas(FRAME_TEXTURE_KEY, this.frameCanvas);
+    this.frameImage = this.add.image(0, 0, FRAME_TEXTURE_KEY).setOrigin(0, 0);
     this.scale.on("resize", this.handleResize, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
-    this.handleResize(this.scale.gameSize);
-  }
-
-  getHudTextStyle(size) {
-    return {
-      fontFamily: '"PixelEnPrimary", "PixelZhFusion", monospace',
-      fontSize: `${size}px`,
-      color: "#fff0c8",
-      stroke: "#342034",
-      strokeThickness: 4,
-      align: "center",
-    };
+    this.handleResize();
   }
 
   handleResize() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const playWidth = Math.min(width * 0.82, 520);
-    const topY = height * 0.18;
-    const hitY = height * 0.72;
-    this.layout = {
-      width,
-      height,
-      centerX,
-      centerY,
-      laneLeft: centerX - playWidth / 2,
-      laneRight: centerX + playWidth / 2,
-      laneTop: topY,
-      hitY,
-      travelTime: 2.05,
-    };
-    this.controlRects = this.getControlRects(width, height);
-    this.background.setPosition(centerX, centerY);
-    const bgScale = Math.max(width / this.background.width, height / this.background.height);
-    this.background.setScale(Number.isFinite(bgScale) ? bgScale : 1);
-    this.laneBase.setPosition(centerX, (topY + hitY) / 2);
-    this.laneBase.setSize(playWidth, Math.max(1, hitY - topY + 90));
-    this.hitLine.setPosition(centerX, hitY);
-    this.hitLine.setSize(playWidth, 4);
-    this.rabbit.setPosition(centerX - playWidth * 0.28, height * 0.92).setScale(clamp(height / 760, 0.42, 0.72));
-    this.pig.setPosition(centerX + playWidth * 0.28, hitY + 42).setScale(clamp(height / 760, 0.28, 0.48));
-    this.hud.score.setPosition(18, 16).setOrigin(0, 0);
-    this.hud.combo.setPosition(18, 50).setOrigin(0, 0);
-    this.hud.lives.setPosition(width - 18, 18).setOrigin(1, 0);
-    this.hud.pauseButton.setPosition(width - 32, height - 34);
-    this.hud.judgement.setPosition(centerX, Math.max(88, topY - 48));
-    this.hud.hint.setPosition(centerX, height - 30);
-    this.hud.overlay.setPosition(centerX, centerY).setSize(width, height);
-    this.hud.overlayTitle.setPosition(centerX, centerY - 26);
-    this.hud.overlaySub.setPosition(centerX, centerY + 24);
-    this.positionPauseMenuButtons();
+    const width = Math.max(1, Math.round(this.scale.width));
+    const height = Math.max(1, Math.round(this.scale.height));
+    const dpr = Math.min(MAX_DEVICE_PIXEL_RATIO, window.devicePixelRatio || 1);
+    this.viewport = { width, height, dpr };
+    this.controlRects = getControlRects(this.viewport);
+    this.resizeFrameCanvas(width, height, dpr);
   }
 
-  getControlRects(width, height) {
-    const centerX = Math.round(width / 2);
-    const centerY = Math.round(height / 2);
-    const buttonSize = Math.round(Math.min(56, Math.max(50, width * 0.145)));
-    const buttonGap = 18;
-    const rowWidth = buttonSize * 3 + buttonGap * 2;
-    const rowLeft = Math.round(centerX - rowWidth / 2);
-    const buttonTop = Math.round(centerY - buttonSize / 2);
-    const secondLeft = rowLeft + buttonSize + buttonGap;
-    const thirdLeft = secondLeft + buttonSize + buttonGap;
-    const pauseSize = 26;
-    const songCoverSize = Math.min(52, Math.max(38, width * 0.11));
-    const pauseTop = Math.round(12 + songCoverSize / 2 - pauseSize / 2);
-    return {
-      pause: { left: width - 44, top: pauseTop, right: width - 18, bottom: pauseTop + pauseSize },
-      pauseHome: { left: rowLeft, top: buttonTop, right: rowLeft + buttonSize, bottom: buttonTop + buttonSize },
-      pauseRestart: { left: secondLeft, top: buttonTop, right: secondLeft + buttonSize, bottom: buttonTop + buttonSize },
-      resume: { left: thirdLeft, top: buttonTop, right: thirdLeft + buttonSize, bottom: buttonTop + buttonSize },
-    };
-  }
-
-  positionPauseMenuButtons() {
-    if (!this.controlRects || !this.hud) return;
-    this.positionTextInRect(this.hud.pauseHome, this.controlRects.pauseHome);
-    this.positionTextInRect(this.hud.pauseRestart, this.controlRects.pauseRestart);
-    this.positionTextInRect(this.hud.pauseResume, this.controlRects.resume);
-  }
-
-  positionTextInRect(textObject, rect) {
-    textObject.setPosition((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
+  resizeFrameCanvas(width, height, dpr) {
+    if (!this.frameCanvas || !this.frameImage) return;
+    const pixelWidth = Math.max(1, Math.round(width * dpr));
+    const pixelHeight = Math.max(1, Math.round(height * dpr));
+    if (this.frameCanvas.width !== pixelWidth || this.frameCanvas.height !== pixelHeight) {
+      this.frameCanvas.width = pixelWidth;
+      this.frameCanvas.height = pixelHeight;
+      // CanvasTexture caches its dimensions, so recreate it after a resize.
+      if (this.textures.exists(FRAME_TEXTURE_KEY)) {
+        this.textures.remove(FRAME_TEXTURE_KEY);
+      }
+      this.frameTexture = this.textures.addCanvas(FRAME_TEXTURE_KEY, this.frameCanvas);
+      this.frameImage.setTexture(FRAME_TEXTURE_KEY);
+    }
+    // Assigning canvas.width resets the 2D transform; re-apply the dpr scale so
+    // renderFrame can draw in CSS-pixel coordinates (matches the legacy runner).
+    this.frameCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.frameCtx.imageSmoothingEnabled = false;
+    this.frameImage.setPosition(0, 0).setOrigin(0, 0).setDisplaySize(width, height);
   }
 
   startRun() {
@@ -394,15 +269,19 @@ export class GameScene extends Phaser.Scene {
     this.resetInputGesture();
     this.lastJudgementResult = null;
     this.lastJudgementAt = -99;
-    this.clearNotes();
-    this.setPauseOverlay(false);
+    this.crowdMotion = createCrowdMotionState();
+    this.rabbitWandAnimation = createRabbitWandAnimationState();
+    this.magicVisualTime = 0;
   }
 
   update(_time, deltaMs) {
     if (this.disposed) return;
     const dt = Math.min(0.05, Math.max(0, deltaMs / 1000));
+    // The magic-impact-zone shimmer advances on its own clock even while paused
+    // or during the intro, matching the legacy renderer feel.
+    this.magicVisualTime += dt;
     if (!this.started || this.resultPending || this.isPaused) {
-      this.renderFrame();
+      this.drawFrame();
       return;
     }
     if (this.introActive) {
@@ -423,7 +302,7 @@ export class GameScene extends Phaser.Scene {
         this.finishRun();
       }
     }
-    this.renderFrame();
+    this.drawFrame();
   }
 
   async updateIntro(dt) {
@@ -449,94 +328,55 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  renderFrame() {
-    if (!this.layout || !this.state) return;
-    this.renderNotes();
-    this.renderHud();
-    this.renderEffects();
-  }
-
-  renderNotes() {
-    const { laneLeft, laneRight, laneTop, hitY, travelTime } = this.layout;
-    const currentTime = this.introActive ? 0 : this.state.currentTime;
-    const visibleIds = new Set();
-    this.state.notes.forEach((note) => {
-      if (note.judged && !note.holding) return;
-      const progress = getNoteProgress(note, currentTime, travelTime);
-      if (progress <= 0 || progress > 1.18) return;
-      visibleIds.add(note.id);
-      const sprite = this.getNoteSprite(note);
-      const laneRatio = note.direction === "left" ? 0.22 : note.direction === "right" ? 0.78 : 0.5;
-      const x = Phaser.Math.Linear(laneLeft, laneRight, laneRatio);
-      const y = Phaser.Math.Linear(laneTop, hitY, progress);
-      const scale = note.kind === "hold" ? 1.14 : note.direction ? 1.08 : 1;
-      sprite.container.setPosition(x, y).setScale(scale).setAlpha(note.holding ? 0.72 : 1);
-      if (note.kind === "hold") {
-        const holdHeight = Math.max(28, ((note.endTime - note.time) / travelTime) * (hitY - laneTop));
-        sprite.body.setVisible(true).setSize(16, holdHeight).setDisplaySize(16, holdHeight).setPosition(0, -holdHeight / 2);
-      } else {
-        sprite.body.setVisible(false);
-      }
-    });
-    this.noteSprites.forEach((entry, id) => {
-      if (!visibleIds.has(id)) {
-        entry.container.setVisible(false);
-      }
-    });
-  }
-
-  getNoteSprite(note) {
-    const existing = this.noteSprites.get(note.id);
-    if (existing) {
-      existing.container.setVisible(true);
-      return existing;
-    }
-    const color = note.kind === "hold" ? 0x91e2ff : note.direction ? 0xffd166 : 0xff7aa8;
-    const body = this.add.rectangle(0, 0, 16, 40, color, 0.42).setVisible(false);
-    const circle = this.add.circle(0, 0, 18 * (note.size || 1), color, 1);
-    const label = note.direction
-      ? this.add.text(0, -2, note.direction === "left" ? "<" : ">", this.getHudTextStyle(16)).setOrigin(0.5)
-      : this.add.text(0, -1, note.kind === "hold" ? "H" : "", this.getHudTextStyle(12)).setOrigin(0.5);
-    const container = this.add.container(0, 0, [body, circle, label]);
-    this.noteLayer.add(container);
-    const entry = { container, body, circle, label };
-    this.noteSprites.set(note.id, entry);
-    return entry;
-  }
-
-  renderHud() {
-    const state = this.state;
-    this.hud.score.setText(formatScore(state.score));
-    this.hud.combo.setText(`COMBO ${state.combo}`);
-    this.hud.lives.setText(`LIFE ${state.lives}/${state.maxLives}`);
-    this.hud.judgement.setText(state.judgementText || "");
-    const hint = this.inputMode === "keyboard"
-      ? "Click or SPACE/J/K/F/D · swipe or ←/→ · ESC pause"
-      : "Tap/click to hit · swipe left/right for direction · hold and release";
-    this.hud.hint.setText(this.introActive ? "准备..." : hint);
-    if (this.failureSequence.active) {
-      this.hud.judgement.setText(this.failureSequence.kind === "completed" ? "COMPLETED" : "FAILED");
-    }
-  }
-
-  renderEffects() {
-    const now = this.state.currentTime;
-    const fresh = this.lastJudgementResult && now - this.lastJudgementAt < 0.16;
-    this.rabbit.setTexture(fresh ? ASSET_KEYS.rabbitWand : ASSET_KEYS.rabbit);
-    if (fresh && this.lastJudgementResult?.type !== "miss" && this.lastJudgementResult?.type !== "empty") {
-      this.pig.setTexture(ASSET_KEYS.pigLaunch);
-      this.pig.rotation = Math.sin(now * 18) * 0.08;
+  drawFrame() {
+    if (!this.viewport || !this.frameCtx || !this.state) return;
+    try {
+      drawGameFrame(this.frameCtx, this.viewport, this.state, this.buildUiState());
+    } catch (error) {
+      console.error("render frame failed", error);
       return;
     }
-    const best = peekBestNote(this.state, this.state.currentTime).note;
-    if (best?.direction === "left") {
-      this.pig.setTexture(ASSET_KEYS.pigLeft);
-    } else if (best?.direction === "right") {
-      this.pig.setTexture(ASSET_KEYS.pigRight);
-    } else {
-      this.pig.setTexture(ASSET_KEYS.pig);
-    }
-    this.pig.rotation = 0;
+    this.frameTexture?.refresh();
+  }
+
+  buildUiState() {
+    const introProgress = this.introActive ? this.introElapsed / INTRO_DURATION : 1;
+    const sceneTime = this.started
+      ? this.introActive
+        ? this.introElapsed
+        : this.state.currentTime
+      : 0;
+    const failure = this.failureSequence;
+    return {
+      paused: this.isPaused,
+      useDomPauseOverlay: false,
+      gameOverOverlayActive: !!failure?.active,
+      gameOverOverlayProgress: failure?.active
+        ? failure.elapsed / Math.max(0.001, failure.duration)
+        : 0,
+      gameOverOverlayKind: failure?.kind || "failed",
+      selectedSongId: this.song.id,
+      songTitle: this.song.title,
+      songDifficultyLabel: this.song.difficultyLabel || "",
+      songCoverImage: this.songCoverImage,
+      characterSprites: this.characterSprites,
+      crowdMotion: this.crowdMotion,
+      audioDebugText: "",
+      introProgress,
+      sceneTime,
+      magicVisualTime: this.magicVisualTime,
+      showLaneBase: false,
+      gameplayActive: this.started && !this.introActive,
+      // Tier 2 will drive these from real state machines; static defaults keep
+      // the scene rendering correctly without animating yet.
+      showTutorialHints: false,
+      rabbitWandAnimation: this.rabbitWandAnimation,
+      rabbitWandSwingVariant: RABBIT_WAND_SWING_VARIANT,
+      startTheme: this.startTheme,
+      inputMode: this.inputMode,
+      loadingColors: getStartThemeLoadingColors(this.startTheme),
+      sceneOnly: false,
+    };
   }
 
   installInputEvents() {
@@ -582,10 +422,6 @@ export class GameScene extends Phaser.Scene {
     window.removeEventListener("pagehide", this.handlePageHide);
     window.removeEventListener("blur", this.handleWindowBlur);
     this.lifecycleEventsInstalled = false;
-  }
-
-  canPauseFromButton() {
-    return this.started && !this.introActive && !this.failureSequence.active && !this.resultPending && !this.isPaused;
   }
 
   isGameplayActive() {
@@ -753,7 +589,6 @@ export class GameScene extends Phaser.Scene {
     this.isPaused = true;
     this.pauseReason = reason;
     this.audio.pause();
-    this.setPauseOverlay(true, reason);
   }
 
   async resumeGame() {
@@ -762,7 +597,6 @@ export class GameScene extends Phaser.Scene {
     if (this.introActive) {
       this.isPaused = false;
       this.pauseReason = null;
-      this.setPauseOverlay(false);
       return;
     }
     try {
@@ -770,20 +604,10 @@ export class GameScene extends Phaser.Scene {
       if (this.disposed) return;
       this.isPaused = false;
       this.pauseReason = null;
-      this.setPauseOverlay(false);
     } catch (error) {
       if (this.disposed) return;
       this.options.onError?.(error);
     }
-  }
-
-  setPauseOverlay(visible, reason = "user") {
-    this.hud.overlay.setVisible(visible).setAlpha(visible ? 0.72 : 0);
-    this.hud.overlayTitle.setVisible(visible).setText(reason === "system" ? "PAUSED" : "PAUSED");
-    this.hud.overlaySub.setVisible(visible).setText(reason === "system" ? "点 GO 或 Enter 继续" : "HOME · RETRY · GO");
-    this.hud.pauseHome.setVisible(visible);
-    this.hud.pauseRestart.setVisible(visible);
-    this.hud.pauseResume.setVisible(visible);
   }
 
   goHome() {
@@ -824,17 +648,19 @@ export class GameScene extends Phaser.Scene {
     this.options.onFinish?.(summary);
   }
 
-  clearNotes() {
-    this.noteSprites.forEach((entry) => entry.container.destroy());
-    this.noteSprites.clear();
-  }
-
   shutdown() {
     if (this.disposed) return;
     this.disposed = true;
     this.scale?.off("resize", this.handleResize, this);
     this.removeInputEvents();
     this.removeLifecycleEvents();
+    if (this.textures?.exists(FRAME_TEXTURE_KEY)) {
+      this.textures.remove(FRAME_TEXTURE_KEY);
+    }
+    this.frameTexture = null;
+    this.frameImage = null;
+    this.frameCtx = null;
+    this.frameCanvas = null;
     this.audio?.destroy();
   }
 }
