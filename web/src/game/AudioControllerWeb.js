@@ -9,6 +9,9 @@ const AUDIO_UNLOCK_PULSE_GAIN = 0.00001;
 const AUDIO_RESUME_TIMEOUT_MS = 700;
 const AUDIO_CLOCK_PROBE_DELAY_MS = 160;
 const AUDIO_BUFFER_LOAD_TIMEOUT_MS = 12000;
+const DEFAULT_MUSIC_VOLUME = 1;
+const MIN_MUSIC_VOLUME = 0;
+const MAX_MUSIC_VOLUME = 2;
 export const AUDIO_DEBUG_EVENT_NAME = "bunnies-audio-debug";
 let runningContextPromise = null;
 let nextAudioContextId = 1;
@@ -42,6 +45,18 @@ function getAudioErrorDetails(error) {
     errorName: error.name || "Error",
     errorMessage: error.message || String(error),
   };
+}
+
+export function normalizeMusicVolume(value, fallback = DEFAULT_MUSIC_VOLUME) {
+  const numericValue = Number(value);
+  const numericFallback = Number(fallback);
+  const safeFallback =
+    Number.isFinite(numericFallback) && numericFallback >= MIN_MUSIC_VOLUME
+      ? numericFallback
+      : DEFAULT_MUSIC_VOLUME;
+  const nextValue = Number.isFinite(numericValue) ? numericValue : safeFallback;
+
+  return Math.max(MIN_MUSIC_VOLUME, Math.min(MAX_MUSIC_VOLUME, nextValue));
 }
 
 function waitForAudioBufferTimeout(src) {
@@ -501,6 +516,7 @@ export class AudioControllerWeb {
     this.chart = null;
     this.buffer = null;
     this.source = null;
+    this.musicGain = null;
     this.startedAt = 0;
     this.offset = 0;
     this.pausedAt = 0;
@@ -619,8 +635,11 @@ export class AudioControllerWeb {
     }
     this.destroySource();
     const source = this.audioContext.createBufferSource();
+    const musicGain = this.audioContext.createGain();
     source.buffer = this.buffer;
-    source.connect(this.audioContext.destination);
+    musicGain.gain.value = normalizeMusicVolume(this.chart?.musicVolume);
+    source.connect(musicGain);
+    musicGain.connect(this.audioContext.destination);
     source.onended = () => {
       if (!this.playing) return;
       this.playing = false;
@@ -633,6 +652,7 @@ export class AudioControllerWeb {
     this.pausedAt = 0;
     this.playing = true;
     this.source = source;
+    this.musicGain = musicGain;
     try {
       source.start(0, this.offset);
       emitAudioDebug("audio.playFromOffset", {
@@ -750,14 +770,29 @@ export class AudioControllerWeb {
   }
 
   destroySource() {
-    if (!this.source) return;
-    try {
-      this.source.onended = null;
-      this.source.stop();
-    } catch (error) {
-      // Source may already have ended.
+    if (this.source) {
+      try {
+        this.source.onended = null;
+        this.source.stop();
+      } catch (error) {
+        // Source may already have ended.
+      }
+      try {
+        this.source.disconnect();
+      } catch (error) {
+        // Source may already be disconnected.
+      }
     }
     this.source = null;
+
+    if (this.musicGain) {
+      try {
+        this.musicGain.disconnect();
+      } catch (error) {
+        // Gain may already be disconnected.
+      }
+    }
+    this.musicGain = null;
   }
 
   destroy() {
@@ -803,6 +838,7 @@ export class AudioControllerWeb {
       startedAt: Number((this.startedAt || 0).toFixed(4)),
       hasSource: !!this.source,
       hasBuffer: !!this.buffer,
+      musicVolume: Number(normalizeMusicVolume(this.chart?.musicVolume).toFixed(3)),
       playbackRequestId: this.playbackRequestId,
       chartTime: Number(this.getCurrentChartTime().toFixed(4)),
     };

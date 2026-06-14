@@ -143,11 +143,58 @@
                 <span id="fallSpeedValue" class="fall-speed-value">1.10x</span>
               </div>
             </label>
+            <label class="field field-full fall-speed-field">
+              <span>歌曲音量</span>
+              <div class="fall-speed-control">
+                <input
+                  id="musicVolumeRange"
+                  type="range"
+                  min="0"
+                  max="1.2"
+                  step="0.01"
+                  value="1"
+                />
+                <input
+                  id="musicVolumeInput"
+                  type="number"
+                  min="0"
+                  max="1.2"
+                  step="0.01"
+                  value="1.00"
+                />
+                <span id="musicVolumeValue" class="fall-speed-value">1.00x</span>
+              </div>
+            </label>
           </section>
 
           <section id="emptyState" class="inspector-section empty-state">
             先点一个 note，或者双击时间线加一个。
           </section>
+
+          <form id="bulkNoteForm" class="inspector-form hidden" autocomplete="off">
+            <section class="inspector-section">
+              <div class="section-title">多选 note</div>
+              <div id="bulkSelectedSummary" class="selected-summary"></div>
+            </section>
+
+            <section class="inspector-section form-grid">
+              <label class="field field-full">
+                <span>全部转为</span>
+                <select id="bulkNoteKind">
+                  <option value="tap">点按</option>
+                  <option value="hold">长按</option>
+                  <option value="tap-left">左方向猪</option>
+                  <option value="tap-right">右方向猪</option>
+                </select>
+              </label>
+            </section>
+
+            <section class="inspector-section action-row">
+              <button id="applyBulkNoteKind" type="button" class="button button-primary">
+                应用到全部选中
+              </button>
+            </section>
+          </form>
 
           <form id="noteForm" class="inspector-form hidden" autocomplete="off">
             <section class="inspector-section">

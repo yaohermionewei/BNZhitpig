@@ -9,6 +9,9 @@ const AUDIO_DIR = path.join(ROOT, "web", "public", "assets", "audio");
 const DEFAULT_NOTE_FALL_SPEED_MULTIPLIER = 1.1;
 const MIN_NOTE_FALL_SPEED_MULTIPLIER = 0.5;
 const MAX_NOTE_FALL_SPEED_MULTIPLIER = 1.3;
+const DEFAULT_MUSIC_VOLUME = 1;
+const MIN_MUSIC_VOLUME = 0;
+const MAX_MUSIC_VOLUME = 1.2;
 const CHART_CATALOG = [
   {
     id: "ditto/default",
@@ -22,6 +25,7 @@ const CHART_CATALOG = [
       bpmHint: 134,
       audioSrc: "/assets/audio/ditto.m4a",
       noteFallSpeedMultiplier: 1.1,
+      musicVolume: 1,
     },
     sourcePath: path.join(ROOT, "shared", "charts", "ditto.editable.chart.json"),
     targets: [
@@ -58,7 +62,8 @@ const CHART_CATALOG = [
       title: "Super Shy [Easy]",
       bpmHint: 150,
       audioSrc: "/assets/audio/super-shy.mp3",
-      noteFallSpeedMultiplier: 0.85,
+      noteFallSpeedMultiplier: 0.8,
+      musicVolume: 0.8,
     },
     sourcePath: path.join(ROOT, "shared", "charts", "supershy.easy.editable.chart.json"),
     targets: [
@@ -91,6 +96,7 @@ const CHART_CATALOG = [
       bpmHint: 150,
       audioSrc: "/assets/audio/super-shy.mp3",
       noteFallSpeedMultiplier: 0.78,
+      musicVolume: 0.8,
     },
     sourcePath: path.join(ROOT, "shared", "charts", "supershy.normal.editable.chart.json"),
     targets: [
@@ -198,6 +204,7 @@ function getChartCatalogPayload() {
     chartSourcePath: path.relative(ROOT, entry.sourcePath),
     chartPaths: entry.targets.map((target) => path.relative(ROOT, target.path)),
     audioUrl: entry.defaults.audioSrc,
+    musicVolume: entry.defaults.musicVolume,
   }));
 }
 
@@ -221,6 +228,25 @@ function normalizeNoteFallSpeedMultiplier(value, fallback = DEFAULT_NOTE_FALL_SP
     !Number.isFinite(numericValue) ||
     numericValue < MIN_NOTE_FALL_SPEED_MULTIPLIER ||
     numericValue > MAX_NOTE_FALL_SPEED_MULTIPLIER
+  ) {
+    return Number(safeFallback.toFixed(2));
+  }
+
+  return Number(numericValue.toFixed(2));
+}
+
+function normalizeMusicVolume(value, fallback = DEFAULT_MUSIC_VOLUME) {
+  const numericValue = Number(value);
+  const numericFallback = Number(fallback);
+  const safeFallback =
+    Number.isFinite(numericFallback) && numericFallback >= MIN_MUSIC_VOLUME
+      ? numericFallback
+      : DEFAULT_MUSIC_VOLUME;
+
+  if (
+    !Number.isFinite(numericValue) ||
+    numericValue < MIN_MUSIC_VOLUME ||
+    numericValue > MAX_MUSIC_VOLUME
   ) {
     return Number(safeFallback.toFixed(2));
   }
@@ -315,6 +341,7 @@ function normalizeChart(rawChart, chartEntry = getChartEntry()) {
       source.noteFallSpeedMultiplier,
       chartEntry.defaults.noteFallSpeedMultiplier
     ),
+    musicVolume: normalizeMusicVolume(source.musicVolume, chartEntry.defaults.musicVolume),
     duration: roundTime(duration),
     windows: {
       perfect: Number(source.windows && source.windows.perfect) || 0.07,
@@ -463,8 +490,18 @@ function resolveStaticPath(urlPath) {
   }
 
   if (urlPath.startsWith("/assets/audio/")) {
-    const fileName = path.basename(urlPath);
-    return path.join(AUDIO_DIR, fileName);
+    const relativeAudioPath = decodeURIComponent(urlPath.replace(/^\/assets\/audio\/+/, ""));
+    const safePath = path.normalize(relativeAudioPath);
+    if (safePath.startsWith("..") || path.isAbsolute(safePath)) {
+      return null;
+    }
+
+    const filePath = path.join(AUDIO_DIR, safePath);
+    if (!filePath.startsWith(AUDIO_DIR)) {
+      return null;
+    }
+
+    return filePath;
   }
 
   const safePath = path.normalize(urlPath.replace(/^\/+/, ""));

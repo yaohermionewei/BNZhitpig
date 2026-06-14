@@ -5,6 +5,7 @@ module.exports = {
   "audioSrc": "/assets/audio/super-shy.mp3",
   "audioStartTime": 9,
   "noteFallSpeedMultiplier": 0.8,
+  "musicVolume": 0.8,
   "duration": 147.512,
   "windows": {
     "perfect": 0.07,

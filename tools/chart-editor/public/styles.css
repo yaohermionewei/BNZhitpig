@@ -797,7 +797,8 @@ input[type="checkbox"] {
 .note-hold {
   position: relative;
   --anchor-color: rgba(132, 84, 21, 0.88);
-  --hold-tail-gap: 4px;
+  --hold-anchor-size: 6px;
+  --hold-anchor-center: 16px;
   min-width: 32px;
   height: 32px;
   border-radius: 999px;
@@ -808,7 +809,7 @@ input[type="checkbox"] {
 .note-hold::before {
   content: "";
   position: absolute;
-  inset: 0 var(--hold-tail-gap) 0 0;
+  inset: 0;
   border-radius: inherit;
   border: 1px solid rgba(255, 232, 182, 0.18);
   background:
@@ -825,18 +826,25 @@ input[type="checkbox"] {
   pointer-events: none;
 }
 
-.note-hold::after {
-  content: "";
+.note-hold-anchor {
   position: absolute;
-  left: 15px;
   top: 50%;
-  width: 6px;
-  height: 6px;
+  width: var(--hold-anchor-size);
+  height: var(--hold-anchor-size);
   border-radius: 50%;
   background: var(--anchor-color);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
   transform: translate(-50%, -50%);
   pointer-events: none;
+  z-index: 1;
+}
+
+.note-hold-anchor-head {
+  left: var(--hold-anchor-center);
+}
+
+.note-hold-anchor-tail {
+  left: calc(100% - var(--hold-anchor-center));
 }
 
 .note-selected .note-hold::before {
@@ -850,6 +858,7 @@ input[type="checkbox"] {
   position: absolute;
   top: 1px;
   right: -6px;
+  left: auto;
   width: 12px;
   height: 30px;
   border-radius: 999px;
@@ -1058,6 +1067,10 @@ input[type="checkbox"] {
   color: var(--text-1);
   font-size: 14px;
   line-height: 1.7;
+}
+
+.inspector-form {
+  display: contents;
 }
 
 .empty-state {

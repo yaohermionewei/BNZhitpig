@@ -1,8 +1,8 @@
 // Keep the song a bit lower in the editor so hit cues are easier to judge by ear.
-const EDITOR_MUSIC_VOLUME = 0.28;
-const EDITOR_SFX_VOLUME = 1;
-const HOLD_SUSTAIN_VOLUME = 0.095;
-const HOLD_NOTE_HEAD_SIZE = 30;
+const EDITOR_MONITOR_VOLUME = 0.28;
+const GAME_HIT_EFFECT_VOLUME = 3.6;
+const HIT_CUE_SRC = "/assets/audio/hit-lab/freesound-517744-punch-short.wav";
+const HOLD_NOTE_HEAD_SIZE = 32;
 const HOLD_NOTE_HEAD_RADIUS = HOLD_NOTE_HEAD_SIZE / 2;
 const EMPTY_SELECTION_TEXT = "先点一个 note，或者双击时间线加一个。";
 const DRAG_THRESHOLD_PX = 6;
@@ -13,6 +13,9 @@ const TIMELINE_START_PADDING_PX = 88;
 const DEFAULT_NOTE_FALL_SPEED_MULTIPLIER = 1.1;
 const MIN_NOTE_FALL_SPEED_MULTIPLIER = 0.5;
 const MAX_NOTE_FALL_SPEED_MULTIPLIER = 1.3;
+const DEFAULT_MUSIC_VOLUME = 1;
+const MIN_MUSIC_VOLUME = 0;
+const MAX_MUSIC_VOLUME = 1.2;
 const LAST_SELECTED_CHART_STORAGE_KEY = "rhythm-chart-editor:last-selected-chart-id";
 const TIMELINE_ZOOM_STORAGE_KEY = "rhythm-chart-editor:timeline-zoom";
 
@@ -32,9 +35,9 @@ const state = {
   playheadTime: 0,
   pendingAudioTime: null,
   lastCueChartTime: 0,
-  sfxPlayers: [],
-  sfxPlayerIndex: 0,
-  holdPreview: null,
+  hitCueContext: null,
+  hitCueBuffer: null,
+  hitCueBufferPromise: null,
   history: [],
   historyIndex: -1,
   savedHistoryIndex: -1,
@@ -56,6 +59,10 @@ const dom = {
   duplicateButton: document.querySelector("#duplicateButton"),
   emptyState: document.querySelector("#emptyState"),
   followToggle: document.querySelector("#followToggle"),
+  bulkNoteForm: document.querySelector("#bulkNoteForm"),
+  bulkNoteKind: document.querySelector("#bulkNoteKind"),
+  bulkSelectedSummary: document.querySelector("#bulkSelectedSummary"),
+  applyBulkNoteKind: document.querySelector("#applyBulkNoteKind"),
   noteAccent: document.querySelector("#noteAccent"),
   noteEndTime: document.querySelector("#noteEndTime"),
   noteEndWrap: document.querySelector("#noteEndWrap"),
@@ -78,6 +85,9 @@ const dom = {
   fallSpeedInput: document.querySelector("#fallSpeedInput"),
   fallSpeedRange: document.querySelector("#fallSpeedRange"),
   fallSpeedValue: document.querySelector("#fallSpeedValue"),
+  musicVolumeInput: document.querySelector("#musicVolumeInput"),
+  musicVolumeRange: document.querySelector("#musicVolumeRange"),
+  musicVolumeValue: document.querySelector("#musicVolumeValue"),
   snapSelectionToPlayhead: document.querySelector("#snapSelectionToPlayhead"),
   songSelect: document.querySelector("#songSelect"),
   stopButton: document.querySelector("#stopButton"),
@@ -111,13 +121,6 @@ function formatClock(timeInSeconds) {
   ).padStart(2, "0")}`;
 }
 
-function createSfxPlayer(src, volume = 0.5) {
-  const player = new Audio(src);
-  player.preload = "auto";
-  player.volume = volume;
-  return player;
-}
-
 function roundTime(value) {
   return Number(Number(value).toFixed(3));
 }
@@ -136,6 +139,18 @@ function normalizeNoteFallSpeedMultiplier(value, fallback = DEFAULT_NOTE_FALL_SP
       Math.min(MAX_NOTE_FALL_SPEED_MULTIPLIER, nextValue)
     ).toFixed(2)
   );
+}
+
+function normalizeMusicVolume(value, fallback = DEFAULT_MUSIC_VOLUME) {
+  const numericValue = Number(value);
+  const numericFallback = Number(fallback);
+  const safeFallback =
+    Number.isFinite(numericFallback) && numericFallback >= MIN_MUSIC_VOLUME
+      ? numericFallback
+      : DEFAULT_MUSIC_VOLUME;
+  const nextValue = Number.isFinite(numericValue) ? numericValue : safeFallback;
+
+  return Number(Math.max(MIN_MUSIC_VOLUME, Math.min(MAX_MUSIC_VOLUME, nextValue)).toFixed(2));
 }
 
 function chartTimeToAudioTime(chartTime) {
@@ -416,159 +431,104 @@ function getChartTime() {
   return state.playheadTime || 0;
 }
 
-function ensureSfxPlayers() {
-  if (state.sfxPlayers.length) {
-    return;
+function getOrCreateHitCueContext() {
+  if (state.hitCueContext && state.hitCueContext.state !== "closed") {
+    return state.hitCueContext;
   }
-
-  state.sfxPlayers = Array.from({ length: 10 }, () =>
-    createSfxPlayer("/assets/audio/hit-lab/freesound-517744-punch-short.wav", EDITOR_SFX_VOLUME)
-  );
-  state.sfxPlayerIndex = 0;
-}
-
-function ensureHoldPreview() {
-  if (state.holdPreview) {
-    return state.holdPreview;
-  }
-
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) {
     return null;
   }
 
-  const context = new AudioContextClass();
-  const output = context.createGain();
-  const filter = context.createBiquadFilter();
-  const tone = context.createOscillator();
-  const subTone = context.createOscillator();
-  const subGain = context.createGain();
-  const lfo = context.createOscillator();
-  const lfoGain = context.createGain();
-
-  output.gain.value = 0;
-  filter.type = "lowpass";
-  filter.frequency.value = 980;
-  filter.Q.value = 0.42;
-
-  tone.type = "triangle";
-  tone.frequency.value = 329.63;
-
-  subTone.type = "sine";
-  subTone.frequency.value = 164.81;
-  subGain.gain.value = 0.48;
-
-  lfo.type = "sine";
-  lfo.frequency.value = 3.2;
-  lfoGain.gain.value = 0.45;
-
-  lfo.connect(lfoGain);
-  lfoGain.connect(tone.frequency);
-  tone.connect(filter);
-  subTone.connect(subGain);
-  subGain.connect(filter);
-  filter.connect(output);
-  output.connect(context.destination);
-
-  tone.start();
-  subTone.start();
-  lfo.start();
-
-  state.holdPreview = {
-    context,
-    output,
-    active: false,
-  };
-
-  return state.holdPreview;
-}
-
-async function resumeHoldPreview() {
-  const holdPreview = ensureHoldPreview();
-  if (!holdPreview) {
-    return;
-  }
-
-  if (holdPreview.context.state === "suspended") {
-    try {
-      await holdPreview.context.resume();
-    } catch (error) {
-      console.error("Hold preview resume error", error);
-    }
-  }
-}
-
-function startHoldCue() {
-  const holdPreview = ensureHoldPreview();
-  if (!holdPreview) {
-    return;
-  }
-
-  if (holdPreview.context.state === "suspended") {
-    holdPreview.context.resume().catch(() => {});
-  }
-
-  if (holdPreview.active) {
-    return;
-  }
-
-  holdPreview.active = true;
-  const now = holdPreview.context.currentTime;
-  const currentGain = holdPreview.output.gain.value;
-  holdPreview.output.gain.cancelScheduledValues(now);
-  holdPreview.output.gain.setValueAtTime(currentGain, now);
-  holdPreview.output.gain.linearRampToValueAtTime(HOLD_SUSTAIN_VOLUME, now + 0.025);
-}
-
-function stopHoldCue() {
-  const holdPreview = state.holdPreview;
-  if (!holdPreview) {
-    return;
-  }
-
-  if (!holdPreview.active && holdPreview.output.gain.value <= 0.0001) {
-    return;
-  }
-
-  holdPreview.active = false;
-  const now = holdPreview.context.currentTime;
-  const currentGain = holdPreview.output.gain.value;
-  holdPreview.output.gain.cancelScheduledValues(now);
-  holdPreview.output.gain.setValueAtTime(currentGain, now);
-  holdPreview.output.gain.linearRampToValueAtTime(0, now + 0.07);
-}
-
-function updateHoldCue(chartTime) {
-  const epsilon = 0.001;
-  const hasActiveHold = state.notes.some(
-    (note) =>
-      note.kind === "hold" &&
-      note.time <= chartTime + epsilon &&
-      note.endTime > chartTime + epsilon
-  );
-
-  if (hasActiveHold) {
-    startHoldCue();
-  } else {
-    stopHoldCue();
-  }
+  state.hitCueContext = new AudioContextClass();
+  state.hitCueBuffer = null;
+  state.hitCueBufferPromise = null;
+  return state.hitCueContext;
 }
 
 function resetCueTracking(chartTime = state.playheadTime || 0) {
   state.lastCueChartTime = chartTime;
 }
 
+async function ensureHitCueBuffer() {
+  if (state.hitCueBuffer) {
+    return state.hitCueBuffer;
+  }
+
+  const context = getOrCreateHitCueContext();
+  if (!context) {
+    return null;
+  }
+
+  if (!state.hitCueBufferPromise) {
+    state.hitCueBufferPromise = fetch(HIT_CUE_SRC)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load hit cue: ${HIT_CUE_SRC}`);
+        }
+        return response.arrayBuffer();
+      })
+      .then((arrayBuffer) => context.decodeAudioData(arrayBuffer))
+      .then((buffer) => {
+        state.hitCueBuffer = buffer;
+        return buffer;
+      })
+      .catch((error) => {
+        state.hitCueBufferPromise = null;
+        throw error;
+      });
+  }
+
+  return state.hitCueBufferPromise;
+}
+
+async function resumeHitCueContext() {
+  const context = getOrCreateHitCueContext();
+  if (!context) {
+    return null;
+  }
+
+  if (context.state === "suspended") {
+    await context.resume();
+  }
+
+  return context;
+}
+
+async function prepareHitCuePreview() {
+  try {
+    await resumeHitCueContext();
+    await ensureHitCueBuffer();
+  } catch (error) {
+    console.error("Hit cue prepare error", error);
+  }
+}
+
 function playHitCue() {
-  ensureSfxPlayers();
-  const player = state.sfxPlayers[state.sfxPlayerIndex];
-  state.sfxPlayerIndex = (state.sfxPlayerIndex + 1) % state.sfxPlayers.length;
+  const context = state.hitCueContext;
+  const buffer = state.hitCueBuffer;
+
+  if (!context || context.state !== "running" || !buffer) {
+    prepareHitCuePreview();
+    return;
+  }
 
   try {
-    player.currentTime = 0;
-    const result = player.play();
-    if (result && typeof result.catch === "function") {
-      result.catch(() => {});
-    }
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    gain.gain.value = GAME_HIT_EFFECT_VOLUME * EDITOR_MONITOR_VOLUME;
+    source.connect(gain);
+    gain.connect(context.destination);
+    source.start(0);
+    source.onended = () => {
+      try {
+        source.disconnect();
+        gain.disconnect();
+      } catch (error) {
+        // Preview cues are disposable.
+      }
+    };
   } catch (error) {
     console.error("Hit cue preview error", error);
   }
@@ -581,16 +541,10 @@ function playCrossedNoteCues(previousTime, currentTime) {
 
   const epsilon = 0.001;
   state.notes.forEach((note) => {
-    if (
-      note.kind !== "hold" &&
-      note.time > previousTime + epsilon &&
-      note.time <= currentTime + epsilon
-    ) {
+    if (note.time > previousTime + epsilon && note.time <= currentTime + epsilon) {
       playHitCue();
     }
   });
-
-  updateHoldCue(currentTime);
 }
 
 function setSaveStatus(message, isMuted = false) {
@@ -727,6 +681,14 @@ function getCurrentNoteFallSpeedMultiplier() {
   return normalizeNoteFallSpeedMultiplier(state.chart?.noteFallSpeedMultiplier);
 }
 
+function getCurrentMusicVolume() {
+  return normalizeMusicVolume(state.chart?.musicVolume);
+}
+
+function applyEditorAudioVolume() {
+  dom.audio.volume = EDITOR_MONITOR_VOLUME * getCurrentMusicVolume();
+}
+
 function setChartFallSpeedMultiplier(value, options = {}) {
   if (!state.chart) {
     return;
@@ -741,9 +703,25 @@ function setChartFallSpeedMultiplier(value, options = {}) {
   }
 }
 
+function setChartMusicVolume(value, options = {}) {
+  if (!state.chart) {
+    return;
+  }
+
+  const nextValue = normalizeMusicVolume(value, getCurrentMusicVolume());
+  state.chart.musicVolume = nextValue;
+  applyEditorAudioVolume();
+  renderMusicVolumeControl();
+
+  if (!options.silent) {
+    pushHistory();
+  }
+}
+
 function createHistorySnapshot() {
   return {
     noteFallSpeedMultiplier: getCurrentNoteFallSpeedMultiplier(),
+    musicVolume: getCurrentMusicVolume(),
     notes: state.notes.map((note) => cloneLocalNote(note)),
     selectedId: state.selectedId,
     selectedIds: getSelectedNoteIds(),
@@ -825,6 +803,10 @@ function applyHistorySnapshot(snapshot) {
       snapshot.noteFallSpeedMultiplier
     );
   }
+  if (state.chart && snapshot.musicVolume !== undefined) {
+    state.chart.musicVolume = normalizeMusicVolume(snapshot.musicVolume);
+    applyEditorAudioVolume();
+  }
   state.notes = snapshot.notes.map((note) => cloneLocalNote(note));
   state.selectedId = snapshot.selectedId;
   state.selectedIds = Array.isArray(snapshot.selectedIds) ? [...snapshot.selectedIds] : [];
@@ -900,6 +882,7 @@ function renderInspector() {
   if (!selectedNotes.length) {
     dom.emptyState.textContent = EMPTY_SELECTION_TEXT;
     dom.emptyState.classList.remove("hidden");
+    dom.bulkNoteForm.classList.add("hidden");
     dom.noteForm.classList.add("hidden");
     return;
   }
@@ -907,14 +890,17 @@ function renderInspector() {
   if (selectedNotes.length > 1) {
     const firstTime = Math.min(...selectedNotes.map((note) => note.time));
     const lastTime = Math.max(...selectedNotes.map((note) => getNoteEndTime(note)));
-    dom.emptyState.textContent = `已选 ${selectedNotes.length} 个 note · ${formatClock(
+    dom.bulkSelectedSummary.textContent = `已选 ${selectedNotes.length} 个 note · ${formatClock(
       firstTime
-    )} -> ${formatClock(lastTime)}。现在可以直接拖动任意一个已选 note 一起移动；Delete 可整组删除。`;
-    dom.emptyState.classList.remove("hidden");
+    )} -> ${formatClock(lastTime)}。可以直接拖动任意一个已选 note 一起移动；Delete 可整组删除。`;
+    dom.bulkNoteKind.value = getEditorNoteType(selectedNotes[0]);
+    dom.emptyState.classList.add("hidden");
+    dom.bulkNoteForm.classList.remove("hidden");
     dom.noteForm.classList.add("hidden");
     return;
   }
 
+  dom.bulkNoteForm.classList.add("hidden");
   loadNoteForm(selectedNotes[0]);
 }
 
@@ -926,10 +912,11 @@ function renderMeta() {
 
   const holdCount = state.notes.filter((note) => note.kind === "hold").length;
   const fallSpeed = getCurrentNoteFallSpeedMultiplier();
+  const musicVolume = getCurrentMusicVolume();
   const dirtyTag = state.dirty ? " · 未保存" : "";
   dom.chartMeta.textContent = `${state.chart.title} · ${state.notes.length} notes · ${holdCount} holds · 偏移 ${(
     state.chart.audioStartTime || 0
-  ).toFixed(3)}s · 下落 ${fallSpeed.toFixed(2)}x${dirtyTag}`;
+  ).toFixed(3)}s · 下落 ${fallSpeed.toFixed(2)}x · 歌曲 ${musicVolume.toFixed(2)}x${dirtyTag}`;
 }
 
 function renderFallSpeedControl() {
@@ -941,6 +928,17 @@ function renderFallSpeedControl() {
   dom.fallSpeedRange.value = fallSpeed.toFixed(2);
   dom.fallSpeedInput.value = fallSpeed.toFixed(2);
   dom.fallSpeedValue.textContent = `${fallSpeed.toFixed(2)}x`;
+}
+
+function renderMusicVolumeControl() {
+  if (!dom.musicVolumeRange || !dom.musicVolumeInput || !dom.musicVolumeValue) {
+    return;
+  }
+
+  const musicVolume = getCurrentMusicVolume();
+  dom.musicVolumeRange.value = musicVolume.toFixed(2);
+  dom.musicVolumeInput.value = musicVolume.toFixed(2);
+  dom.musicVolumeValue.textContent = `${musicVolume.toFixed(2)}x`;
 }
 
 function renderPlaybackTime() {
@@ -977,15 +975,22 @@ function createNoteElement(note, noteOrder) {
   wrapper.dataset.noteId = String(note._id);
 
   if (note.kind === "hold") {
+    const holdDurationPx = Math.max(0, (note.endTime - note.time) * state.pxPerSecond);
     wrapper.style.left = `${x}px`;
-    wrapper.style.transform = "translateY(-50%)";
+    wrapper.style.transform = `translate(-${HOLD_NOTE_HEAD_RADIUS}px, -50%)`;
 
     const body = document.createElement("div");
     body.className = "note-hold";
-    body.style.width = `${Math.max(
-      HOLD_NOTE_HEAD_SIZE,
-      (note.endTime - note.time) * state.pxPerSecond
-    )}px`;
+    body.style.width = `${HOLD_NOTE_HEAD_SIZE + holdDurationPx}px`;
+
+    const headAnchor = document.createElement("div");
+    headAnchor.className = "note-hold-anchor note-hold-anchor-head";
+    body.appendChild(headAnchor);
+
+    const tailAnchor = document.createElement("div");
+    tailAnchor.className = "note-hold-anchor note-hold-anchor-tail";
+    body.appendChild(tailAnchor);
+
     wrapper.appendChild(body);
 
     const handle = document.createElement("div");
@@ -1050,6 +1055,7 @@ function renderAll() {
   renderRuler();
   renderNotes();
   renderFallSpeedControl();
+  renderMusicVolumeControl();
   renderPlaybackTime();
   renderPlayhead();
 }
@@ -1075,14 +1081,12 @@ function seekToChartTime(chartTime) {
     state.pendingAudioTime = audioTime;
   }
 
-  if (dom.audio.paused) {
-    stopHoldCue();
-  } else {
-    updateHoldCue(bounded);
-  }
-
   renderPlaybackTime();
   renderPlayhead();
+}
+
+function scrollTimelineToStart() {
+  dom.timelineScroll.scrollLeft = 0;
 }
 
 function addNoteAtTime(chartTime, noteType = EDITOR_NOTE_TYPES.TAP) {
@@ -1338,7 +1342,7 @@ async function playFromCurrentPlayhead() {
   const startChartTime = roundTime(Math.max(0, state.playheadTime || 0));
   seekToChartTime(startChartTime);
   resetCueTracking(startChartTime);
-  await resumeHoldPreview();
+  await prepareHitCuePreview();
 
   try {
     const result = dom.audio.play();
@@ -1411,7 +1415,6 @@ function hydrateChart(chart) {
   state.playheadTime = 0;
   state.pendingAudioTime = chartTimeToAudioTime(0);
   resetCueTracking(0);
-  stopHoldCue();
   state.notes = chart.notes.map((note) => createLocalNote(note));
   state.selectedId = null;
   state.selectedIds = [];
@@ -1434,10 +1437,10 @@ function hydrateChart(chart) {
 
   if (currentAudioSrc !== chart.audioSrc) {
     dom.audio.src = chart.audioSrc;
-    dom.audio.volume = EDITOR_MUSIC_VOLUME;
+    applyEditorAudioVolume();
     dom.audio.load();
   } else {
-    dom.audio.volume = EDITOR_MUSIC_VOLUME;
+    applyEditorAudioVolume();
     syncPendingAudioTime();
   }
 
@@ -1501,6 +1504,42 @@ function handleNoteFormChange() {
     );
   } else {
     delete note.endTime;
+  }
+
+  sortNotes();
+  renderNotes();
+  pushHistory();
+}
+
+function applyBulkNoteTypeChange() {
+  const selectedNotes = getSelectedNotes();
+  if (selectedNotes.length <= 1) {
+    return;
+  }
+
+  const nextType = dom.bulkNoteKind.value;
+  let changed = false;
+
+  selectedNotes.forEach((note) => {
+    const previousType = getEditorNoteType(note);
+    if (previousType === nextType) {
+      return;
+    }
+
+    applyNoteTypeValue(note, nextType);
+    if (note.kind === "hold") {
+      note.endTime = roundTime(
+        Math.max(note.time + 0.05, Number(note.endTime) || note.time + 0.448)
+      );
+    } else {
+      delete note.endTime;
+    }
+    changed = true;
+  });
+
+  if (!changed) {
+    renderInspector();
+    return;
   }
 
   sortNotes();
@@ -1612,6 +1651,7 @@ function bindEvents() {
   dom.stopButton.addEventListener("click", () => {
     dom.audio.pause();
     seekToChartTime(0);
+    scrollTimelineToStart();
     updatePlayToggle();
   });
 
@@ -1633,6 +1673,14 @@ function bindEvents() {
 
   dom.fallSpeedInput?.addEventListener("change", () => {
     setChartFallSpeedMultiplier(dom.fallSpeedInput.value);
+  });
+
+  dom.musicVolumeRange?.addEventListener("input", () => {
+    setChartMusicVolume(dom.musicVolumeRange.value);
+  });
+
+  dom.musicVolumeInput?.addEventListener("change", () => {
+    setChartMusicVolume(dom.musicVolumeInput.value);
   });
 
   dom.songSelect.addEventListener("change", () => {
@@ -1679,6 +1727,7 @@ function bindEvents() {
   });
 
   dom.snapSelectionToPlayhead.addEventListener("click", syncSelectionToPlayhead);
+  dom.applyBulkNoteKind?.addEventListener("click", applyBulkNoteTypeChange);
   dom.deleteButton.addEventListener("click", removeSelectedNote);
   dom.duplicateButton.addEventListener("click", duplicateSelectedNote);
 
@@ -1782,21 +1831,14 @@ function bindEvents() {
   dom.audio.addEventListener("seeked", () => {
     state.playheadTime = audioTimeToChartTime(dom.audio.currentTime || 0);
     resetCueTracking(state.playheadTime);
-    if (dom.audio.paused) {
-      stopHoldCue();
-    } else {
-      updateHoldCue(state.playheadTime);
-    }
   });
   dom.audio.addEventListener("pause", () => {
     state.playheadTime = audioTimeToChartTime(dom.audio.currentTime || 0);
     resetCueTracking(state.playheadTime);
-    stopHoldCue();
     updatePlayToggle();
   });
   dom.audio.addEventListener("play", () => {
     resetCueTracking(state.playheadTime);
-    updateHoldCue(state.playheadTime);
     updatePlayToggle();
   });
 }
