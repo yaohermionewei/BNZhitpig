@@ -7,7 +7,7 @@ export const DEFAULT_HIT_SFX_LAB_ID = "sample-freesound-847838-strong-punch";
 const SAMPLED_HIT_IMPACT_SOUNDS = Object.freeze({
   "sample-freesound-517744-punch": {
     src: "/assets/audio/hit-lab/freesound-517744-punch-short.wav",
-    volume: 2.2,
+    volume: 1.4,
   },
   "sample-freesound-847838-strong-punch": {
     src: "/assets/audio/hit-lab/freesound-847838-strong-punch-short.wav",
